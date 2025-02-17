@@ -19,8 +19,10 @@ fecha = datetime.now()
 prod_year = fecha.isocalendar().year
 prod_week = fecha.isocalendar().week
 fecha_salida = fecha + timedelta(days=1)
-fecha = fecha.strftime('%Y-%m-%d')
+fecha_str = fecha.strftime('%Y-%m-%d')
 fecha_salida = fecha_salida.strftime('%Y-%m-%d')
+hours_in = '10:00:00'
+hours_out = '11:00:00'
 
 product_code_1 = 'LNAFP'
 product_name_1 = 'Nandina domestica nana Firepower'
@@ -79,8 +81,8 @@ class TestStock:
                     stock_obj.Product.f['product_department']:[ product_department_1,]
                 },
                 stock_obj.f['production_requier_containers']: 100,
-                stock_obj.Employee.TEAM_OBJ_ID: {stock_obj.Employee.f['team_name']:'Team1'},
-                stock_obj.WH.WAREHOUSE_OBJ_ID: {stock_obj.WH.f['warehouse']:'Team1'},
+                stock_obj.Employee.TEAM_OBJ_ID: {stock_obj.Employee.f['team_name']:'Team 1'},
+                stock_obj.WH.WAREHOUSE_OBJ_ID: {stock_obj.WH.f['warehouse']:'Team 1'},
                 stock_obj.f['production_left_overs']: 'next_day',
                 stock_obj.f['production_order_status']: 'programed',
                 # stock_obj.WH.WAREHOUSE_LOCATION_OBJ_ID: {
@@ -118,7 +120,69 @@ class TestStock:
         res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
         print('res_create',res_create)
         assert res_create['status_code'] == 201
-        time.sleep(1)
+        prod_folio = res_create.get('json',{}).get('folio')
+        prod_id = res_create.get('json',{}).get('id')
+        metadata['folio'] = prod_folio
+        metadata['id'] = prod_id
+        prod_answers = {
+            stock_obj.f['production_per_container_in']: 10,
+            stock_obj.f['product_container_type']: 'clean',
+            stock_obj.f['production_working_cycle']: 'C1',
+            stock_obj.f['production_working_group']: 1,
+            stock_obj.f['production_working_group']: 1,
+            stock_obj.MEDIA_LOT_OBJ_ID: {
+                stock_obj.f['media_name']: 'AG II',
+                stock_obj.f['media_lot']: '16 C',
+            },
+            stock_obj.f['use_clorox']: 'no',
+            stock_obj.f['production_group']: [
+                {
+                    stock_obj.Employee.EMPLOYEE_OBJ_ID:{stock_obj.Employee.f['worker_name']: "Elizabeth Guevara"},
+                    stock_obj.f['production_containers_in']: 50,
+                    stock_obj.f['set_total_produced']: 100,
+                    stock_obj.f['set_production_date']: fecha_str,
+                    stock_obj.f['time_in']: hours_in,
+                    stock_obj.f['set_production_date_out']: fecha_str,
+                    stock_obj.f['time_out']: hours_out,
+                    stock_obj.f['set_lunch_brake']: 'no',
+                    stock_obj.f['production_status']: 'progress',
+                },
+                {
+                    stock_obj.Employee.EMPLOYEE_OBJ_ID:{stock_obj.Employee.f['worker_name']: "Blanca Guevara"},
+                    stock_obj.f['production_containers_in']: 50,
+                    stock_obj.f['set_total_produced']: 201,
+                    stock_obj.f['set_production_date']: fecha_str,
+                    stock_obj.f['time_in']: hours_in,
+                    stock_obj.f['set_production_date_out']: fecha_str,
+                    stock_obj.f['time_out']: hours_out,
+                    stock_obj.f['set_lunch_brake']: 'no',
+                    stock_obj.f['production_status']: 'progress',
+                },
+                {
+                    stock_obj.Employee.EMPLOYEE_OBJ_ID:{stock_obj.Employee.f['worker_name']: "Anayeli Bautista"},
+                    stock_obj.f['production_containers_in']: 50,
+                    stock_obj.f['set_total_produced']: 302,
+                    stock_obj.f['set_production_date']: fecha_str,
+                    stock_obj.f['time_in']: hours_in,
+                    stock_obj.f['set_production_date_out']: fecha_str,
+                    stock_obj.f['time_out']: hours_out,
+                    stock_obj.f['set_lunch_brake']: 'no',
+                    stock_obj.f['production_status']: 'progress',
+                }                  
+                    ],
+        }
+
+        metadata['answers'].update(prod_answers)
+        res = stock_obj.lkf_api.patch_record(metadata, prod_id)
+        assert res['status_code'] == 202
+        record = stock_obj.get_record_by_id(prod_id)
+        print('record_id=',record)
+        answers = record['answers']
+        production_group = answers[stock_obj.f['production_group']]
+        total_produced = answers.get(stock_obj.f['total_produced'])
+        assert total_produced == 603
+        print('total_produced=',total_produced)
+
         print('TERMINO ----test_crea_recepcion_materiales---')
     
   #   def test_crea_recepcion_materiales(self):
