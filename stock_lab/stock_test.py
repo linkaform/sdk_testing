@@ -358,4 +358,13 @@ class TestStock:
         res = stock_obj.lkf_api.patch_record(new_lot_rec, stock_obj.new_lot_id )
         print('res=',res)
         assert res['status_code'] == 202
-  
+        
+        new_lot_rec['answers'][stock_obj.f['product_code']] = product_code_1
+        print('product_code_1',product_code_1)
+        
+        lot_number =  new_lot_rec['answers'][stock_obj.f['product_lot']]
+        
+        
+        
+        stock_obj.get_invntory_record_by_product(stock_obj.FORM_INVENTORY_ID, product_code_1, sku, lot_number, warehouse, warehouse_in_location, **kwargs)
+        
