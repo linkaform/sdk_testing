@@ -56,6 +56,7 @@ class TestStock:
     total_produced_1 = 0
     stock_location_1_qty = 0
     stock_location_2_qty = 0
+    stock_location_3_qty = 0
     stock2_location_1_qty = 0
     stock2_location_2_qty = 0
     stock_lote1_qty = 0
@@ -480,51 +481,51 @@ class TestStock:
         total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
         assert TestStock.total_produced_1 == total_produced
 
-    # def test_production_2(self):
-    #     qty_factor = 2
-    #     metadata = self.production_metadata(product_code_2, product_name_2)
-    #     res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-    #     assert res_create['status_code'] == 201
-    #     TestStock.prod_folio_2 = res_create.get('json', {}).get('folio')
-    #     TestStock.prod_id_2 = res_create.get('json', {}).get('id')
-    #     metadata['folio'] = TestStock.prod_folio_2 
-    #     metadata['id'] = TestStock.prod_id_2
-    #     working_group, working_cycle = self.get_group_cyle()
-    #     prod_answers = self.production_answers(working_group, working_cycle, qty_factor)
-    #     metadata['answers'].update(prod_answers)
-    #     res = stock_obj.lkf_api.patch_record(metadata, TestStock.prod_id_2)
-    #     assert res['status_code'] == 202
-    #     record = stock_obj.get_record_by_id(TestStock.prod_id_2)
-    #     answers = record['answers']
-    #     production_group = answers[stock_obj.f['production_group']]
-    #     TestStock.total_produced_2 = answers.get(stock_obj.f['total_produced'])
-    #     total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
-    #     assert TestStock.total_produced_2  == total_produced
+    def test_production_2(self):
+        qty_factor = 2
+        metadata = self.production_metadata(product_code_2, product_name_2)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        assert res_create['status_code'] == 201
+        TestStock.prod_folio_2 = res_create.get('json', {}).get('folio')
+        TestStock.prod_id_2 = res_create.get('json', {}).get('id')
+        metadata['folio'] = TestStock.prod_folio_2 
+        metadata['id'] = TestStock.prod_id_2
+        working_group, working_cycle = self.get_group_cyle()
+        prod_answers = self.production_answers(working_group, working_cycle, qty_factor)
+        metadata['answers'].update(prod_answers)
+        res = stock_obj.lkf_api.patch_record(metadata, TestStock.prod_id_2)
+        assert res['status_code'] == 202
+        record = stock_obj.get_record_by_id(TestStock.prod_id_2)
+        answers = record['answers']
+        production_group = answers[stock_obj.f['production_group']]
+        TestStock.total_produced_2 = answers.get(stock_obj.f['total_produced'])
+        total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
+        assert TestStock.total_produced_2  == total_produced
 
-    # def test_production_3(self):
-    #     qty_factor = 3
-    #     product_code = 'LNAFP'
-    #     product_name = 'Nandina domestica nana Firepower'
-    #     product_department = 'LAB'
-    #     metadata = self.production_metadata(product_code, product_name)
-    #     res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-    #     assert res_create['status_code'] == 201
-    #     TestStock.prod_folio_3 = res_create.get('json', {}).get('folio')
-    #     TestStock.prod_id_3 = res_create.get('json', {}).get('id')
-    #     metadata['folio'] = TestStock.prod_folio_3 
-    #     metadata['id'] = TestStock.prod_id_3
-    #     working_group = TestStock.working_group
-    #     working_cycle = TestStock.working_cycle 
-    #     prod_answers = self.production_answers(working_group, working_cycle, qty_factor)
-    #     metadata['answers'].update(prod_answers)
-    #     res = stock_obj.lkf_api.patch_record(metadata, TestStock.prod_id_3)
-    #     assert res['status_code'] == 202
-    #     record = stock_obj.get_record_by_id(TestStock.prod_id_3)
-    #     answers = record['answers']
-    #     production_group = answers[stock_obj.f['production_group']]
-    #     TestStock.total_produced_3 = answers.get(stock_obj.f['total_produced'])
-    #     total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
-    #     assert TestStock.total_produced_3 == total_produced
+    def test_production_3(self):
+        qty_factor = 3
+        product_code = 'LNAFP'
+        product_name = 'Nandina domestica nana Firepower'
+        product_department = 'LAB'
+        metadata = self.production_metadata(product_code, product_name)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        assert res_create['status_code'] == 201
+        TestStock.prod_folio_3 = res_create.get('json', {}).get('folio')
+        TestStock.prod_id_3 = res_create.get('json', {}).get('id')
+        metadata['folio'] = TestStock.prod_folio_3 
+        metadata['id'] = TestStock.prod_id_3
+        working_group = TestStock.working_group
+        working_cycle = TestStock.working_cycle 
+        prod_answers = self.production_answers(working_group, working_cycle, qty_factor)
+        metadata['answers'].update(prod_answers)
+        res = stock_obj.lkf_api.patch_record(metadata, TestStock.prod_id_3)
+        assert res['status_code'] == 202
+        record = stock_obj.get_record_by_id(TestStock.prod_id_3)
+        answers = record['answers']
+        production_group = answers[stock_obj.f['production_group']]
+        TestStock.total_produced_3 = answers.get(stock_obj.f['total_produced'])
+        total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
+        assert TestStock.total_produced_3 == total_produced
 
     def test_move_stock_in(self):
         warehouse = 'Lab A'
@@ -553,124 +554,125 @@ class TestStock:
         qty2 = self.do_test_stock(product_code, lot_number, warehouse, location_2, TestStock.stock_location_2_qty)
         assert qty1 + qty2 == int(total_produced)
 
-    # def test_move_stock_in_2(self):
-    #     warehouse = 'Lab A'
-    #     location = '10'
-    #     location_2 = '11'
-    #     folio = TestStock.prod_folio_2
-    #     total_produced = TestStock.total_produced_2
-    #     qty1, qty2 = self.do_move_stock_in(folio, warehouse, location, location_2, total_produced)
-    #     TestStock.stock2_location_1_qty = qty1
-    #     TestStock.stock2_location_2_qty = qty2
+    def test_move_stock_in_2(self):
+        warehouse = 'Lab A'
+        location = '10'
+        location_2 = '11'
+        folio = TestStock.prod_folio_2
+        total_produced = TestStock.total_produced_2
+        qty1, qty2 = self.do_move_stock_in(folio, warehouse, location, location_2, total_produced)
+        TestStock.stock2_location_1_qty = qty1
+        TestStock.stock2_location_2_qty = qty2
 
-    # def test_stock_inventory_2(self):
-    #     warehouse = 'Lab A'
-    #     location = '10'
-    #     location_2 = '11'
-    #     # product_code = TestStock.prod_folio_2
-    #     product_code= product_code_2
-    #     lot_number = TestStock.lot_number
-    #     total_produced = TestStock.total_produced_2
-    #     qty1 = self.do_test_stock(product_code, lot_number, warehouse, location, TestStock.stock2_location_1_qty)
-    #     qty2 = self.do_test_stock(product_code, lot_number, warehouse, location_2, TestStock.stock2_location_2_qty)
-    #     assert qty1 + qty2 == int(total_produced)
+    def test_stock_inventory_2(self):
+        warehouse = 'Lab A'
+        location = '10'
+        location_2 = '11'
+        # product_code = TestStock.prod_folio_2
+        product_code= product_code_2
+        lot_number = TestStock.lot_number
+        total_produced = TestStock.total_produced_2
+        qty1 = self.do_test_stock(product_code, lot_number, warehouse, location, TestStock.stock2_location_1_qty)
+        qty2 = self.do_test_stock(product_code, lot_number, warehouse, location_2, TestStock.stock2_location_2_qty)
+        assert qty1 + qty2 == int(total_produced)
 
-    # def test_move_stock_in_3(self):
-    #     warehouse = 'Lab A'
-    #     location = '10'
-    #     location_2 = '11'
-    #     folio = TestStock.prod_folio_3
-    #     total_produced = TestStock.total_produced_3
-    #     qty1, qty2 = self.do_move_stock_in(folio, warehouse, location, location_2, total_produced)
-    #     TestStock.stock_lot_3_loc1_qty = qty1
-    #     TestStock.stock_lot_3_loc2_qty = qty2
-    #     assert qty1 + qty2 == total_produced
+    def test_move_stock_in_3(self):
+        warehouse = 'Lab A'
+        location = '10'
+        location_2 = '11'
+        folio = TestStock.prod_folio_3
+        total_produced = TestStock.total_produced_3
+        qty1, qty2 = self.do_move_stock_in(folio, warehouse, location, location_2, total_produced)
+        TestStock.stock_lot_3_loc1_qty = qty1
+        TestStock.stock_lot_3_loc2_qty = qty2
+        assert qty1 + qty2 == total_produced
 
-    # def test_stock_inventory_3(self):
-    #     warehouse = 'Lab A'
-    #     location = '10'
-    #     location_2 = '11'
-    #     # product_code = TestStock.prod_folio_2
-    #     product_code= product_code_1
-    #     lot_number = TestStock.lot_number
-    #     total_produced = TestStock.total_produced_3
-    #     location_1_lote_qty = TestStock.stock_lot_1_loc1_qty + TestStock.stock_lot_3_loc1_qty
-    #     location_2_lote_qty = TestStock.stock_lot_1_loc2_qty + TestStock.stock_lot_3_loc2_qty
-    #     qty1 = self.do_test_stock(product_code, lot_number, warehouse, location, location_1_lote_qty)
-    #     qty2 = self.do_test_stock(product_code, lot_number, warehouse, location_2, location_2_lote_qty)
-    #     assert qty1 == location_1_lote_qty
-    #     assert qty2 == location_2_lote_qty
-    #     TestStock.stock3_location_1_qty = qty1 + qty2
-    #     assert TestStock.stock_lot_3_loc1_qty + TestStock.stock_lot_3_loc2_qty == int(total_produced)
+    def test_stock_inventory_3(self):
+        warehouse = 'Lab A'
+        location = '10'
+        location_2 = '11'
+        # product_code = TestStock.prod_folio_2
+        product_code= product_code_1
+        lot_number = TestStock.lot_number
+        total_produced = TestStock.total_produced_3
+        location_1_lote_qty = TestStock.stock_lot_1_loc1_qty + TestStock.stock_lot_3_loc1_qty
+        location_2_lote_qty = TestStock.stock_lot_1_loc2_qty + TestStock.stock_lot_3_loc2_qty
+        qty1 = self.do_test_stock(product_code, lot_number, warehouse, location, location_1_lote_qty)
+        qty2 = self.do_test_stock(product_code, lot_number, warehouse, location_2, location_2_lote_qty)
+        assert qty1 == location_1_lote_qty
+        assert qty2 == location_2_lote_qty
+        TestStock.stock3_location_1_qty = qty1 + qty2
+        assert TestStock.stock_lot_3_loc1_qty + TestStock.stock_lot_3_loc2_qty == int(total_produced)
 
-    # def test_move_stock_location_1(self):
-    #     warehouse_from = 'Lab A'
-    #     location_from = '10'
-    #     product_lot = TestStock.lot_number
-    #     stock_location_1_qty = TestStock.stock_location_1_qty
-    #     warehouse_to = 'Lab A'
-    #     location_to = '100'
-    #     move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
-    #     metadata = self.move_metadata(product_code_1, product_lot, warehouse_from, location_from, warehouse_to, location_to, move_qty)
-    #     res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-    #     qty = self.do_test_stock(product_code_1, product_lot, warehouse_to, location_to, move_qty)
-    #     #TODO REVISAR DESCUENT EN UBICACION ANTIGUA
-    #     TestStock.stock_move_location_1_qty = move_qty
-    #     assert qty == move_qty
+    def test_move_stock_location_1(self):
+        warehouse_from = 'Lab A'
+        location_from = '10'
+        product_lot = TestStock.lot_number
+        stock_location_1_qty = TestStock.stock_location_1_qty
+        warehouse_to = 'Lab A'
+        location_to = '100'
+        move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
+        metadata = self.move_metadata(product_code_1, product_lot, warehouse_from, location_from, warehouse_to, location_to, move_qty)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        qty = self.do_test_stock(product_code_1, product_lot, warehouse_to, location_to, move_qty)
+        #TODO REVISAR DESCUENT EN UBICACION ANTIGUA
+        TestStock.stock_move_location_1_qty = move_qty
+        assert qty == move_qty
 
-    # def test_move_stock_location_2(self):
-    #     warehouse_from = 'Lab A'
-    #     location_from = '11'
-    #     product_lot = TestStock.lot_number
-    #     stock_location_2_qty = TestStock.stock2_location_2_qty
-    #     warehouse_to = 'Lab A'
-    #     location_to = '100'
-    #     move_qty = int(stock_location_2_qty * .1)
-    #     metadata = self.move_metadata(product_code_1, product_lot, warehouse_from, location_from, warehouse_to, location_to, move_qty)
-    #     res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-    #     qty = self.do_test_stock(product_code_1, product_lot, warehouse_to, location_to, move_qty, extra_qty = TestStock.stock_move_location_1_qty)
-    #     print('asi regresa... qty', qty)
-    #     TestStock.stock_move_location_2_qty = qty
-    #     # assert qty == move_qty
-    #     assert (move_qty + TestStock.stock_move_location_1_qty )== qty
 
-    # def test_move_stock_warehouse(self):
-    #     warehouse_from = 'Lab A'
-    #     location_from = '10'
-    #     product_lot = TestStock.lot_number
-    #     stock_location_1_qty = TestStock.stock_location_1_qty
-    #     print('stock_location_1_qty', stock_location_1_qty)
-    #     warehouse_to = 'Lab B'
-    #     location_to = '41'
-    #     move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
-    #     metadata = self.move_metadata(product_code_1, product_lot, warehouse_from, location_from, warehouse_to, location_to, move_qty)
-    #     print('metadata', metadata)
-    #     res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-    #     print('res_create', res_create)
-    #     qty = self.do_test_stock(product_code_1, product_lot, warehouse_to, location_to, move_qty)
-    #     print('qty', qty)
-    #     TestStock.stock_move_wh_1_qty = move_qty
-    #     assert qty == move_qty
+    def test_move_stock_location_2(self):
+        warehouse_from = 'Lab A'
+        location_from = '11'
+        product_lot = TestStock.lot_number
+        stock_location_2_qty = TestStock.stock2_location_2_qty
+        warehouse_to = 'Lab A'
+        location_to = '100'
+        move_qty = int(stock_location_2_qty * .1)
+        metadata = self.move_metadata(product_code_1, product_lot, warehouse_from, location_from, warehouse_to, location_to, move_qty)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        qty = self.do_test_stock(product_code_1, product_lot, warehouse_to, location_to, move_qty, extra_qty = TestStock.stock_move_location_1_qty)
+        print('asi regresa... qty', qty)
+        TestStock.stock_move_location_2_qty = qty
+        # assert qty == move_qty
+        assert (move_qty + TestStock.stock_move_location_1_qty )== qty
 
-    # def test_adjustment_qty(self):
-    #     warehouse_from = 'Lab A'
-    #     location_from = '11'
-    #     product_lot = TestStock.lot_number
-    #     stock_location_2_qty = TestStock.stock_location_2_qty
-    #     warehouse_to = 'Lab A'
-    #     location_to = '201'
-    #     actual_qty = TestStock.stock_location_1_qty
-    #     actual_qty -= TestStock.stock_move_location_1_qty 
-    #     actual_qty -= TestStock.stock_move_wh_1_qty 
-    #     new_qty =  actual_qty + 10
-    #     print('new_qty', new_qty)
-    #     metadata = self.adjust_metadata(product_code_1, product_stage_1, warehouse_from, location_from, warehouse_to, location_to, new_qty)
-    #     print('adjust metadata metadata', metadata)
-    #     res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-    #     print('adjust res create', res_create)
-    #     qty = self.do_test_stock(product_code_1, product_lot, warehouse_to, location_to, new_qty)
-    #     print('adjust qtye', qty)
-    #     assert qty == new_qty
+    def test_move_stock_warehouse(self):
+        warehouse_from = 'Lab A'
+        location_from = '10'
+        product_lot = TestStock.lot_number
+        stock_location_1_qty = TestStock.stock_location_1_qty
+        print('stock_location_1_qty', stock_location_1_qty)
+        warehouse_to = 'Lab B'
+        location_to = '41'
+        move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
+        metadata = self.move_metadata(product_code_1, product_lot, warehouse_from, location_from, warehouse_to, location_to, move_qty)
+        print('metadata', metadata)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        print('res_create', res_create)
+        qty = self.do_test_stock(product_code_1, product_lot, warehouse_to, location_to, move_qty)
+        print('qty', qty)
+        TestStock.stock_move_wh_1_qty = move_qty
+        assert qty == move_qty
+
+    def test_adjustment_qty(self):
+        warehouse_from = 'Lab A'
+        location_from = '11'
+        product_lot = TestStock.lot_number
+        stock_location_2_qty = TestStock.stock_location_2_qty
+        warehouse_to = 'Lab A'
+        location_to = '201'
+        actual_qty = TestStock.stock_location_1_qty
+        actual_qty -= TestStock.stock_move_location_1_qty 
+        actual_qty -= TestStock.stock_move_wh_1_qty 
+        new_qty =  actual_qty + 10
+        print('new_qty', new_qty)
+        metadata = self.adjust_metadata(product_code_1, product_stage_1, warehouse_from, location_from, warehouse_to, location_to, new_qty)
+        print('adjust metadata metadata', metadata)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        print('adjust res create', res_create)
+        qty = self.do_test_stock(product_code_1, product_lot, warehouse_to, location_to, new_qty)
+        print('adjust qtye', qty)
+        assert qty == new_qty
 
 
     def test_seleccion_planta1(self):
@@ -688,3 +690,23 @@ class TestStock:
         res_create = stock_obj.lkf_api.post_forms_answers(metadata)
         print('res_create', res_create)
         assert res_create['status_code'] == 201
+
+    def test_stock_inventory_out(self):
+        product_code = product_code_1
+        lot_number = TestStock.lot_number
+        warehouse = 'Lab A'
+        location = '10'
+        # Deberíamos tener esto
+        stock_res_loc1 = stock_obj.get_invtory_record_by_product(stock_obj.FORM_INVENTORY_ID, product_code, lot_number, warehouse, location)
+        print('stock_res', stock_res_loc1)
+        #stock_location_1_qty = TestStock.stock_location_3_qty
+        stock_location_1_qty = TestStock.stock_location_1_qty
+        move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
+        print('move_qty', move_qty)
+        print('stock_location_1_qty', stock_location_1_qty)
+        stock_out = stock_location_1_qty - move_qty
+        lot_number = TestStock.lot_number
+        print('stock_out', stock_out)
+        qty = self.do_test_stock(product_code, lot_number, warehouse, location, stock_out)
+        print('qty', qty)
+        assert qty == stock_out
