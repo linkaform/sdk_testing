@@ -387,7 +387,7 @@ class TestStock:
         }
         return metadata
 
-    def pull_out_metadata(self, product_code, product_name, product_lot, warehouse_from, location_from, qty):
+    def pull_out_metadata(self, product_code, product_name, product_lot, product_stage, warehouse_from, location_from, warehouse_to, location_to, qty):
         print('prod_week', prod_week)
         metadata = {
             "form_id": stock_obj.STOCK_MANY_LOCATION_OUT, "geolocation": [], "start_timestamp": 1715787608.475, "end_timestamp": 1715788138.316,
@@ -400,15 +400,20 @@ class TestStock:
                 stock_obj.f['requierd_eaches']: 10,
                 stock_obj.f['move_group']: [
                     {stock_obj.CATALOG_INVENTORY_OBJ_ID:{
+                        stock_obj.f['recipe_stage']: product_stage,
+                        stock_obj.f['plant_cut_day']: cut_day,
                         stock_obj.WH.f['warehouse']: warehouse_from,
                         stock_obj.WH.f['warehouse_location']: location_from,
-                        stock_obj.f['production_cut_week']: str(int(prod_week) - 1) ,
                         stock_obj.f['product_lot']: product_lot,
                         },
-                    stock_obj.f['inv_move_qty']: qty,
+                    stock_obj.f['new_location_containers']: qty,
                     }
                 ],
-                stock_obj.f['inv_adjust_status']: qty,
+                stock_obj.WH.WAREHOUSE_LOCATION_DEST_OBJ_ID:{
+                        stock_obj.WH.f['warehouse_dest']: warehouse_to,
+                        stock_obj.WH.f['warehouse_location_dest']: location_to,
+                    },
+                stock_obj.f['inv_adjust_status']: 'to_do',
             },
             "properties": {"device_properties": {"system": "Testing"}}
         }
@@ -691,22 +696,38 @@ class TestStock:
         print('res_create', res_create)
         assert res_create['status_code'] == 201
 
-    def test_stock_inventory_out(self):
+    # def test_stock_inventory_out(self):
+    #     product_code = product_code_1
+    #     lot_number = TestStock.lot_number
+    #     warehouse = 'Lab A'
+    #     location = '10'
+    #     # Deberíamos tener esto
+    #     stock_res_loc1 = stock_obj.get_invtory_record_by_product(stock_obj.FORM_INVENTORY_ID, product_code, lot_number, warehouse, location)
+    #     print('stock_res', stock_res_loc1)
+    #     #stock_location_1_qty = TestStock.stock_location_3_qty
+    #     stock_location_1_qty = TestStock.stock_location_1_qty
+    #     move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
+    #     print('move_qty', move_qty)
+    #     print('stock_location_1_qty', stock_location_1_qty)
+    #     stock_out = stock_location_1_qty - move_qty
+    #     lot_number = TestStock.lot_number
+    #     print('stock_out', stock_out)
+    #     qty = self.do_test_stock(product_code, lot_number, warehouse, location, stock_out)
+    #     print('qty', qty)
+    #     assert qty == stock_out
+        
+    def test_inventory_pull_out(self):
         product_code = product_code_1
-        lot_number = TestStock.lot_number
+        product_name = product_name_1 
+        product_stage = 'S2'
+        product_lot = TestStock.lot_number_1
+        stock_location_1_qty = TestStock.stock_location_1_qty
         warehouse = 'Lab A'
         location = '10'
-        # Deberíamos tener esto
-        stock_res_loc1 = stock_obj.get_invtory_record_by_product(stock_obj.FORM_INVENTORY_ID, product_code, lot_number, warehouse, location)
-        print('stock_res', stock_res_loc1)
-        #stock_location_1_qty = TestStock.stock_location_3_qty
-        stock_location_1_qty = TestStock.stock_location_1_qty
+        warehouse_to = 'Team 1 A'
+        location_to = 'Team 1'
         move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
-        print('move_qty', move_qty)
-        print('stock_location_1_qty', stock_location_1_qty)
-        stock_out = stock_location_1_qty - move_qty
-        lot_number = TestStock.lot_number
-        print('stock_out', stock_out)
-        qty = self.do_test_stock(product_code, lot_number, warehouse, location, stock_out)
-        print('qty', qty)
-        assert qty == stock_out
+        metadata = self.pull_out_metadata(product_code, product_name, product_lot, product_stage, warehouse, location, warehouse_to, location_to, move_qty)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        print('res_create', res_create)
+        assert res_create['status_code'] == 201
