@@ -1317,39 +1317,3 @@ class TestStock:
         res_create = stock_obj.lkf_api.post_forms_answers(metadata)
         print('res_create', res_create)
         assert res_create['status_code'] == 201
-
-    # def test_stock_inventory_out(self):
-    #     product_code = product_code_1
-    #     lot_number = TestStock.lot_number
-    #     warehouse = 'Lab A'
-    #     location = '10'
-    #     # Deberíamos tener esto
-    #     stock_res_loc1 = stock_obj.get_invtory_record_by_product(stock_obj.FORM_INVENTORY_ID, product_code, lot_number, warehouse, location)
-    #     print('stock_res', stock_res_loc1)
-    #     #stock_location_1_qty = TestStock.stock_location_3_qty
-    #     stock_location_1_qty = TestStock.stock_location_1_qty
-    #     move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
-    #     print('move_qty', move_qty)
-    #     print('stock_location_1_qty', stock_location_1_qty)
-    #     stock_out = stock_location_1_qty - move_qty
-    #     lot_number = TestStock.lot_number
-    #     print('stock_out', stock_out)
-    #     qty = self.do_test_stock(product_code, lot_number, warehouse, location, stock_out)
-    #     print('qty', qty)
-    #     assert qty == stock_out
-        
-    def test_inventory_pull_out_s3(self):
-        product_code = product_code_1
-        product_name = product_name_1 
-        product_stage = 'S3'
-        product_lot = TestStock.lot_number_1
-        stock_location_1_qty = TestStock.stock_location_1_qty
-        warehouse = 'Lab A'
-        location = '10'
-        warehouse_to = 'Team 1 A'
-        location_to = 'Team 1'
-        move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
-        metadata = self.pull_out_metadata(product_code, product_name, product_lot, product_stage, warehouse, location, warehouse_to, location_to, move_qty)
-        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-        print('res_create', res_create)
-        assert res_create['status_code'] == 201
