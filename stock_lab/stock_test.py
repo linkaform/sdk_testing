@@ -718,22 +718,6 @@ class TestStock:
     #     print('qty', qty)
     #     assert qty == stock_out
         
-    def test_inventory_pull_out(self):
-        product_code = product_code_1
-        product_name = product_name_1 
-        product_stage = 'S2'
-        product_lot = TestStock.lot_number_1
-        stock_location_1_qty = TestStock.stock_location_1_qty
-        warehouse = 'Lab A'
-        location = '10'
-        warehouse_to = 'Team 1 A'
-        location_to = 'Team 1'
-        move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
-        metadata = self.pull_out_metadata(product_code, product_name, product_lot, product_stage, warehouse, location, warehouse_to, location_to, move_qty)
-        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-        print('res_create', res_create)
-        assert res_create['status_code'] == 201
- 
 ##### Tests ######
 
     def test_production_s3(self):
@@ -971,7 +955,24 @@ class TestStock:
         print('res_create', res_create)
         assert res_create['status_code'] == 201
     
-    def production_metadata_greenhouse(self, product_code, product_name):
+    def test_inventory_pull_out(self):
+        product_code = product_code_1
+        product_name = product_name_1 
+        product_stage = 'S2'
+        product_lot = TestStock.lot_number_1
+        stock_location_1_qty = TestStock.stock_location_1_qty
+        warehouse = 'Lab A'
+        location = '10'
+        warehouse_to = 'Team 1 A'
+        location_to = 'Team 1'
+        move_qty = 1 if int(stock_location_1_qty * .1) == 0 else int(stock_location_1_qty * .1)
+        metadata = self.pull_out_metadata(product_code, product_name, product_lot, product_stage, warehouse, location, warehouse_to, location_to, move_qty)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        print('res_create', res_create)
+        assert res_create['status_code'] == 201
+ 
+    
+    def production_metadata_greenhouse(self, product_code, product_name, total_produced):
         priority = 9
         form_stage = 'Ln72'
         to_stage = 'Ln72'
@@ -1008,7 +1009,7 @@ class TestStock:
                     stock_obj.f['time_out']: hours_out,
                     stock_obj.f['production_status']: 'progress',
                     }],
-                stock_obj.f['total_produced']: 200,
+                stock_obj.f['total_produced']: total_produced,
                 stock_obj.f['production_left_overs']: 'next_day',
                 stock_obj.f['production_order_status']: 'programed',
             },
@@ -1022,25 +1023,79 @@ class TestStock:
         product_code = 'LNAFP'
         product_name = 'Nandina domestica nana Firepower'
         product_department = 'LAB'
-        metadata = self.production_metadata_greenhouse(product_code, product_name)
+        total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
+        metadata = self.production_metadata_greenhouse(product_code, product_name, total_produced)
         print('++++metadata++++', metadata)
         res_create = stock_obj_greenhouse.lkf_api.post_forms_answers(metadata)
         assert res_create['status_code'] == 201
+        TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
+        TestStock.prod_id_1 = res_create.get('json', {}).get('id')
+        print('self prod folio 1===', TestStock.prod_folio_1)
+        metadata['folio'] = TestStock.prod_folio_1 
+        metadata['id'] = TestStock.prod_id_1
+        working_group, working_cycle = self.get_group_cyle()
+        TestStock.working_group = working_group
+        TestStock.working_cycle = working_cycle
+        prod_answers = self.production_answers(working_group, working_cycle, qty_factor)
+        metadata['answers'].update(prod_answers)
+        res = stock_obj_greenhouse.lkf_api.patch_record(metadata, TestStock.prod_id_1)
+        assert res['status_code'] == 202
+        record = stock_obj_greenhouse.get_record_by_id(TestStock.prod_id_1)
+        answers = record['answers']
+        production_group = answers[stock_obj.f['production_group']]
+        TestStock.total_produced_1 = answers.get(stock_obj.f['total_produced'])
+        assert TestStock.total_produced_1 == total_produced
         
     def test_production_greenhouse_2(self):
         qty_factor = 2
         product_code = 'LNAFP'
         product_name = 'Nandina domestica nana Firepower'
         product_department = 'LAB'
-        metadata = self.production_metadata_greenhouse(product_code, product_name)
+        total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
+        metadata = self.production_metadata_greenhouse(product_code, product_name, total_produced)
         res_create = stock_obj_greenhouse.lkf_api.post_forms_answers(metadata)
         assert res_create['status_code'] == 201
-        
+        TestStock.prod_folio_2 = res_create.get('json', {}).get('folio')
+        TestStock.prod_id_2 = res_create.get('json', {}).get('id')
+        print('self prod folio 2===', TestStock.prod_folio_2)
+        metadata['folio'] = TestStock.prod_folio_2 
+        metadata['id'] = TestStock.prod_id_2
+        working_group, working_cycle = self.get_group_cyle()
+        TestStock.working_group = working_group
+        TestStock.working_cycle = working_cycle
+        prod_answers = self.production_answers(working_group, working_cycle, qty_factor)
+        metadata['answers'].update(prod_answers)
+        res = stock_obj_greenhouse.lkf_api.patch_record(metadata, TestStock.prod_id_2)
+        assert res['status_code'] == 202
+        record = stock_obj_greenhouse.get_record_by_id(TestStock.prod_id_2)
+        answers = record['answers']
+        production_group = answers[stock_obj.f['production_group']]
+        TestStock.total_produced_2 = answers.get(stock_obj.f['total_produced'])
+        assert TestStock.total_produced_2 == total_produced
+
     def test_production_greenhouse_3(self):
         qty_factor = 3
         product_code = 'LNAFP'
         product_name = 'Nandina domestica nana Firepower'
         product_department = 'LAB'
-        metadata = self.production_metadata_greenhouse(product_code, product_name)
+        total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
+        metadata = self.production_metadata_greenhouse(product_code, product_name, total_produced)
         res_create = stock_obj_greenhouse.lkf_api.post_forms_answers(metadata)
         assert res_create['status_code'] == 201
+        TestStock.prod_folio_3 = res_create.get('json', {}).get('folio')
+        TestStock.prod_id_3 = res_create.get('json', {}).get('id')
+        print('self prod folio 3===', TestStock.prod_folio_3)
+        metadata['folio'] = TestStock.prod_folio_3 
+        metadata['id'] = TestStock.prod_id_3
+        working_group, working_cycle = self.get_group_cyle()
+        TestStock.working_group = working_group
+        TestStock.working_cycle = working_cycle
+        prod_answers = self.production_answers(working_group, working_cycle, qty_factor)
+        metadata['answers'].update(prod_answers)
+        res = stock_obj_greenhouse.lkf_api.patch_record(metadata, TestStock.prod_id_3)
+        assert res['status_code'] == 202
+        record = stock_obj_greenhouse.get_record_by_id(TestStock.prod_id_3)
+        answers = record['answers']
+        production_group = answers[stock_obj.f['production_group']]
+        TestStock.total_produced_3 = answers.get(stock_obj.f['total_produced'])
+        assert TestStock.total_produced_3 == total_produced
