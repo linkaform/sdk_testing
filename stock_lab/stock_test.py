@@ -1026,113 +1026,21 @@ class TestStock:
         print('++++metadata++++', metadata)
         res_create = stock_obj_greenhouse.lkf_api.post_forms_answers(metadata)
         assert res_create['status_code'] == 201
-        # TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
-        # TestStock.prod_id_1 = res_create.get('json', {}).get('id')
-        # print('self prod folio 1===', TestStock.prod_folio_1)
-        # metadata['folio'] = TestStock.prod_folio_1 
-        # metadata['id'] = TestStock.prod_id_1
-        # working_group, working_cycle = self.get_group_cyle()
-        # TestStock.working_group = working_group
-        # TestStock.working_cycle = working_cycle
-        # prod_answers = self.production_answers(working_group, working_cycle, qty_factor)
-        # metadata['answers'].update(prod_answers)
-        # res = stock_obj.lkf_api.patch_record(metadata, TestStock.prod_id_1)
-        # assert res['status_code'] == 202
-        # record = stock_obj.get_record_by_id(TestStock.prod_id_1)
-        # answers = record['answers']
-        # production_group = answers[stock_obj.f['production_group']]
-        # TestStock.total_produced_1 = answers.get(stock_obj.f['total_produced'])
-        # total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
-        # assert TestStock.total_produced_1 == total_produced
         
+    def test_production_greenhouse_2(self):
+        qty_factor = 2
+        product_code = 'LNAFP'
+        product_name = 'Nandina domestica nana Firepower'
+        product_department = 'LAB'
+        metadata = self.production_metadata_greenhouse(product_code, product_name)
+        res_create = stock_obj_greenhouse.lkf_api.post_forms_answers(metadata)
+        assert res_create['status_code'] == 201
         
-    # def do_move_stock_in(self, prod_folio, warehouse, location, location_2, total_produced):
-    #     mongo_query = {
-    #         "form_id" : stock_obj.MOVE_NEW_PRODUCTION_ID,
-    #         f"answers.{stock_obj.f['production_folio']}": prod_folio
-    #     }
-    #     #se obtiene registro con query de folio de prudccion
-    #     print('mongo_query', mongo_query)
-    #     new_lot_rec = stock_obj.cr.find(mongo_query)
-    #     new_lot_rec = new_lot_rec.next()
-    #     TestStock.new_lot_id = new_lot_rec.get('_id')
-    #     TestStock.new_lot_folio = new_lot_rec.get('folio')
-    #     # se selecciona almacen destino y location
-    #     warehouse = self.create_warehouse(warehouse)
-    #     location = self.create_warehouse_location(location)
-    #     # se arma el set de movimiento
-    #     stock_location_1_qty = int(random.random() * 100)
-    #     new_location = {
-    #         stock_obj.WH.WAREHOUSE_DEST_OBJ_ID: {
-    #             stock_obj.WH.f['warehouse'] : warehouse,
-    #             stock_obj.WH.f['warehouse_location']: location
-
-    #         },
-    #         stock_obj.f['new_location_racks']: 0 ,
-    #         stock_obj.f['new_location_containers']: stock_location_1_qty
-    #     }
-    #     # se pon dentro de la variable grupo el set1
-    #     new_location_group = [new_location]
-    #     # se anexa al registro completo el grupo
-    #     new_lot_rec['answers'][stock_obj.f['new_location_group']] = new_location_group
-
-    #     # se edita el registr y se verifica que regrese un 400 debido a mala cantidad
-    #     res = stock_obj.lkf_api.patch_record(new_lot_rec, new_lot_rec['_id'])
-    #     assert res['status_code'] == 400
-    #     location_2 = self.create_warehouse_location(location_2)
-    #     # se prepara set 2
-    #     stock_location_2_qty = total_produced  - stock_location_1_qty 
-    #     new_location_2 = {
-    #         stock_obj.WH.WAREHOUSE_DEST_OBJ_ID: {
-    #             stock_obj.WH.f['warehouse'] : warehouse,
-    #             stock_obj.WH.f['warehouse_location']: location_2
-    #         },
-    #         stock_obj.f['new_location_racks']: 0 ,
-    #         stock_obj.f['new_location_containers']: stock_location_2_qty
-    #     }
-    #     # se se anexa al grupo
-    #     new_location_group.append(new_location_2)
-
-    #     # se acutaliza el registro y se hace patch
-    #     new_lot_rec['answers'][stock_obj.f['new_location_group']] = new_location_group
-
-    #     res = stock_obj.lkf_api.patch_record(new_lot_rec, TestStock.new_lot_id )
-    #     print('sleeping...... 4s')
-    #     time.sleep(4)
-    #     print('res=',res)
-    #     assert res['status_code'] == 202
-    #     product_code = new_lot_rec['answers'][stock_obj.SKU_OBJ_ID][stock_obj.f['product_code']] 
-    #     lot_number = new_lot_rec['answers'][stock_obj.f['product_lot']] 
-    #     # self.get_test_stock_qty(product_code_1, lot_number_1, warehouse, warehouse_in_location_1, stock_location_1 )
-    #     assert stock_location_2_qty + stock_location_1_qty == int(total_produced)
-    #     TestStock.product_code = product_code
-    #     TestStock.lot_number = lot_number
-    #     return stock_location_1_qty, stock_location_2_qty
-
-        
-    # def test_move_stock_in_greenhouse(self):
-    #     warehouse = 'Lab A'
-    #     location = '10'
-    #     location_2 = '11'
-    #     folio = TestStock.prod_folio_1
-    #     total_produced = TestStock.total_produced_1
-    #     qty1, qty2 = self.do_move_stock_in(folio, warehouse, location, location_2, total_produced)
-    #     TestStock.stock_location_1_qty = qty1
-    #     TestStock.stock_location_2_qty = qty2
-
-    #     TestStock.stock_lot_1_loc1_qty = qty1
-    #     TestStock.stock_lot_1_loc2_qty = qty2
-    #     assert qty1 + qty2 == total_produced
-
-    # def test_stock_inventory_greenhouse(self):
-    #     warehouse = 'Lab A'
-    #     location = '10'
-    #     location_2 = '11'
-    #     # product_code = TestStock.prod_folio_2
-    #     product_code= product_code_1
-    #     lot_number = TestStock.lot_number
-    #     TestStock.lot_number_1 = lot_number
-    #     total_produced = TestStock.total_produced_1
-    #     qty1 = self.do_test_stock(product_code, lot_number, warehouse, location, TestStock.stock_location_1_qty)
-    #     qty2 = self.do_test_stock(product_code, lot_number, warehouse, location_2, TestStock.stock_location_2_qty)
-    #     assert qty1 + qty2 == int(total_produced)    
+    def test_production_greenhouse_3(self):
+        qty_factor = 3
+        product_code = 'LNAFP'
+        product_name = 'Nandina domestica nana Firepower'
+        product_department = 'LAB'
+        metadata = self.production_metadata_greenhouse(product_code, product_name)
+        res_create = stock_obj_greenhouse.lkf_api.post_forms_answers(metadata)
+        assert res_create['status_code'] == 201
