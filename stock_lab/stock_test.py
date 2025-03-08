@@ -177,7 +177,72 @@ class TestStock:
         TestStock.product_code = product_code
         TestStock.lot_number = lot_number
         return stock_location_1_qty, stock_location_2_qty
+    
+    def do_move_stock_in_greenhouse(self, prod_folio, warehouse, location, location_2, total_produced):
+        mongo_query = {
+            "form_id" : stock_obj_greenhouse.STOCK_MOVE_FORM_ID #no folio
+        }
+        #se obtiene registro con query de folio de prudccion
+        print('mongo_query', mongo_query)
+        new_lot_rec = stock_obj_greenhouse.cr.find(mongo_query)
+        new_lot_rec = new_lot_rec.next()
+        print('+++new_lot_rec', new_lot_rec)
+        TestStock.new_lot_id = new_lot_rec.get('_id')
+        TestStock.new_lot_folio = new_lot_rec.get('folio')
+        # se selecciona almacen destino y location
+        warehouse = self.create_warehouse(warehouse)
+        location = self.create_warehouse_location(location)
+        # se arma el set de movimiento
+        stock_location_1_qty = int(random.random() * 100)
+        new_location = {
+            stock_obj.WH.WAREHOUSE_DEST_OBJ_ID: {
+                stock_obj.WH.f['warehouse'] : warehouse,
+                stock_obj.WH.f['warehouse_location']: location
 
+            },
+            stock_obj.f['new_location_racks']: 0 ,
+            stock_obj.f['new_location_containers']: stock_location_1_qty
+        }
+        # se pon dentro de la variable grupo el set1
+        new_location_group = [new_location]
+        # se anexa al registro completo el grupo
+        new_lot_rec['answers'][stock_obj.f['new_location_group']] = new_location_group
+        print('new_lot_rec', new_lot_rec)
+
+        # se edita el registr y se verifica que regrese un 400 debido a mala cantidad
+        res = stock_obj.lkf_api.patch_record(new_lot_rec, new_lot_rec['_id'])
+        print ('res', res)
+        assert res['status_code'] == 200
+        location_2 = self.create_warehouse_location(location_2)
+        # se prepara set 2
+        stock_location_2_qty = total_produced  - stock_location_1_qty 
+        new_location_2 = {
+            stock_obj.WH.WAREHOUSE_DEST_OBJ_ID: {
+                stock_obj.WH.f['warehouse'] : warehouse,
+                stock_obj.WH.f['warehouse_location']: location_2
+            },
+            stock_obj.f['new_location_racks']: 0 ,
+            stock_obj.f['new_location_containers']: stock_location_2_qty
+        }
+        # se se anexa al grupo
+        new_location_group.append(new_location_2)
+
+        # se acutaliza el registro y se hace patch
+        new_lot_rec['answers'][stock_obj.f['new_location_group']] = new_location_group
+
+        res = stock_obj.lkf_api.patch_record(new_lot_rec, TestStock.new_lot_id )
+        print('sleeping...... 4s')
+        time.sleep(4)
+        print('res=',res)
+        assert res['status_code'] == 200
+        #product_code = new_lot_rec['answers'][stock_obj.SKU_OBJ_ID][stock_obj.f['product_code']] 
+        #lot_number = new_lot_rec['answers'][stock_obj.f['product_lot']] 
+        # self.get_test_stock_qty(product_code_1, lot_number_1, warehouse, warehouse_in_location_1, stock_location_1 )
+        assert stock_location_2_qty + stock_location_1_qty == int(total_produced)
+        # TestStock.product_code = product_code
+        #TestStock.lot_number = lot_number
+        return stock_location_1_qty, stock_location_2_qty    
+       
     def do_test_stock(self, product_code, lot_number, warehouse, location, qty, extra_qty=0):
         print('do_test_stock qty=',qty)
         qty = self.get_test_stock_qty(product_code, lot_number, warehouse, location, qty, extra_qty)
@@ -390,7 +455,53 @@ class TestStock:
             "properties": {"device_properties": {"system": "Testing"}}
         }
         return metadata
-
+    
+    def production_metadata_greenhouse(self, product_code, product_name, total_produced):
+        priority = 9
+        form_stage = 'Ln72'
+        to_stage = 'Ln72'
+        recipe_type = 'Main'
+        growth_weeks = '8'
+        sku_package = 'Baby Jar'
+        per_container = '72'
+        reicpe_soil_type = 'CUSTOM BLEND'
+        print('entra aq test_crea_recepcion_materiales')
+        warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location = self.get_warehouses()
+        metadata = {
+            "form_id": stock_obj_greenhouse.PRODUCTION_FORM_ID, "geolocation": [], "start_timestamp": 1715787608.475, "end_timestamp": 1715788138.316,
+            "answers": {
+                stock_obj.f['production_year']: prod_year,
+                stock_obj.f['production_week']: prod_week,
+                #stock_obj.f['priority']: priority,
+                ###### Catalog Select ######
+                stock_obj.Product.SKU_OBJ_ID: {
+                    stock_obj.f['product_code']: product_code,
+                    stock_obj.f['reicpe_start_size'] : to_stage,  # To Stage
+                    stock_obj.f['prod_qty_per_container']: [per_container] ,
+                },
+                stock_obj.f['production_lote']: ready_yr_wk,
+                stock_obj.f['production_requier_containers']: 5000,
+                stock_obj.f['requierd_qty_flats']: 70,
+                stock_obj.f['production_group']: [{
+                    stock_obj.f['product_lot_location']: 2,
+                    stock_obj.f['worker_obj_id']: {
+                        stock_obj.f['worker_name']: "Alexia Piche",
+                    },
+                    stock_obj.f['set_total_produced']: 200,
+                    stock_obj.f['set_production_date']: fecha_str,
+                    stock_obj.f['time_in']: hours_in,
+                    stock_obj.f['time_out']: hours_out,
+                    stock_obj.f['production_status']: 'progress',
+                    }],
+                stock_obj.f['total_produced']: total_produced,
+                stock_obj.f['production_left_overs']: 'next_day',
+                stock_obj.f['production_order_status']: 'programed',
+            },
+            "folio": None,
+            "properties": {"device_properties": {"system": "Testing"}}
+        }
+        return metadata
+    
     def pull_out_metadata(self, product_code, product_name, product_lot, product_stage, warehouse_from, location_from, warehouse_to, location_to, qty):
         print('prod_week', prod_week)
         metadata = {
@@ -970,53 +1081,6 @@ class TestStock:
         res_create = stock_obj.lkf_api.post_forms_answers(metadata)
         print('res_create', res_create)
         assert res_create['status_code'] == 201
- 
-    
-    def production_metadata_greenhouse(self, product_code, product_name, total_produced):
-        priority = 9
-        form_stage = 'Ln72'
-        to_stage = 'Ln72'
-        recipe_type = 'Main'
-        growth_weeks = '8'
-        sku_package = 'Baby Jar'
-        per_container = '72'
-        reicpe_soil_type = 'CUSTOM BLEND'
-        print('entra aq test_crea_recepcion_materiales')
-        warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location = self.get_warehouses()
-        metadata = {
-            "form_id": stock_obj_greenhouse.PRODUCTION_FORM_ID, "geolocation": [], "start_timestamp": 1715787608.475, "end_timestamp": 1715788138.316,
-            "answers": {
-                stock_obj.f['production_year']: prod_year,
-                stock_obj.f['production_week']: prod_week,
-                #stock_obj.f['priority']: priority,
-                ###### Catalog Select ######
-                stock_obj.Product.SKU_OBJ_ID: {
-                    stock_obj.f['product_code']: product_code,
-                    stock_obj.f['reicpe_start_size'] : to_stage,  # To Stage
-                    stock_obj.f['prod_qty_per_container']: [per_container] ,
-                },
-                stock_obj.f['production_lote']: ready_yr_wk,
-                stock_obj.f['production_requier_containers']: 5000,
-                stock_obj.f['requierd_qty_flats']: 70,
-                stock_obj.f['production_group']: [{
-                    stock_obj.f['product_lot_location']: 2,
-                    stock_obj.f['worker_obj_id']: {
-                        stock_obj.f['worker_name']: "Alexia Piche",
-                    },
-                    stock_obj.f['set_total_produced']: 200,
-                    stock_obj.f['set_production_date']: fecha_str,
-                    stock_obj.f['time_in']: hours_in,
-                    stock_obj.f['time_out']: hours_out,
-                    stock_obj.f['production_status']: 'progress',
-                    }],
-                stock_obj.f['total_produced']: total_produced,
-                stock_obj.f['production_left_overs']: 'next_day',
-                stock_obj.f['production_order_status']: 'programed',
-            },
-            "folio": None,
-            "properties": {"device_properties": {"system": "Testing"}}
-        }
-        return metadata
     
     def test_production_greenhouse(self):
         qty_factor = 1
@@ -1045,7 +1109,22 @@ class TestStock:
         production_group = answers[stock_obj.f['production_group']]
         TestStock.total_produced_1 = answers.get(stock_obj.f['total_produced'])
         assert TestStock.total_produced_1 == total_produced
+
+    def test_move_stock_in_greenhouse(self):
+        warehouse = 'Lab A'
+        location = '10'
+        location_2 = '11'
+        folio = TestStock.prod_folio_1
+        total_produced = TestStock.total_produced_1
+        qty1, qty2 = self.do_move_stock_in_greenhouse(folio, warehouse, location, location_2, total_produced)
+        TestStock.stock_location_1_qty = qty1
+        TestStock.stock_location_2_qty = qty2
+
+        TestStock.stock_lot_1_loc1_qty = qty1
+        TestStock.stock_lot_1_loc2_qty = qty2
+        assert qty1 + qty2 == total_produced
         
+    
     def test_production_greenhouse_2(self):
         qty_factor = 2
         product_code = 'LNAFP'
@@ -1072,6 +1151,16 @@ class TestStock:
         production_group = answers[stock_obj.f['production_group']]
         TestStock.total_produced_2 = answers.get(stock_obj.f['total_produced'])
         assert TestStock.total_produced_2 == total_produced
+    
+    def test_move_stock_in_2_greenhouse(self):
+        warehouse = 'Lab A'
+        location = '10'
+        location_2 = '11'
+        folio = TestStock.prod_folio_2
+        total_produced = TestStock.total_produced_2
+        qty1, qty2 = self.do_move_stock_in_greenhouse(folio, warehouse, location, location_2, total_produced)
+        TestStock.stock2_location_1_qty = qty1
+        TestStock.stock2_location_2_qty = qty2    
 
     def test_production_greenhouse_3(self):
         qty_factor = 3
@@ -1099,3 +1188,15 @@ class TestStock:
         production_group = answers[stock_obj.f['production_group']]
         TestStock.total_produced_3 = answers.get(stock_obj.f['total_produced'])
         assert TestStock.total_produced_3 == total_produced
+        
+
+    def test_move_stock_in_3_greenhouse(self):
+        warehouse = 'Lab A'
+        location = '10'
+        location_2 = '11'
+        folio = TestStock.prod_folio_3
+        total_produced = TestStock.total_produced_3
+        qty1, qty2 = self.do_move_stock_in_greenhouse(folio, warehouse, location, location_2, total_produced)
+        TestStock.stock_lot_3_loc1_qty = qty1
+        TestStock.stock_lot_3_loc2_qty = qty2
+        assert qty1 + qty2 == total_produced
