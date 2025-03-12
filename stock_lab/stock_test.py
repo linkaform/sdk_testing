@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, simplejson, copy, time, random, string
+import sys, simplejson, copy, time, random, string, math, json
 from datetime import datetime ,timedelta
 
 from lkf_modules.stock_lab.items.scripts.Lab.lab_stock_utils import Stock
@@ -1089,12 +1089,10 @@ class TestStock:
         product_department = 'LAB'
         total_produced = (qty_factor*10 + qty_factor*100 + qty_factor*1000)
         metadata = self.production_metadata_greenhouse(product_code, product_name, total_produced)
-        print('++++metadata++++', metadata)
         res_create = stock_obj_greenhouse.lkf_api.post_forms_answers(metadata)
         assert res_create['status_code'] == 201
         TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
         TestStock.prod_id_1 = res_create.get('json', {}).get('id')
-        print('self prod folio 1===', TestStock.prod_folio_1)
         metadata['folio'] = TestStock.prod_folio_1 
         metadata['id'] = TestStock.prod_id_1
         working_group, working_cycle = self.get_group_cyle()
@@ -1121,9 +1119,187 @@ class TestStock:
         TestStock.stock_location_2_qty = qty2
 
         TestStock.stock_lot_1_loc1_qty = qty1
-        TestStock.stock_lot_1_loc2_qty = qty2
+        TestStock.stock_lot_1_loc2_qty = qty2       
         assert qty1 + qty2 == total_produced
         
+        
+    def get_test_stock_qty_greenhouse(self, product_code, lot_number, warehouse, location, qty, extra_qty=0):
+        current_record = {}
+        current_record.get('answers')
+        record = stock_obj_greenhouse.get_record_by_id(TestStock.prod_id_1)
+        answers = record['answers']
+        plant_info = record['answers'].get(stock_obj.f['product_recipe'], {})
+        plant_code = plant_info.get(stock_obj.f['product_code'])
+        lot_number = record['answers'].get(stock_obj.f['production_lote'], {})
+
+        new_production = {}
+        recipes = None
+
+        recipes = stock_obj.get_plant_recipe([plant_code,], stage=[4, 'Ln72',])
+        week = record['answers'].get(stock_obj.f['production_week'])
+        year = record['answers'].get(stock_obj.f['production_year'])
+        if not week or not year:
+            return []
+        production_date = time.strptime('{} {} 1'.format(year, week), '%Y %W %w')
+        production_date = datetime.fromtimestamp(time.mktime(production_date))
+        recipe = stock_obj.select_S4_recipe(recipes[plant_code], week)
+        grow_weeks = recipe.get('S4_growth_weeks')
+        ready_date = production_date + timedelta(weeks=grow_weeks)
+        calc_lot_number = int(ready_date.strftime('%Y%W'))
+        lot_number = record['answers'].get(stock_obj.f['production_lote'], calc_lot_number)
+        
+        total_produced =0
+        force_lot = False
+        for production in record['answers'].get(stock_obj.f['production_group'], []):
+            production_status = production.get(stock_obj.f['production_status'],'progress')
+            if production_status == 'progress':
+                force_lot = True
+
+            total_hours = stock_obj.calc_work_hours(production)
+            production[stock_obj.f['set_total_hours']] = round(total_hours, 2)
+
+            total_produced += production[stock_obj.f['set_total_produced']]
+            if production_status == 'progress':
+                containers_out = production[stock_obj.f['set_total_produced']]
+            else:
+                containers_out = 0
+
+
+
+          
+            qty_per_container = recipe.get(stock_obj.f['prod_qty_per_container'], [])
+            if qty_per_container:
+                if type(qty_per_container) == list and qty_per_container[0]:
+                    qty_per_container = int( qty_per_container[0] )
+                else:
+                    qty_per_container = int(qty_per_container)
+            else:
+                qty_per_container = 0 
+
+            container_type = None
+            if qty_per_container:
+                container_type = 'ln{}'.format(qty_per_container)
+            
+
+            total_eu = 1 * containers_out 
+            flats_per_hour = total_eu / float(total_hours)
+
+
+
+            production[stock_obj.f['set_products_per_hours']] = round(flats_per_hour, 2) # Plants per Hour
+            production[stock_obj.f['production_status']] = 'posted'
+            plant_date = production[stock_obj.f['set_production_date']]
+            plant_date = datetime.strptime(plant_date, '%Y-%m-%d')
+
+
+            production[stock_obj.f['product_lot']] = lot_number
+            plan_defults = {
+                'qty':0,
+                'plant_date':plant_date, 
+                'qty_per_container':qty_per_container,
+                'container_type':container_type,
+                'recipe':recipe}
+            new_production[lot_number] = new_production.get(lot_number, plan_defults)
+            new_production[lot_number]['qty'] += containers_out
+
+        res = []
+        total_produced = record['answers'].get(stock_obj.f['total_produced'])
+        planting_house = warehouse
+        for lot_number, plant_data in new_production.items():
+            res.append(self.calculates_inventory_greenhouse(plant_info, planting_house, lot_number, plant_data, grow_weeks, qty=total_produced, force_lot=force_lot))
+            return res
+            
+        #plant_data is an object with the following keys 'qty','recipe', 'planted_date'
+    def calculates_inventory_greenhouse(self, plant_info, warehouse, ready_date, plant_data, grow_weeks, force_lot=False, qty=0):
+        plant_code = plant_info[stock_obj.f['product_code']]
+        greenhouse_inventory = stock_obj.get_record_greenhouse_inventory(ready_date, warehouse, plant_code)
+        plant_yearWeek = plant_data.get('plant_date').strftime('%Y%W')
+        qty_produced = plant_data.get('qty',0)
+        container_type = plant_data.get('container_type')
+        S4_overage = plant_data.get('recipe').get('S4_overage', 0)
+        qty_proyected = math.floor(qty_produced * (1 - S4_overage))
+        if not greenhouse_inventory:
+
+            answers_to_record = {
+                stock_obj.f['product_lot_produced']: qty_produced,
+                stock_obj.f['product_estimated_ready_date']: ready_date, # Estimated Ready Week
+                stock_obj.f['product_lot']: ready_date,
+                stock_obj.f['product_lot_actuals']: qty_produced, # Containers on hand
+                stock_obj.f['product_lot_proyected_qty']: qty_proyected , # Proyected Containers on hand
+                stock_obj.f['product_lot_created_week']: int(plant_yearWeek),
+                stock_obj.f['product_recipe']: plant_info,
+                stock_obj.f['product_growth_week']: grow_weeks,
+                stock_obj.CATALOG_WAREHOUSE_OBJ_ID: {stock_obj.f['warehouse']:warehouse},
+                stock_obj.f['inventory_status']: 'active',
+                stock_obj.f['product_grading_pending']: 'grading_pending'
+            }
+            if container_type:
+                answers_to_record.update({stock_obj.f['product_container_type']:container_type})
+            metadata = stock_obj.lkf_api.get_metadata(stock_obj_greenhouse.FORM_INVENTORY_ID)
+            if force_lot:
+                #metadata['kwargs'] = {'production':qty_produced}
+                stock_obj.cache_set({
+                    '_id': f'{plant_code}_{ready_date}_{warehouse}',
+                    'production':qty_produced,
+                    'product_lot':ready_date,
+                    'product_code':plant_code,
+                    'warehouse': warehouse,
+                    })
+            metadata.update({
+                'properties': {
+                    "device_properties":{
+                        "system": "Script",
+                        "process": 'GreenHouse Inventory',
+                        "action": 'Upsert Inventory GreenHouse',
+                    }
+                },
+                'answers': answers_to_record
+            })
+
+            resp_create = stock_obj.lkf_api.post_forms_answers(metadata, jwt_settings_key='APIKEY_JWT_KEY')
+            return resp_create
+        new_qty_produced = qty_produced + greenhouse_inventory['answers'].get(stock_obj.f['product_lot_produced'], 0)
+        new_qty_proyected = qty_proyected + greenhouse_inventory['answers'].get(stock_obj.f['product_lot_proyected_qty'], 0)
+        new_qty_flats = qty_produced + greenhouse_inventory['answers'].get(stock_obj.f['product_lot_actuals'], 0)
+        
+        greenhouse_inventory['answers'][stock_obj.f['product_lot_produced']] = new_qty_produced
+        greenhouse_inventory['answers'][stock_obj.f['product_lot_proyected_qty']] = new_qty_proyected
+        greenhouse_inventory['answers'][stock_obj.f['product_lot_actuals']] = new_qty_flats
+        if force_lot:
+            stock_obj.cache_set({
+                '_id': f'{plant_code}_{ready_date}_{warehouse}',
+                'production':qty_produced,
+                'product_lot':ready_date,
+                'product_code':plant_code,
+                'warehouse': warehouse,
+                'record_id': stock_obj.record_id
+                })
+            greenhouse_inventory['properties'] = {'kwargs':{'production':qty_produced}}
+            greenhouse_inventory['kwargs'] = {'production':qty_produced}
+        resp_update = stock_obj.lkf_api.patch_record(greenhouse_inventory, jwt_settings_key='APIKEY_JWT_KEY')
+        return resp_update
+        
+    def do_test_stock_greenhouse(self, product_code, lot_number, warehouse, location, qty, extra_qty=0):
+        res = self.get_test_stock_qty_greenhouse(product_code, lot_number, warehouse, location, qty, extra_qty)
+        data = json.loads(res[0]['data'])
+        folio = data['id']
+        greenhouse_inventory_record = stock_obj_greenhouse.get_record_by_id(folio)
+        answers = greenhouse_inventory_record['answers']
+        acutalas_1 = greenhouse_inventory_record['answers'][stock_obj.f['actuals']]
+        catalog_records = self.get_test_stock_qty_catalog(product_code, lot_number, warehouse, location)
+        for rec in catalog_records:
+            catalog_records_qty = rec.get(stock_obj.f['actuals'])
+            assert qty == catalog_records_qty
+        return acutalas_1
+        
+    def test_stock_inventory_greenhouse(self):
+        warehouse = 'Lab A'
+        location = '10'
+        product_code= product_code_1
+        lot_number = TestStock.prod_folio_1
+        total_produced = TestStock.total_produced_1
+        qty = self.do_test_stock_greenhouse(product_code, lot_number, warehouse, location, TestStock.stock_location_1_qty)
+        assert qty == int(total_produced)
     
     def test_production_greenhouse_2(self):
         qty_factor = 2
@@ -1200,3 +1376,6 @@ class TestStock:
         TestStock.stock_lot_3_loc1_qty = qty1
         TestStock.stock_lot_3_loc2_qty = qty2
         assert qty1 + qty2 == total_produced
+        
+        
+    
