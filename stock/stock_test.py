@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, simplejson, copy, time
+import sys, simplejson, copy, time, random, string
 from datetime import datetime ,timedelta
 
 
@@ -40,9 +40,31 @@ fecha_salida = fecha + timedelta(days=1)
 fecha = fecha.strftime('%Y-%m-%d')
 fecha_salida = fecha_salida.strftime('%Y-%m-%d')
 
-
+ 
 class TestStock:
 
+    supplier_warehouse = 'Proveedores'
+    supplier_wh_location = 'CONDUMEX'
+
+    stock_warehouse_1 = 'Almacen Auxiliar'
+    stock_warehouse_location_1 = 'Refacciones Mantenimiento'
+
+    product_lot = None
+    product_code = "1000887"
+    product_sku = "R1000887"
+    product_name = "VALVULA DE PRUEBA"
+
+    def do_test_stock(self, product_code, sku, lot_number, warehouse, location, qty, extra_qty=0):
+        print('do_test_stock qty=',qty)
+        qty = self.get_test_stock_qty(product_code, sku, lot_number, warehouse, location, qty, extra_qty)
+        print('2222do_test_stock qty=',qty)
+        catalog_records = self.get_test_stock_qty_catalog(product_code, lot_number, warehouse, location)
+        print('catalog_records qty=',catalog_records)
+        for rec in catalog_records:
+            print('qty1_catalog',rec.get(stock_obj.f['actuals']))
+            catalog_records_qty = rec.get(stock_obj.f['actuals'])
+            assert qty == catalog_records_qty
+        return qty
 
     def create_warehouse(self, warehouse_name):
         print('create warehouse')
@@ -62,36 +84,90 @@ class TestStock:
         warehouse_in_location = self.create_warehouse_location('Refacciones Mantenimiento')
         return warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location
 
-    def test_crea_recepcion_materiales(self):
+    def get_product_lot(self):
+        letra = random.choice(string.ascii_uppercase)
+        numero = random.randint(1, 20)
+        working_group = random.randint(1, 9)
+        product_lot = f"{numero}{letra}-{working_group}"
+        return product_lot
+
+    def get_test_stock_qty(self, product_code, sku, lot_number, warehouse, location, qty, extra_qty=0):
+        # sku = new_lot_rec['answers'][stock_obj.SKU_OBJ_ID][stock_obj.f['product_sku']] 
+        # print('sku',sku)
+        # Va a revisar el almacen de location 1
+        print('get_test_stock_qty qty',qty)
+        print('extra_qty qty',extra_qty)
+        print('product_code',product_code)
+        print('lot_number',lot_number)
+        print('warehouse',warehouse)
+        print('location',location)
+        time.sleep(5)
+        form_id = stock_obj.FORM_INVENTORY_ID
+        stock_res_loc1 = stock_obj.get_invtory_record_by_product(form_id, product_code, sku, lot_number, warehouse, location)
+        print('stock_res_loc1',stock_res_loc1)
+        print('actualsactuals',stock_obj.f['actuals'])
+        acutalas_1 = stock_res_loc1['answers'][stock_obj.f['actuals']]
+        print('acutalas_1',acutalas_1)
+        assert acutalas_1 == int(qty+extra_qty)
+        calc_actuals = stock_obj.get_product_stock(product_code, sku=sku, lot_number=lot_number, warehouse=warehouse, location=location)
+        print('calc_actuals',calc_actuals)
+        assert acutalas_1 == calc_actuals['actuals']
+        # calc_actuals = stock_obj.get_product_stock(product_code, sku=None, lot_number=lot_number, warehouse=warehouse, location=location)
+        return acutalas_1
+
+    def get_test_stock_qty_catalog(self, product_code, lot_number, warehouse, location ):
+        mango_query = {
+            "selector":{"answers": {}},
+            "limit":1000,
+            "skip":0
+            }
+        query = {
+            stock_obj.f['product_code']:product_code,
+            stock_obj.f['product_lot']:lot_number,
+            stock_obj.f['warehouse']:warehouse,
+            stock_obj.f['warehouse_location']:location,
+        }
+        mango_query['selector']['answers'].update(query)
+        print('mango_query=', mango_query)
+        if False:
+            #TODO gargabe collector
+            mango_query['selector']['answers'].update({stock_obj.f['inventory_status']: "Done"})
+        res = stock_obj.lkf_api.search_catalog( stock_obj.CATALOG_INVENTORY_ID, mango_query)
+        return res
+
+    def recibo_de_material(self, product_code, product_sku, product_name, warehouse_in, location_in, qty):
         print('entra aq test_crea_recepcion_materiales')
-        warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location = self.get_warehouses()
+        supplier_warehouse = TestStock.supplier_warehouse
+        supplier_wh_location = TestStock.supplier_wh_location
+        # warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location = self.get_warehouses()
+        TestStock.product_lot = self.get_product_lot()
         metadata = {
             "form_id": stock_obj.STOCK_IN_ONE_MANY_ONE,"geolocation": [],"start_timestamp": 1715787608.475,"end_timestamp": 1715788138.316,
             "answers": {
                 stock_obj.f['grading_date']: fecha,
                 stock_obj.WH.WAREHOUSE_LOCATION_OBJ_ID: {
-                    stock_obj.WH.f['warehouse']: warehouse_from,
-                    stock_obj.WH.f['warehouse_location']: warehouse_from_location
+                    stock_obj.WH.f['warehouse']: supplier_warehouse,
+                    stock_obj.WH.f['warehouse_location']: supplier_wh_location
                 },
                 stock_obj.WH.WAREHOUSE_LOCATION_DEST_OBJ_ID: {
                     stock_obj.WH.f['warehouse_dest']: warehouse_in,
-                    stock_obj.WH.f['warehouse_location_dest']: warehouse_in_location
+                    stock_obj.WH.f['warehouse_location_dest']: location_in
                 },
                 stock_obj.f['move_group']: [
                     {
                         stock_obj.Product.SKU_OBJ_ID: {
-                            stock_obj.Product.f['product_code']: "1000887",
-                            stock_obj.Product.f['product_sku']: "R1000887",
+                            stock_obj.Product.f['product_code']: product_code,
+                            stock_obj.Product.f['product_sku']: product_sku,
                             stock_obj.Product.f['product_name']: [
-                                "VALVULA DE PRUEBA"
+                                product_name
                             ],
                             stock_obj.Product.f['sku_percontainer']: [
                                 1
                             ]
                         },
-                        stock_obj.f['product_lot']: "TEST002",
+                        stock_obj.f['product_lot']: TestStock.product_lot,
                         stock_obj.f['inv_adjust_grp_status']: "todo",
-                        stock_obj.f['move_group_qty']: 20,
+                        stock_obj.f['move_group_qty']: qty,
                     }
                 ],
                  stock_obj.f['stock_status']: "to_do",
@@ -99,12 +175,36 @@ class TestStock:
             "folio":None, 
             "properties":{ "device_properties":{"system":"Testing"} }
         }
+        return metadata
         # print('metadata', simplejson.dumps(metadata, indent=3))
+        
+    def test_move_stock_in(self):
+        warehouse_in = TestStock.stock_warehouse_1
+        location_in = TestStock.stock_warehouse_location_1
+        product_code = TestStock.product_code
+        product_sku = TestStock.product_sku
+        product_name = TestStock.product_name
+        qty = 1000
+        metadata = self.recibo_de_material(product_code, product_sku, product_name, warehouse_in, location_in, qty)
         res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
         print('res_create',res_create)
         assert res_create['status_code'] == 201
         time.sleep(1)
         print('TERMINO ----test_crea_recepcion_materiales---')
+        TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
+        TestStock.prod_id_1 = res_create.get('json', {}).get('id')
+        record = stock_obj.get_record_by_id(TestStock.prod_id_1)
+        print('TERMINO ----test_crea_recepcion_materiales---')
+        answers = record['answers']
+        print('answers', answers)
+        stock_move = answers[stock_obj.f['move_group']]
+        print('stock_move=', stock_move)
+        status = stock_move[0][stock_obj.f['stock_move_status']]
+        print('status=', status)
+        print('TestStock.product_lot=', TestStock.product_lot)
+        assert status == 'done'
+        self.do_test_stock(product_code, product_sku, TestStock.product_lot, warehouse_in, location_in, qty)
+
     
     # def test_create_inventory_adjustment(self):
     #     metadata = {
