@@ -572,6 +572,7 @@ class TestStock:
             "properties": {"device_properties": {"system": "Testing"}}
         }
         return metadata
+   
     ##### Tests ######
 
     def test_production(self):
@@ -1124,7 +1125,6 @@ class TestStock:
         TestStock.stock_lot_1_loc2_qty = qty2       
         assert qty1 + qty2 == total_produced
         
-        
     def get_test_stock_qty_greenhouse(self, product_code, lot_number, warehouse, location, qty, extra_qty=0):
         current_record = {}
         current_record.get('answers')
@@ -1212,6 +1212,7 @@ class TestStock:
             return res
             
         #plant_data is an object with the following keys 'qty','recipe', 'planted_date'
+ 
     def calculates_inventory_greenhouse(self, plant_info, warehouse, ready_date, plant_data, grow_weeks, force_lot=False, qty=0):
         plant_code = plant_info[stock_obj.f['product_code']]
         greenhouse_inventory = stock_obj.get_record_greenhouse_inventory(ready_date, warehouse, plant_code)
@@ -1366,7 +1367,6 @@ class TestStock:
         production_group = answers[stock_obj.f['production_group']]
         TestStock.total_produced_3 = answers.get(stock_obj.f['total_produced'])
         assert TestStock.total_produced_3 == total_produced
-        
 
     def test_move_stock_in_3_greenhouse(self):
         warehouse = 'Lab A'
