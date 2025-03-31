@@ -47,9 +47,9 @@ class TestStock:
     supplier_wh_location = 'CONDUMEX'
 
     stock_warehouse_1 = 'Almacen Auxiliar'
-    stock_warehouse_location_1 = 'Refacciones Mantenimiento'
+    stock_warehouse_location_1 = 'Monterrey'
 
-    product_lot = None
+    product_lot =  None
     product_code = "1000887"
     product_sku = "R1000887"
     product_name = "VALVULA DE PRUEBA"
@@ -106,6 +106,7 @@ class TestStock:
         stock_res_loc1 = stock_obj.get_invtory_record_by_product(form_id, product_code, sku, lot_number, warehouse, location)
         print('stock_res_loc1',stock_res_loc1)
         print('actualsactuals',stock_obj.f['actuals'])
+
         acutalas_1 = stock_res_loc1['answers'][stock_obj.f['actuals']]
         print('acutalas_1',acutalas_1)
         assert acutalas_1 == int(qty+extra_qty)
@@ -170,13 +171,19 @@ class TestStock:
                         stock_obj.f['move_group_qty']: qty,
                     }
                 ],
-                 stock_obj.f['stock_status']: "to_do",
+                stock_obj.f['stock_status']: "to_do",
+                stock_obj.f['stock_move_comments']: f"Comentario pruebas unitarias: {stock_obj.today_str()}",
+                stock_obj.f['evidencia']: [{
+                            "file_name": "ejemplo_evidnecia.pdf",
+                            "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/67ead23eaf630d6b0af9cc29.pdf"
+                            }],
             },
             "folio":None, 
             "properties":{ "device_properties":{"system":"Testing"} }
         }
+
+        print('metadata', simplejson.dumps(metadata, indent=3))
         return metadata
-        # print('metadata', simplejson.dumps(metadata, indent=3))
         
     def test_move_stock_in(self):
         warehouse_in = TestStock.stock_warehouse_1
