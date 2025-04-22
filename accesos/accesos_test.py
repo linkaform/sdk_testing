@@ -5,8 +5,7 @@
 # en test debes de tener una rama por cliente
 
 # -*- coding: utf-8 -*-
-import sys, simplejson, copy, time, random, string, math, json
-import pytz
+import sys, simplejson, copy, random, string, math, json, time, pytz, pytest
 from datetime import datetime ,timedelta
 from bson import ObjectId
 
@@ -15,7 +14,6 @@ from lkf_addons.addons.accesos.app import Accesos
 
 from account_settings import *
 
-print('starting test')
 accesos_obj = Accesos(settings, use_api=True)
 
 access_pass = {
@@ -39,6 +37,64 @@ access_pass = {
     "config_limitar_acceso": None,
     "ubicacion": "Planta Monterrey",
     "nombre": "Pase de Testing",
+    "visita_a": "Emiliano Zapata",
+    "telefono": "+528341227834",
+    "email": "paco@linkaform.com",
+    "comentarios": [
+        {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+    ]
+}
+
+access_pass_with_3_access = {
+    "empresa": "Testing Lkf",
+    "tipo_visita_pase": "rango_de_fechas",
+    "tema_cita": "Testing de la cita",
+    "config_dia_de_acceso": "cualquier_d\u00eda",
+    "perfil_pase": "Visita General",
+    "fecha_desde_hasta": "2025-04-27 00:00:00",
+    "custom": True,
+    "descripcion": "Descripcion de la cita",
+    "fecha_desde_visita": "2025-04-23 00:00:00",
+    "status_pase": "Proceso",
+    "link": {
+        "docs": ["agregarIdentificacion", "agregarFoto"],
+        "creado_por_email": "seguridad@linkaform.com",
+        "link": "https://app.soter.mx/pase.html",
+        "creado_por_id": "10"
+    },
+    "config_limitar_acceso": 3,
+    "ubicacion": "Planta Monterrey",
+    "nombre": "Pase con 3 Accesos",
+    "visita_a": "Emiliano Zapata",
+    "telefono": "+528341227834",
+    "email": "paco@linkaform.com",
+    "comentarios": [{
+        "tipo_comentario": "Pase",
+        "comentario_pase": "Comentario de testing"
+    }]
+}
+
+access_pass_caducated = {
+    "empresa": "LkfTesting",
+    "tipo_visita_pase": "fecha_fija",
+    "tema_cita": "Tema de la cita",
+    # "enviar_correo_pre_registro": ["enviar_correo_pre_registro", "enviar_sms_pre_registro"],
+    "enviar_correo_pre_registro": [],
+    "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+    "perfil_pase": "Visita General",
+    "custom": True,
+    "descripcion": "Descripcion de la cita",
+    "fecha_desde_visita": "2025-04-20 13:00:00",
+    "status_pase": "Proceso",
+    "link": {
+        "docs": ["agregarIdentificacion", "agregarFoto"],
+        "creado_por_email": "seguridad@linkaform.com",
+        "link": "https://app.soter.mx/pase.html",
+        "creado_por_id": "10"
+    },
+    "config_limitar_acceso": None,
+    "ubicacion": "Planta Monterrey",
+    "nombre": "Pase de Testing Vencido",
     "visita_a": "Emiliano Zapata",
     "telefono": "+528341227834",
     "email": "paco@linkaform.com",
@@ -90,6 +146,7 @@ class TestAccesos:
 
     folio = ''
     complete_access_pass_folio = ''
+    qr_code = ''
 
     def create_access_pass(self, location, access_pass):
         #---Define Metadata
@@ -248,6 +305,9 @@ class TestAccesos:
         assert res['status_code'] in (200, 201), 'No se recibio respuesta correcta'
 
         if res.get("status_code") ==200 or res.get("status_code")==201:
+            TestAccesos.folio = res.get("json")["id"]
+            TestAccesos.complete_access_pass_folio = res.get("json")["id"]
+
             link_info=access_pass.get('link', "")
             docs=""
             
@@ -260,6 +320,7 @@ class TestAccesos:
                     if index==0 :
                         docs+="-"
                 link_pass= f"{link_info['link']}?id={res.get('json')['id']}&user={link_info['creado_por_id']}&docs={docs}"
+                # TODO Modularizar id forma y id campo
                 id_forma = 121736
                 id_campo = '673773741b2adb2d05d99d63'
 
@@ -306,7 +367,6 @@ class TestAccesos:
                     ]}
                 else:
                     access_pass_custom={"link":link_pass, "enviar_correo_pre_registro": access_pass.get("enviar_correo_pre_registro",[])}
-
                 resUp= self.update_pass(access_pass=access_pass_custom, folio=res.get("json")["id"])
             else:
                 link_pass=""
@@ -314,9 +374,6 @@ class TestAccesos:
         return res
 
     def update_pass(self, access_pass,folio=None):
-        TestAccesos.folio = folio
-        TestAccesos.complete_access_pass_folio = folio
-
         pass_selected = accesos_obj.get_detail_access_pass(qr_code=folio)
         assert 'folio' in pass_selected, 'El pase seleccionado no tiene folio'
         
@@ -639,15 +696,104 @@ class TestAccesos:
             res = accesos_obj.lkf_api.update_catalog_multi_record({accesos_obj.mf['status_locker']: status}, accesos_obj.LOCKERS_CAT_ID, record_id=[locker['_id']])
             assert res['status_code'] in (200, 201, 202), 'No se hizo la actualizacion del status gafete correctamente'
         return res
+    
+    def do_out(self, qr, location, area, gafete_id=None):
+        response = False
+        last_check_out = accesos_obj.get_last_user_move(qr, location)
+        assert last_check_out, 'No se recibio el ultimo movimiento del usuario'
 
-    def test_create_access_pass_complete_and_do_access(self):
-        print('Arranca test de create_access_pass_complete_and_do_access')
+        if last_check_out.get('gafete_id') and not gafete_id:
+            accesos_obj.LKFException({"status_code":400, "msg":f"Se necesita liberar el gafete antes de regitrar la salida"})
+        if not location:
+            accesos_obj.LKFException({"status_code":400, "msg":f"Se requiere especificar una ubicacion de donde se realizara la salida."})
+        if not area:
+            accesos_obj.LKFException({"status_code":400, "msg":f"Se requiere especificar el area de donde se realizara la salida."})
+        if last_check_out.get('folio'):
+            folio = last_check_out.get('folio',0)
+            checkin_date_str = last_check_out.get('checkin_date')
+            checkin_date = accesos_obj.date_from_str(checkin_date_str)
+            tz_mexico = pytz.timezone('America/Mexico_City')
+            now = datetime.now(tz_mexico)
+            fecha_hora_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            duration = time.strftime('%H:%M:%S', time.gmtime( accesos_obj.date_2_epoch(fecha_hora_str) - accesos_obj.date_2_epoch(checkin_date_str)))
+            if accesos_obj.user_in_facility(status_visita=last_check_out.get('status_visita')):
+                answers = {
+                    f"{accesos_obj.mf['tipo_registro']}":'salida',
+                    f"{accesos_obj.mf['fecha_salida']}":fecha_hora_str,
+                    f"{accesos_obj.mf['duracion']}":duration,
+                    f"{accesos_obj.AREAS_DE_LAS_UBICACIONES_SALIDA_OBJ_ID}": {
+                        f"{accesos_obj.mf['nombre_area_salida']}": area,
+                    },
+
+                }
+                response = accesos_obj.lkf_api.patch_multi_record( answers=answers, form_id=accesos_obj.BITACORA_ACCESOS, folios=[folio])
+                assert response['status_code'] in (200, 201, 202), 'No se hizo la actualizacion de la bitacora correctamente'
+
+        if not response:
+            accesos_obj.LKFException({"status_code":400, "msg":f"El usuario no se encuentra dentro de la Ubicacion: {location}."})
+        return response 
+    
+    ################################################### TESTS ####################################################
+    # def test_number_one / 1. Haga un pase fecha fija, se le da acceso y salida posteriormente
+    # def test_number_two / 2. Haga un pase de 3 accesos, validar hasta 4 veces (sleep 10seg)
+    # def test_number_three / 3. Pase vigencia vencida, validar acceso
+    # TODO Pruebas de Accesos pendientes:
+    # def test_number_four / 4. Pase con rango de fechas, dias seleccionados, validar dias que no tiene acceso
+    # def test_number_five / 5. Pase sin completar, validar acceso
+
+    def test_number_one(self):
+        print('Arranca test: Se crea pase, se completa, se le da entrada y posteriormente salida')
         # -- Se crea el pase nuevo
         self.create_access_pass(location=location, access_pass=access_pass)
         print('================> Ya paso la creacion del pase')
         # -- El pase es completado
+        time.sleep(5)
         self.update_pass(access_pass=complete_access_pass, folio=TestAccesos.complete_access_pass_folio)
         print('================> Ya paso el completar del pase')
         # -- Se da el acceso con el pase completado
         self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
         print('================> Ya paso el acceso del pase')
+        # -- Se da la salida con el pase completado
+        time.sleep(5)
+        self.do_out(TestAccesos.folio, location=location, area=area)
+        print('================> Ya paso la salida del pase')
+        print('================> TEST #1 FINALIZADO')
+
+    def test_number_two(self):
+        print('Arranca test: Se crea pase con 3 accesos, se completa, se le da entrada y posteriormente salida 4 veces')
+        # -- Se crea el pase nuevo con 3 accesos
+        self.create_access_pass(location=location, access_pass=access_pass_with_3_access)
+        print('================> Ya paso la creacion del pase')
+        # -- El pase es completado
+        time.sleep(5)
+        self.update_pass(access_pass=complete_access_pass, folio=TestAccesos.complete_access_pass_folio)
+        print('================> Ya paso el completar del pase')
+        for i in range(4):
+            if i < 3:
+                # -- Se da el acceso con el pase completado
+                self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
+                # -- Se da la salida con el pase completado
+                time.sleep(5)
+                self.do_out(TestAccesos.folio, location=location, area=area)
+                print(f"================> Ciclo: {i+1} de Entrada y Salida completado")
+                time.sleep(5)
+            else:
+                with pytest.raises(Exception) as exc_info:
+                    self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
+                print(f"Excepción esperada capturada: {exc_info.value}")
+        print('================> TEST #2 FINALIZADO')
+
+    def test_number_three(self):
+        print('Arranca test: Se crea un pase con fecha vencida, se completa y se le da entrada para validar que no tenga acceso')
+        # -- Se crea el pase nuevo
+        self.create_access_pass(location=location, access_pass=access_pass_caducated)
+        print('================> Ya paso la creacion del pase')
+        # -- El pase es completado
+        time.sleep(5)
+        self.update_pass(access_pass=complete_access_pass, folio=TestAccesos.complete_access_pass_folio)
+        print('================> Ya paso el completar del pase')
+        # -- Se da el acceso con el pase completado
+        with pytest.raises(Exception) as exc_info:
+            self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
+        print(f"Excepción esperada capturada: {exc_info.value}")
+        print('================> TEST #3 FINALIZADO')
