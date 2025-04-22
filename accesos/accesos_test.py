@@ -103,6 +103,37 @@ access_pass_caducated = {
     ]
 }
 
+access_pass_days_selected = {
+    "empresa": "Lkf Testing",
+    "tipo_visita_pase": "rango_de_fechas",
+    "tema_cita": "Testing de la cita",
+    "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+    "perfil_pase": "Visita General",
+    "fecha_desde_hasta": "2025-04-28 00:00:00",
+    "custom": True,
+    "descripcion": "Descripcion de la cita",
+    "fecha_desde_visita": "2025-04-23 00:00:00",
+    "status_pase": "Proceso",
+    "link": {
+        "docs": ["agregarIdentificacion", "agregarFoto"],
+        "creado_por_email": "seguridad@linkaform.com",
+        "link": "https://app.soter.mx/pase.html",
+        "creado_por_id": "10"
+    },
+    "config_limitar_acceso": None,
+    "ubicacion": "Planta Monterrey",
+    "nombre": "Pase de Dias Seleccionados",
+    "visita_a": "Emiliano Zapata",
+    "config_dias_acceso": [
+        "lunes", "mi\u00e9rcoles", "viernes", "s\u00e1bado"
+    ],
+    "telefono": "+528341227834",
+    "email": "paco@linkaform.com",
+    "comentarios": [
+        {"tipo_comentario": "Pase", "comentario_pase": "Comentario de test"}
+    ]
+}
+
 complete_access_pass = {
     "walkin_identificacion": [{
         "file_name": "indentificacion.png",
@@ -519,6 +550,63 @@ class TestAccesos:
             }
         res = self._do_access(access_pass, location, area, data)
 
+    def do_access_mutated(self, qr_code, location, area, data, hoy_parameter):
+        access_pass = accesos_obj.get_detail_access_pass(qr_code)
+        if not qr_code and not location and not area:
+            return False
+        total_entradas = accesos_obj.get_count_ingresos(qr_code)
+        
+        diasDisponibles = access_pass.get("limitado_a_dias", [])
+        dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+        nombre_dia = dias_semana[hoy_parameter]
+
+        if access_pass.get('estatus',"") == 'vencido':
+            accesos_obj.LKFException({'msg':"El pase esta vencido, edita la información o genera uno nuevo.","title":'Revisa la Configuración'})
+        elif access_pass.get('estatus', '') == 'proceso':
+            accesos_obj.LKFException({'msg':"El pase no se ha sido completado aun, informa al usuario que debe completarlo primero.","title":'Requisitos faltantes'})
+
+        if diasDisponibles:
+            if nombre_dia not in diasDisponibles:
+                accesos_obj.LKFException({'msg':"No se permite realizar ingresos este día.","title":'Revisa la Configuración'})
+        
+        limite_acceso = access_pass.get('limite_de_acceso')
+        if len(total_entradas) > 0 and limite_acceso and int(limite_acceso) > 0:
+            if total_entradas['total_records']>= int(limite_acceso) :
+                accesos_obj.LKFException({'msg':"Se ha completado el limite de entradas disponibles para este pase, edita el pase o crea uno nuevo.","title":'Revisa la Configuración'})
+        
+        timezone = pytz.timezone('America/Mexico_City')
+        fecha_actual = datetime.now(timezone).replace(microsecond=0)
+        fecha_caducidad = access_pass.get('fecha_de_caducidad')
+        fecha_obj_caducidad = datetime.strptime(fecha_caducidad, "%Y-%m-%d %H:%M:%S")
+        fecha_caducidad = timezone.localize(fecha_obj_caducidad)
+
+        fecha_caducidad_con_margen = fecha_caducidad + timedelta(minutes=15)
+
+        if fecha_caducidad_con_margen < fecha_actual:
+            accesos_obj.LKFException({'msg':"El pase esta vencido, ya paso su fecha de vigencia.","title":'Advertencia'})
+        
+        if access_pass.get("ubicacion") != location:
+            accesos_obj.LKFException({'msg':"No se puede realizar un ingreso en una ubicación diferente.","title":'Revisa la Configuración'})
+        
+        if accesos_obj.validate_access_pass_location(qr_code, location):
+            accesos_obj.LKFException("En usuario ya se encuentra dentro de una ubicacion")
+        val_certificados = accesos_obj.validate_certificados(qr_code, location)
+
+        
+        pass_dates = accesos_obj.validate_pass_dates(access_pass)
+        comentario_pase =  data.get('comentario_pase',[])
+        if comentario_pase:
+            values = {accesos_obj.pase_entrada_fields['grupo_instrucciones_pase']:{
+                -1:{
+                accesos_obj.pase_entrada_fields['comentario_pase']:comentario_pase,
+                accesos_obj.mf['tipo_de_comentario']:'caseta'
+                }
+            }
+            }
+
+        # De momento no retorna nada
+        # res = self._do_access(access_pass, location, area, data)
+
     def _do_access(self, access_pass, location, area, data):
         employee = accesos_obj.get_employee_data(email=user_email, get_one=True)
         assert employee, 'No se recibio el empleado en el acceso'
@@ -737,8 +825,8 @@ class TestAccesos:
     # def test_number_one / 1. Haga un pase fecha fija, se le da acceso y salida posteriormente
     # def test_number_two / 2. Haga un pase de 3 accesos, validar hasta 4 veces (sleep 10seg)
     # def test_number_three / 3. Pase vigencia vencida, validar acceso
-    # TODO Pruebas de Accesos pendientes:
     # def test_number_four / 4. Pase con rango de fechas, dias seleccionados, validar dias que no tiene acceso
+    # TODO Pruebas de Accesos pendientes:
     # def test_number_five / 5. Pase sin completar, validar acceso
 
     def test_number_one(self):
@@ -797,3 +885,27 @@ class TestAccesos:
             self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
         print(f"Excepción esperada capturada: {exc_info.value}")
         print('================> TEST #3 FINALIZADO')
+
+    def test_number_four(self):
+        print('Arranca test: Se crea un pase con dias seleccionados, se completa y se le da entrada para validar los dias que no tiene acceso')
+        # -- Se crea el pase nuevo
+        self.create_access_pass(location=location, access_pass=access_pass_days_selected)
+        print('================> Ya paso la creacion del pase')
+        # -- El pase es completado
+        time.sleep(5)
+        self.update_pass(access_pass=complete_access_pass, folio=TestAccesos.complete_access_pass_folio)
+        print('================> Ya paso el completar del pase')
+
+        # -- Se obtienen los indices de los dias no permitidos
+        dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+        dias_validos = access_pass_days_selected.get('config_dias_acceso', [])
+        dias_invalidos_indices = [i for i, dia in enumerate(dias_semana) if dia not in dias_validos]
+
+        for i in dias_invalidos_indices:
+            with pytest.raises(Exception) as exc_info:
+                # -- Se da el acceso con el pase completado para validar
+                self.do_access_mutated(qr_code=TestAccesos.folio, location=location, area=area, data=data_access, hoy_parameter=i)
+            print(f"Excepción esperada capturada: {exc_info.value}")
+            time.sleep(5)
+            print(f"================> Dia no permitido validado: {dias_semana[i]}")
+        print('================> TEST #4 FINALIZADO')
