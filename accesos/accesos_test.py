@@ -5,7 +5,7 @@
 # en test debes de tener una rama por cliente
 
 # -*- coding: utf-8 -*-
-import sys, simplejson, copy, random, string, math, json, time, pytz, pytest
+import sys, simplejson, copy, random, string, math, json, time, pytz, pytest, logging
 from datetime import datetime ,timedelta
 from bson import ObjectId
 
@@ -13,6 +13,13 @@ from bson import ObjectId
 from lkf_addons.addons.accesos.app import Accesos
 
 from account_settings import *
+
+# Configuracion del logging para los logs al ejecutar pytest
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%H:%M:%S"
+)
 
 accesos_obj = Accesos(settings, use_api=True)
 
@@ -26,7 +33,7 @@ access_pass = {
     "perfil_pase": "Visita General",
     "custom": True,
     "descripcion": "Descripcion de la cita",
-    "fecha_desde_visita": "2025-04-22 13:00:00",
+    "fecha_desde_visita": "2025-04-23 13:00:00",
     "status_pase": "Proceso",
     "link": {
         "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -131,6 +138,35 @@ access_pass_days_selected = {
     "email": "paco@linkaform.com",
     "comentarios": [
         {"tipo_comentario": "Pase", "comentario_pase": "Comentario de test"}
+    ]
+}
+
+access_pass_no_completed = {
+    "empresa": "LkfTesting",
+    "tipo_visita_pase": "fecha_fija",
+    "tema_cita": "Tema de la cita",
+    # "enviar_correo_pre_registro": ["enviar_correo_pre_registro", "enviar_sms_pre_registro"],
+    "enviar_correo_pre_registro": [],
+    "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+    "perfil_pase": "Visita General",
+    "custom": True,
+    "descripcion": "Descripcion de la cita",
+    "fecha_desde_visita": "2025-04-23 13:00:00",
+    "status_pase": "Proceso",
+    "link": {
+        "docs": ["agregarIdentificacion", "agregarFoto"],
+        "creado_por_email": "seguridad@linkaform.com",
+        "link": "https://app.soter.mx/pase.html",
+        "creado_por_id": "10"
+    },
+    "config_limitar_acceso": None,
+    "ubicacion": "Planta Monterrey",
+    "nombre": "Pase de No Completado",
+    "visita_a": "Emiliano Zapata",
+    "telefono": "+528341227834",
+    "email": "paco@linkaform.com",
+    "comentarios": [
+        {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
     ]
 }
 
@@ -734,6 +770,7 @@ class TestAccesos:
         metadata.update({'answers':answers})
         response_create = accesos_obj.lkf_api.post_forms_answers(metadata)
         assert response_create['status_code'] in (201, 202), 'No se hizo el acceso correctamente'
+
         return response_create
     
     def update_gafet_status(self, answers={}):
@@ -826,36 +863,35 @@ class TestAccesos:
     # def test_number_two / 2. Haga un pase de 3 accesos, validar hasta 4 veces (sleep 10seg)
     # def test_number_three / 3. Pase vigencia vencida, validar acceso
     # def test_number_four / 4. Pase con rango de fechas, dias seleccionados, validar dias que no tiene acceso
-    # TODO Pruebas de Accesos pendientes:
     # def test_number_five / 5. Pase sin completar, validar acceso
 
     def test_number_one(self):
-        print('Arranca test: Se crea pase, se completa, se le da entrada y posteriormente salida')
+        logging.info('Arranca test #1: Se crea pase, se completa, se le da entrada y posteriormente salida')
         # -- Se crea el pase nuevo
         self.create_access_pass(location=location, access_pass=access_pass)
-        print('================> Ya paso la creacion del pase')
+        logging.info('================> Ya paso la creacion del pase')
         # -- El pase es completado
         time.sleep(5)
         self.update_pass(access_pass=complete_access_pass, folio=TestAccesos.complete_access_pass_folio)
-        print('================> Ya paso el completar del pase')
+        logging.info('================> Ya paso el completar del pase')
         # -- Se da el acceso con el pase completado
         self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
-        print('================> Ya paso el acceso del pase')
+        logging.info('================> Ya paso el acceso del pase')
         # -- Se da la salida con el pase completado
         time.sleep(5)
         self.do_out(TestAccesos.folio, location=location, area=area)
-        print('================> Ya paso la salida del pase')
-        print('================> TEST #1 FINALIZADO')
+        logging.info('================> Ya paso la salida del pase')
+        logging.info('================> TEST #1 FINALIZADO')
 
     def test_number_two(self):
-        print('Arranca test: Se crea pase con 3 accesos, se completa, se le da entrada y posteriormente salida 4 veces')
+        logging.info('Arranca test #2: Se crea pase con 3 accesos, se completa, se le da entrada y posteriormente salida 4 veces')
         # -- Se crea el pase nuevo con 3 accesos
         self.create_access_pass(location=location, access_pass=access_pass_with_3_access)
-        print('================> Ya paso la creacion del pase')
+        logging.info('================> Ya paso la creacion del pase')
         # -- El pase es completado
         time.sleep(5)
         self.update_pass(access_pass=complete_access_pass, folio=TestAccesos.complete_access_pass_folio)
-        print('================> Ya paso el completar del pase')
+        logging.info('================> Ya paso el completar del pase')
         for i in range(4):
             if i < 3:
                 # -- Se da el acceso con el pase completado
@@ -863,38 +899,38 @@ class TestAccesos:
                 # -- Se da la salida con el pase completado
                 time.sleep(5)
                 self.do_out(TestAccesos.folio, location=location, area=area)
-                print(f"================> Ciclo: {i+1} de Entrada y Salida completado")
+                logging.info(f"================> Ciclo: {i+1} de Entrada y Salida completado")
                 time.sleep(5)
             else:
                 with pytest.raises(Exception) as exc_info:
                     self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
-                print(f"Excepción esperada capturada: {exc_info.value}")
-        print('================> TEST #2 FINALIZADO')
+                logging.info(f"================> Excepción esperada capturada: {exc_info.value}")
+        logging.info('================> TEST #2 FINALIZADO')
 
     def test_number_three(self):
-        print('Arranca test: Se crea un pase con fecha vencida, se completa y se le da entrada para validar que no tenga acceso')
+        logging.info('Arranca test #3: Se crea un pase con fecha vencida, se completa y se le da entrada para validar que no tenga acceso')
         # -- Se crea el pase nuevo
         self.create_access_pass(location=location, access_pass=access_pass_caducated)
-        print('================> Ya paso la creacion del pase')
+        logging.info('================> Ya paso la creacion del pase')
         # -- El pase es completado
         time.sleep(5)
         self.update_pass(access_pass=complete_access_pass, folio=TestAccesos.complete_access_pass_folio)
-        print('================> Ya paso el completar del pase')
+        logging.info('================> Ya paso el completar del pase')
         # -- Se da el acceso con el pase completado
         with pytest.raises(Exception) as exc_info:
             self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
-        print(f"Excepción esperada capturada: {exc_info.value}")
-        print('================> TEST #3 FINALIZADO')
+        logging.info(f"================> Excepción esperada capturada: {exc_info.value}")
+        logging.info('================> TEST #3 FINALIZADO')
 
     def test_number_four(self):
-        print('Arranca test: Se crea un pase con dias seleccionados, se completa y se le da entrada para validar los dias que no tiene acceso')
+        logging.info('Arranca test #4: Se crea un pase con dias seleccionados, se completa y se le da entrada para validar los dias que no tiene acceso')
         # -- Se crea el pase nuevo
         self.create_access_pass(location=location, access_pass=access_pass_days_selected)
-        print('================> Ya paso la creacion del pase')
+        logging.info('================> Ya paso la creacion del pase')
         # -- El pase es completado
         time.sleep(5)
         self.update_pass(access_pass=complete_access_pass, folio=TestAccesos.complete_access_pass_folio)
-        print('================> Ya paso el completar del pase')
+        logging.info('================> Ya paso el completar del pase')
 
         # -- Se obtienen los indices de los dias no permitidos
         dias_semana = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
@@ -905,7 +941,19 @@ class TestAccesos:
             with pytest.raises(Exception) as exc_info:
                 # -- Se da el acceso con el pase completado para validar
                 self.do_access_mutated(qr_code=TestAccesos.folio, location=location, area=area, data=data_access, hoy_parameter=i)
-            print(f"Excepción esperada capturada: {exc_info.value}")
+            logging.info(f"================> Excepción esperada capturada: {exc_info.value}")
             time.sleep(5)
-            print(f"================> Dia no permitido validado: {dias_semana[i]}")
-        print('================> TEST #4 FINALIZADO')
+            logging.info(f"================> Dia no permitido validado: {dias_semana[i]}")
+        logging.info('================> TEST #4 FINALIZADO')
+
+    def test_number_five(self):
+        logging.info('Arranca test #5: Se crea un pase, no se completa y se le da entrada para validar que no tenga acceso')
+        # -- Se crea el pase nuevo
+        self.create_access_pass(location=location, access_pass=access_pass_no_completed)
+        logging.info('================> Ya paso la creacion del pase')
+        time.sleep(5)
+        # -- Se da el acceso con el pase completado
+        with pytest.raises(Exception) as exc_info:
+            self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
+        logging.info(f"================> Excepción esperada capturada: {exc_info.value}")
+        logging.info('================> TEST #5 FINALIZADO')
