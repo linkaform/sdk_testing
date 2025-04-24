@@ -624,9 +624,9 @@ class TestAccesos:
                     if index==0 :
                         docs+="-"
                 link_pass= f"{link_info['link']}?id={res.get('json')['id']}&user={link_info['creado_por_id']}&docs={docs}"
-                # TODO Modularizar id forma y id campo
-                id_forma = 121736
-                id_campo = '673773741b2adb2d05d99d63'
+
+                id_forma = accesos_obj.PASE_ENTRADA
+                id_campo = accesos_obj.pase_entrada_fields['archivo_invitacion']
 
                 tema_cita = access_pass.get("tema_cita")
                 descripcion = access_pass.get("descripcion")
