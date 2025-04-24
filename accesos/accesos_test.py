@@ -23,6 +23,225 @@ logging.basicConfig(
 
 accesos_obj = Accesos(settings, use_api=True)
 
+list_of_access_pass = [
+    {
+        "empresa": "LkfTesting",
+        "tipo_visita_pase": "fecha_fija",
+        "tema_cita": "Tema de la cita",
+        "enviar_correo_pre_registro": [],
+        "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+        "perfil_pase": "Visita General",
+        "custom": True,
+        "descripcion": "Descripcion de la cita",
+        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "status_pase": "Activo",
+        "link": {
+            "docs": ["agregarIdentificacion", "agregarFoto"],
+            "creado_por_email": "seguridad@linkaform.com",
+            "link": "https://app.soter.mx/pase.html",
+            "creado_por_id": "10"
+        },
+        "config_limitar_acceso": None,
+        "ubicacion": "Planta Monterrey",
+        "nombre": "KPI Pase #1",
+        "visita_a": "Emiliano Zapata",
+        "telefono": "+528341227834",
+        "email": "test@linkaform.com",
+        "comentarios": [
+            {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+        ]
+    },
+    {
+        "empresa": "LkfTesting",
+        "tipo_visita_pase": "fecha_fija",
+        "tema_cita": "Tema de la cita",
+        "enviar_correo_pre_registro": [],
+        "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+        "perfil_pase": "Visita General",
+        "custom": True,
+        "descripcion": "Descripcion de la cita",
+        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "status_pase": "Activo",
+        "link": {
+            "docs": ["agregarIdentificacion", "agregarFoto"],
+            "creado_por_email": "seguridad@linkaform.com",
+            "link": "https://app.soter.mx/pase.html",
+            "creado_por_id": "10"
+        },
+        "config_limitar_acceso": None,
+        "ubicacion": "Planta Monterrey",
+        "nombre": "KPI Pase #2",
+        "visita_a": "Emiliano Zapata",
+        "telefono": "+528341227834",
+        "email": "test@linkaform.com",
+        "comentarios": [
+            {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+        ]
+    },
+    {
+        "empresa": "LkfTesting",
+        "tipo_visita_pase": "fecha_fija",
+        "tema_cita": "Tema de la cita",
+        "enviar_correo_pre_registro": [],
+        "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+        "perfil_pase": "Visita General",
+        "custom": True,
+        "descripcion": "Descripcion de la cita",
+        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "status_pase": "Activo",
+        "link": {
+            "docs": ["agregarIdentificacion", "agregarFoto"],
+            "creado_por_email": "seguridad@linkaform.com",
+            "link": "https://app.soter.mx/pase.html",
+            "creado_por_id": "10"
+        },
+        "config_limitar_acceso": None,
+        "ubicacion": "Planta Monterrey",
+        "nombre": "KPI Pase #3",
+        "visita_a": "Emiliano Zapata",
+        "telefono": "+528341227834",
+        "email": "test@linkaform.com",
+        "comentarios": [
+            {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+        ]
+    },
+    {
+        "empresa": "LkfTesting",
+        "tipo_visita_pase": "fecha_fija",
+        "tema_cita": "Tema de la cita",
+        "enviar_correo_pre_registro": [],
+        "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+        "perfil_pase": "Visita General",
+        "custom": True,
+        "descripcion": "Descripcion de la cita",
+        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "status_pase": "Activo",
+        "link": {
+            "docs": ["agregarIdentificacion", "agregarFoto"],
+            "creado_por_email": "seguridad@linkaform.com",
+            "link": "https://app.soter.mx/pase.html",
+            "creado_por_id": "10"
+        },
+        "config_limitar_acceso": None,
+        "ubicacion": "Planta Monterrey",
+        "nombre": "KPI Pase #4",
+        "visita_a": "Emiliano Zapata",
+        "telefono": "+528341227834",
+        "email": "test@linkaform.com",
+        "comentarios": [
+            {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+        ]
+    },
+    {
+        "empresa": "LkfTesting",
+        "tipo_visita_pase": "fecha_fija",
+        "tema_cita": "Tema de la cita",
+        "enviar_correo_pre_registro": [],
+        "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+        "perfil_pase": "Visita General",
+        "custom": True,
+        "descripcion": "Descripcion de la cita",
+        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "status_pase": "Activo",
+        "link": {
+            "docs": ["agregarIdentificacion", "agregarFoto"],
+            "creado_por_email": "seguridad@linkaform.com",
+            "link": "https://app.soter.mx/pase.html",
+            "creado_por_id": "10"
+        },
+        "config_limitar_acceso": None,
+        "ubicacion": "Planta Monterrey",
+        "nombre": "KPI Pase #5",
+        "visita_a": "Emiliano Zapata",
+        "telefono": "+528341227834",
+        "email": "test@linkaform.com",
+        "comentarios": [
+            {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+        ]
+    },
+    {
+        "empresa": "LkfTesting",
+        "tipo_visita_pase": "fecha_fija",
+        "tema_cita": "Tema de la cita",
+        "enviar_correo_pre_registro": [],
+        "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+        "perfil_pase": "Visita General",
+        "custom": True,
+        "descripcion": "Descripcion de la cita",
+        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "status_pase": "Activo",
+        "link": {
+            "docs": ["agregarIdentificacion", "agregarFoto"],
+            "creado_por_email": "seguridad@linkaform.com",
+            "link": "https://app.soter.mx/pase.html",
+            "creado_por_id": "10"
+        },
+        "config_limitar_acceso": None,
+        "ubicacion": "Planta Monterrey",
+        "nombre": "KPI Pase #6",
+        "visita_a": "Emiliano Zapata",
+        "telefono": "+528341227834",
+        "email": "test@linkaform.com",
+        "comentarios": [
+            {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+        ]
+    },
+    {
+        "empresa": "LkfTesting",
+        "tipo_visita_pase": "fecha_fija",
+        "tema_cita": "Tema de la cita",
+        "enviar_correo_pre_registro": [],
+        "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+        "perfil_pase": "Visita General",
+        "custom": True,
+        "descripcion": "Descripcion de la cita",
+        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "status_pase": "Activo",
+        "link": {
+            "docs": ["agregarIdentificacion", "agregarFoto"],
+            "creado_por_email": "seguridad@linkaform.com",
+            "link": "https://app.soter.mx/pase.html",
+            "creado_por_id": "10"
+        },
+        "config_limitar_acceso": None,
+        "ubicacion": "Planta Monterrey",
+        "nombre": "KPI Pase #7",
+        "visita_a": "Emiliano Zapata",
+        "telefono": "+528341227834",
+        "email": "test@linkaform.com",
+        "comentarios": [
+            {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+        ]
+    },
+    {
+        "empresa": "LkfTesting",
+        "tipo_visita_pase": "fecha_fija",
+        "tema_cita": "Tema de la cita",
+        "enviar_correo_pre_registro": [],
+        "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
+        "perfil_pase": "Visita General",
+        "custom": True,
+        "descripcion": "Descripcion de la cita",
+        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "status_pase": "Activo",
+        "link": {
+            "docs": ["agregarIdentificacion", "agregarFoto"],
+            "creado_por_email": "seguridad@linkaform.com",
+            "link": "https://app.soter.mx/pase.html",
+            "creado_por_id": "10"
+        },
+        "config_limitar_acceso": None,
+        "ubicacion": "Planta Monterrey",
+        "nombre": "KPI Pase #8",
+        "visita_a": "Emiliano Zapata",
+        "telefono": "+528341227834",
+        "email": "test@linkaform.com",
+        "comentarios": [
+            {"tipo_comentario": "Pase", "comentario_pase": "Comentario"}
+        ]
+    },
+]
+
 access_pass = {
     "empresa": "LkfTesting",
     "tipo_visita_pase": "fecha_fija",
@@ -33,7 +252,7 @@ access_pass = {
     "perfil_pase": "Visita General",
     "custom": True,
     "descripcion": "Descripcion de la cita",
-    "fecha_desde_visita": "2025-04-23 13:00:00",
+    "fecha_desde_visita": "2025-04-24 13:00:00",
     "status_pase": "Proceso",
     "link": {
         "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -151,7 +370,7 @@ access_pass_no_completed = {
     "perfil_pase": "Visita General",
     "custom": True,
     "descripcion": "Descripcion de la cita",
-    "fecha_desde_visita": "2025-04-23 13:00:00",
+    "fecha_desde_visita": "2025-04-24 13:00:00",
     "status_pase": "Proceso",
     "link": {
         "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -184,6 +403,20 @@ complete_access_pass = {
     "grupo_equipos": []
 }
 
+complete_access_pass_with_equips_and_vehicles = {
+    "walkin_identificacion": [{
+        "file_name": "indentificacion.png",
+        "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/6806c367a6f263109c2818d2.png"
+    }],
+    "status_pase": "Activo",
+    "grupo_vehiculos": [{"tipo": "Autom\u00f3vil", "color": "Blanco", "placas": "A123", "marca": "AUDI", "modelo": "Audi A7", "estado": "Tamaulipas"}],
+    "walkin_fotografia": [{
+        "file_name": "foto.png", 
+        "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/6806c3617ee1dd400c51bc2d.png"
+    }],
+    "grupo_equipos": [{"tipo": "Computo", "color": "Negro", "marca": "HP", "serie": "L000", "modelo": "2025", "nombre": "Laptop"}]
+}
+
 data_access = {
     "vehiculo": [],
     "area": "Caseta Principal",
@@ -213,6 +446,8 @@ class TestAccesos:
 
     folio = ''
     complete_access_pass_folio = ''
+    folio_changed = ''
+    list_of_folios = []
     qr_code = ''
 
     def create_access_pass(self, location, access_pass):
@@ -374,6 +609,8 @@ class TestAccesos:
         if res.get("status_code") ==200 or res.get("status_code")==201:
             TestAccesos.folio = res.get("json")["id"]
             TestAccesos.complete_access_pass_folio = res.get("json")["id"]
+            TestAccesos.folio_changed = res.get("json")["id"]
+            TestAccesos.list_of_folios.append(TestAccesos.folio_changed)
 
             link_info=access_pass.get('link', "")
             docs=""
@@ -864,6 +1101,7 @@ class TestAccesos:
     # def test_number_three / 3. Pase vigencia vencida, validar acceso
     # def test_number_four / 4. Pase con rango de fechas, dias seleccionados, validar dias que no tiene acceso
     # def test_number_five / 5. Pase sin completar, validar acceso
+    # def test_number_six / 6. Checar los STATS de bitacoras haciendo accesos
 
     def test_number_one(self):
         logging.info('Arranca test #1: Se crea pase, se completa, se le da entrada y posteriormente salida')
@@ -956,4 +1194,293 @@ class TestAccesos:
         with pytest.raises(Exception) as exc_info:
             self.do_access(qr_code=TestAccesos.folio, location=location, area=area, data=data_access)
         logging.info(f"================> Excepción esperada capturada: {exc_info.value}")
+        logging.info('================> TEST #5 FINALIZADO')
+
+    def test_number_six(self):
+        logging.info('Arranca test #6: Se crean 8 pases y se revisan los STATS de bitacoras realizando entradas y salidas')
+        # -- Se crean los pases
+        # for pase in list_of_access_pass:
+        #     self.create_access_pass(location=location, access_pass=pase)
+        #     self.update_pass(access_pass=complete_access_pass_with_equips_and_vehicles, folio=TestAccesos.folio_changed)
+        #     logging.info('================> Ya paso la creacion del pase')
+        # logging.info('================> Ya paso la creacion de todos los pases')
+
+        TestAccesos.list_of_folios = [
+            '6809a6615c12e1f7123ad60e',
+            '6809a64d8004cceffa1704d1',
+            '6809a6396fac022afaaed3eb',
+            '6809a627f14da610b35089fe',
+            '6809a613407ecae736b60bd0',
+            '6809a601d8f909ccfd4ef82c',
+            '6809a5ee82bd712d65a114e3',
+            '6809a5d9bab55849801c8a03'
+        ]
+
+        stats_bitacora = accesos_obj.get_page_stats(booth_area=area, location=location, page='Bitacoras')
+        total_vehiculos_dentro_inicial = stats_bitacora.get('total_vehiculos_dentro')
+        total_equipos_dentro_inicial = stats_bitacora.get('total_equipos_dentro')
+        visitas_en_dia_inicial = stats_bitacora.get('visitas_en_dia')
+        salidas_registradas_inicial = stats_bitacora.get('salidas_registradas')
+        personas_dentro_inicial = stats_bitacora.get('personas_dentro')
+        logging.info(
+            "stats_bitacora ANTES de hacer la prueba #1 de accesos\n"
+            f"    VEHICULOS DENTRO: {total_vehiculos_dentro_inicial}\n"
+            f"    EQUIPOS DENTRO: {total_equipos_dentro_inicial}\n"
+            f"    VISITAS EN DIA: {visitas_en_dia_inicial}\n"
+            f"    SALIDAS REGISTRADAS: {salidas_registradas_inicial}\n"
+            f"    PERSONAS DENTRO: {personas_dentro_inicial}"
+        )
+        
+        for folio in TestAccesos.list_of_folios:
+            # -- Se da el acceso de los pases
+            data_access['qr_code'] = folio
+            data_access['vehiculo'] = [{
+                "modelo_vehiculo": "Audi A7",
+                "color_vehiculo": "blanco",
+                "marca_vehiculo": "AUDI",
+                "tipo_vehiculo": "Autom\u00f3vil",
+                "placas_vehiculo": "A123",
+                "nombre_estado": "tamaulipas"
+            }]
+            data_access['equipo'] = [{
+                "color_articulo": "negro",
+                "numero_serie": "L000",
+                "modelo_articulo": "2025",
+                "marca_articulo": "HP",
+                "tipo_equipo": "computo",
+                "nombre_articulo": "Laptop"
+            }]
+            self.do_access(qr_code=folio, location=location, area=area, data=data_access)
+            logging.info(f"================> Ya paso el acceso del pase con folio: {folio}")
+        logging.info("================> Ya paso el acceso de todos los pases")
+
+        stats_bitacora = accesos_obj.get_page_stats(booth_area=area, location=location, page='Bitacoras')
+        total_vehiculos_dentro = stats_bitacora.get('total_vehiculos_dentro')
+        total_equipos_dentro = stats_bitacora.get('total_equipos_dentro')
+        visitas_en_dia = stats_bitacora.get('visitas_en_dia')
+        salidas_registradas = stats_bitacora.get('salidas_registradas')
+        personas_dentro = stats_bitacora.get('personas_dentro')
+        logging.info(
+            "stats_bitacora DESPUES de hacer la entrada de todos los pases\n"
+            f"    VEHICULOS DENTRO: {total_vehiculos_dentro}\n"
+            f"    EQUIPOS DENTRO: {total_equipos_dentro}\n"
+            f"    VISITAS EN DIA: {visitas_en_dia}\n"
+            f"    SALIDAS REGISTRADAS: {salidas_registradas}\n"
+            f"    PERSONAS DENTRO: {personas_dentro}"
+        )
+
+        expected_increment = len(TestAccesos.list_of_folios)
+
+        if (total_equipos_dentro_inicial + expected_increment) != total_equipos_dentro:
+            logging.error(f"Equipos dentro incorrecto. Esperado: {total_equipos_dentro_inicial + expected_increment}, Obtenido: {total_equipos_dentro}")
+        else:
+            logging.info("Equipos dentro correctamente actualizados.")
+
+        if (total_vehiculos_dentro_inicial + expected_increment) != total_vehiculos_dentro:
+            logging.error(f"Vehículos dentro incorrecto. Esperado: {total_vehiculos_dentro_inicial + expected_increment}, Obtenido: {total_vehiculos_dentro}")
+        else:
+            logging.info("Vehículos dentro correctamente actualizados.")
+
+        if (visitas_en_dia_inicial + expected_increment) != visitas_en_dia:
+            logging.error(f"Visitas en día incorrectas. Esperado: {visitas_en_dia_inicial + expected_increment}, Obtenido: {visitas_en_dia}")
+        else:
+            logging.info("Visitas en día correctamente actualizados.")
+
+        if (personas_dentro_inicial + expected_increment) != personas_dentro:
+            logging.error(f"Personas dentro incorrecto. Esperado: {personas_dentro_inicial + expected_increment}, Obtenido: {personas_dentro}")
+        else:
+            logging.info("Personas dentro correctamente actualizados.")
+
+        if salidas_registradas_inicial != salidas_registradas:
+            logging.error(f"Salidas registradas incorrecto. Esperado: {salidas_registradas_inicial}, Obtenido: {salidas_registradas}")
+        else:
+            logging.info("Salidas registradas correctamente actualizados.")
+
+        for folio in TestAccesos.list_of_folios:
+            # -- Se da la salida de los pases
+            self.do_out(folio, location=location, area=area)
+            logging.info(f"================> Ya paso la salida del pase con folio: {folio}")
+        logging.info("================> Ya paso la salida de todos los pases")
+
+        stats_bitacora = accesos_obj.get_page_stats(booth_area=area, location=location, page='Bitacoras')
+        total_vehiculos_dentro_salida = stats_bitacora.get('total_vehiculos_dentro')
+        total_equipos_dentro_salida = stats_bitacora.get('total_equipos_dentro')
+        visitas_en_dia_salida = stats_bitacora.get('visitas_en_dia')
+        salidas_registradas_salida = stats_bitacora.get('salidas_registradas')
+        personas_dentro_salida = stats_bitacora.get('personas_dentro')
+        logging.info(
+            "stats_bitacora DESPUES de hacer la salida de todos los pases\n"
+            f"    VEHICULOS DENTRO: {total_vehiculos_dentro_salida}\n"
+            f"    EQUIPOS DENTRO: {total_equipos_dentro_salida}\n"
+            f"    VISITAS EN DIA: {visitas_en_dia_salida}\n"
+            f"    SALIDAS REGISTRADAS: {salidas_registradas_salida}\n"
+            f"    PERSONAS DENTRO: {personas_dentro_salida}"
+        )
+
+        if (total_equipos_dentro - expected_increment) != total_equipos_dentro_salida:
+            logging.error(f"Equipos dentro incorrecto. Esperado: {total_equipos_dentro - expected_increment}, Obtenido: {total_equipos_dentro_salida}")
+        else:
+            logging.info("Equipos dentro correctamente actualizados.")
+
+        if (total_vehiculos_dentro - expected_increment) != total_vehiculos_dentro_salida:
+            logging.error(f"Vehículos dentro incorrecto. Esperado: {total_vehiculos_dentro - expected_increment}, Obtenido: {total_vehiculos_dentro_salida}")
+        else:
+            logging.info("Vehículos dentro correctamente actualizados.")
+
+        if visitas_en_dia != visitas_en_dia_salida:
+            logging.error(f"Visitas en día incorrectas. Esperado: {visitas_en_dia}, Obtenido: {visitas_en_dia_salida}")
+        else:
+            logging.info("Visitas en día correctamente actualizados.")
+
+        if (personas_dentro - expected_increment) != personas_dentro_salida:
+            logging.error(f"Personas dentro incorrecto. Esperado: {personas_dentro - expected_increment}, Obtenido: {personas_dentro_salida}")
+        else:
+            logging.info("Personas dentro correctamente actualizados.")
+
+        if (salidas_registradas + expected_increment) != salidas_registradas_salida:
+            logging.error(f"Salidas registradas incorrecto. Esperado: {salidas_registradas + expected_increment}, Obtenido: {salidas_registradas_salida}")
+        else:
+            logging.info("Salidas registradas correctamente actualizados.")
+
+        stats_bitacora = accesos_obj.get_page_stats(booth_area=area, location=location, page='Bitacoras')
+        total_vehiculos_dentro_inicial = stats_bitacora.get('total_vehiculos_dentro')
+        total_equipos_dentro_inicial = stats_bitacora.get('total_equipos_dentro')
+        visitas_en_dia_inicial = stats_bitacora.get('visitas_en_dia')
+        salidas_registradas_inicial = stats_bitacora.get('salidas_registradas')
+        personas_dentro_inicial = stats_bitacora.get('personas_dentro')
+        logging.info(
+            "stats_bitacora ANTES de hacer la prueba #2 de accesos\n"
+            f"    VEHICULOS DENTRO: {total_vehiculos_dentro_inicial}\n"
+            f"    EQUIPOS DENTRO: {total_equipos_dentro_inicial}\n"
+            f"    VISITAS EN DIA: {visitas_en_dia_inicial}\n"
+            f"    SALIDAS REGISTRADAS: {salidas_registradas_inicial}\n"
+            f"    PERSONAS DENTRO: {personas_dentro_inicial}"
+        )
+
+        test_pass_configs = [
+            ('6809a6615c12e1f7123ad60e', True, True),
+            ('6809a64d8004cceffa1704d1', True, False),
+            ('6809a6396fac022afaaed3eb', False, True),
+            ('6809a627f14da610b35089fe', False, False),
+            ('6809a613407ecae736b60bd0', True, True),
+            ('6809a601d8f909ccfd4ef82c', True, False),
+            ('6809a5ee82bd712d65a114e3', False, True),
+            ('6809a5d9bab55849801c8a03', False, False),
+        ]
+
+        for folio, tiene_vehiculo, tiene_equipo in test_pass_configs:
+            data_access['qr_code'] = folio
+            data_access['vehiculo'] = [{
+                "modelo_vehiculo": "Audi A7",
+                "color_vehiculo": "blanco",
+                "marca_vehiculo": "AUDI",
+                "tipo_vehiculo": "Automóvil",
+                "placas_vehiculo": "A123",
+                "nombre_estado": "tamaulipas"
+            }] if tiene_vehiculo else []
+
+            data_access['equipo'] = [{
+                "color_articulo": "negro",
+                "numero_serie": "L000",
+                "modelo_articulo": "2025",
+                "marca_articulo": "HP",
+                "tipo_equipo": "computo",
+                "nombre_articulo": "Laptop"
+            }] if tiene_equipo else []
+
+            self.do_access(qr_code=folio, location=location, area=area, data=data_access)
+            logging.info(f"Acceso registrado - Folio: {folio}, Vehículo: {tiene_vehiculo}, Equipo: {tiene_equipo}")
+
+        stats_bitacora = accesos_obj.get_page_stats(booth_area=area, location=location, page='Bitacoras')
+        total_vehiculos_dentro = stats_bitacora.get('total_vehiculos_dentro')
+        total_equipos_dentro = stats_bitacora.get('total_equipos_dentro')
+        visitas_en_dia = stats_bitacora.get('visitas_en_dia')
+        salidas_registradas = stats_bitacora.get('salidas_registradas')
+        personas_dentro = stats_bitacora.get('personas_dentro')
+        logging.info(
+            "stats_bitacora DESPUES de hacer la entrada de todos los pases\n"
+            f"    VEHICULOS DENTRO: {total_vehiculos_dentro}\n"
+            f"    EQUIPOS DENTRO: {total_equipos_dentro}\n"
+            f"    VISITAS EN DIA: {visitas_en_dia}\n"
+            f"    SALIDAS REGISTRADAS: {salidas_registradas}\n"
+            f"    PERSONAS DENTRO: {personas_dentro}"
+        )
+
+        expected_visitas = 8
+        expected_personas = 8
+        expected_vehiculos = 4
+        expected_equipos = 4
+        expected_salidas = 0
+
+        if (total_vehiculos_dentro_inicial + expected_vehiculos) != total_vehiculos_dentro:
+            logging.error(f"Vehículos dentro incorrecto. Esperado: {total_vehiculos_dentro_inicial + expected_vehiculos}, Obtenido: {total_vehiculos_dentro}")
+        else:
+            logging.info("Vehículos dentro correctamente actualizados.")
+
+        if (total_equipos_dentro_inicial + expected_equipos) != total_equipos_dentro:
+            logging.error(f"Equipos dentro incorrecto. Esperado: {total_equipos_dentro_inicial + expected_equipos}, Obtenido: {total_equipos_dentro}")
+        else:
+            logging.info("Equipos dentro correctamente actualizados.")
+
+        if (visitas_en_dia_inicial + expected_visitas) != visitas_en_dia:
+            logging.error(f"Visitas en día incorrectas. Esperado: {visitas_en_dia_inicial + expected_visitas}, Obtenido: {visitas_en_dia}")
+        else:
+            logging.info("Visitas en día correctamente actualizadas.")
+
+        if (personas_dentro_inicial + expected_personas) != personas_dentro:
+            logging.error(f"Personas dentro incorrecto. Esperado: {personas_dentro_inicial + expected_personas}, Obtenido: {personas_dentro}")
+        else:
+            logging.info("Personas dentro correctamente actualizadas.")
+
+        if (salidas_registradas_inicial + expected_salidas) != salidas_registradas:
+            logging.warning(f"Salidas registradas inesperadas. Esperado: {salidas_registradas_inicial + expected_salidas}, Obtenido: {salidas_registradas}")
+        else:
+            logging.info("Salidas registradas correctamente (sin cambios esperados).")
+
+        for folio in TestAccesos.list_of_folios:
+            self.do_out(folio, location=location, area=area)
+            logging.info(f"================> Ya pasó la salida del pase con folio: {folio}")
+        logging.info("================> Ya pasó la salida de todos los pases")
+
+        stats_bitacora = accesos_obj.get_page_stats(booth_area=area, location=location, page='Bitacoras')
+        total_vehiculos_dentro_salida = stats_bitacora.get('total_vehiculos_dentro')
+        total_equipos_dentro_salida = stats_bitacora.get('total_equipos_dentro')
+        visitas_en_dia_salida = stats_bitacora.get('visitas_en_dia')
+        salidas_registradas_salida = stats_bitacora.get('salidas_registradas')
+        personas_dentro_salida = stats_bitacora.get('personas_dentro')
+
+        logging.info(
+            "stats_bitacora DESPUÉS de hacer la salida de todos los pases\n"
+            f"    VEHÍCULOS DENTRO: {total_vehiculos_dentro_salida}\n"
+            f"    EQUIPOS DENTRO: {total_equipos_dentro_salida}\n"
+            f"    VISITAS EN DÍA: {visitas_en_dia_salida}\n"
+            f"    SALIDAS REGISTRADAS: {salidas_registradas_salida}\n"
+            f"    PERSONAS DENTRO: {personas_dentro_salida}"
+        )
+
+        if (total_equipos_dentro - expected_equipos) != total_equipos_dentro_salida:
+            logging.error(f"Equipos dentro incorrecto. Esperado: {total_equipos_dentro - expected_equipos}, Obtenido: {total_equipos_dentro_salida}")
+        else:
+            logging.info("Equipos dentro correctamente actualizados después de salida.")
+
+        if (total_vehiculos_dentro - expected_vehiculos) != total_vehiculos_dentro_salida:
+            logging.error(f"Vehículos dentro incorrecto. Esperado: {total_vehiculos_dentro - expected_vehiculos}, Obtenido: {total_vehiculos_dentro_salida}")
+        else:
+            logging.info("Vehículos dentro correctamente actualizados después de salida.")
+
+        if visitas_en_dia != visitas_en_dia_salida:
+            logging.error(f"Visitas en día incorrectas. Esperado: {visitas_en_dia}, Obtenido: {visitas_en_dia_salida}")
+        else:
+            logging.info("Visitas en día correctamente mantenidas después de salida.")
+
+        if (personas_dentro - expected_personas) != personas_dentro_salida:
+            logging.error(f"Personas dentro incorrecto. Esperado: {personas_dentro - expected_personas}, Obtenido: {personas_dentro_salida}")
+        else:
+            logging.info("Personas dentro correctamente actualizadas después de salida.")
+
+        if (salidas_registradas + expected_personas) != salidas_registradas_salida:
+            logging.error(f"Salidas registradas incorrectas. Esperado: {salidas_registradas + expected_personas}, Obtenido: {salidas_registradas_salida}")
+        else:
+            logging.info("Salidas registradas correctamente actualizadas.")
+
         logging.info('================> TEST #5 FINALIZADO')
