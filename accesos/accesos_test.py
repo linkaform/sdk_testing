@@ -1199,22 +1199,11 @@ class TestAccesos:
     def test_number_six(self):
         logging.info('Arranca test #6: Se crean 8 pases y se revisan los STATS de bitacoras realizando entradas y salidas')
         # -- Se crean los pases
-        # for pase in list_of_access_pass:
-        #     self.create_access_pass(location=location, access_pass=pase)
-        #     self.update_pass(access_pass=complete_access_pass_with_equips_and_vehicles, folio=TestAccesos.folio_changed)
-        #     logging.info('================> Ya paso la creacion del pase')
-        # logging.info('================> Ya paso la creacion de todos los pases')
-
-        TestAccesos.list_of_folios = [
-            '6809a6615c12e1f7123ad60e',
-            '6809a64d8004cceffa1704d1',
-            '6809a6396fac022afaaed3eb',
-            '6809a627f14da610b35089fe',
-            '6809a613407ecae736b60bd0',
-            '6809a601d8f909ccfd4ef82c',
-            '6809a5ee82bd712d65a114e3',
-            '6809a5d9bab55849801c8a03'
-        ]
+        for pase in list_of_access_pass:
+            self.create_access_pass(location=location, access_pass=pase)
+            self.update_pass(access_pass=complete_access_pass_with_equips_and_vehicles, folio=TestAccesos.folio_changed)
+            logging.info('================> Ya paso la creacion del pase')
+        logging.info('================> Ya paso la creacion de todos los pases')
 
         stats_bitacora = accesos_obj.get_page_stats(booth_area=area, location=location, page='Bitacoras')
         total_vehiculos_dentro_inicial = stats_bitacora.get('total_vehiculos_dentro')
@@ -1358,14 +1347,14 @@ class TestAccesos:
         )
 
         test_pass_configs = [
-            ('6809a6615c12e1f7123ad60e', True, True),
-            ('6809a64d8004cceffa1704d1', True, False),
-            ('6809a6396fac022afaaed3eb', False, True),
-            ('6809a627f14da610b35089fe', False, False),
-            ('6809a613407ecae736b60bd0', True, True),
-            ('6809a601d8f909ccfd4ef82c', True, False),
-            ('6809a5ee82bd712d65a114e3', False, True),
-            ('6809a5d9bab55849801c8a03', False, False),
+            (TestAccesos.list_of_folios[0], True, True),
+            (TestAccesos.list_of_folios[1], True, False),
+            (TestAccesos.list_of_folios[2], False, True),
+            (TestAccesos.list_of_folios[3], False, False),
+            (TestAccesos.list_of_folios[4], True, True),
+            (TestAccesos.list_of_folios[5], True, False),
+            (TestAccesos.list_of_folios[6], False, True),
+            (TestAccesos.list_of_folios[7], False, False),
         ]
 
         for folio, tiene_vehiculo, tiene_equipo in test_pass_configs:
