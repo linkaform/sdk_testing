@@ -23,6 +23,9 @@ logging.basicConfig(
 
 accesos_obj = Accesos(settings, use_api=True)
 
+fecha_desde = "2025-05-01 13:00:00"
+fecha_hasta = "2025-05-10 13:00:00"
+
 list_of_access_pass = [
     {
         "empresa": "LkfTesting",
@@ -33,7 +36,7 @@ list_of_access_pass = [
         "perfil_pase": "Visita General",
         "custom": True,
         "descripcion": "Descripcion de la cita",
-        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "fecha_desde_visita": fecha_desde,
         "status_pase": "Activo",
         "link": {
             "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -60,7 +63,7 @@ list_of_access_pass = [
         "perfil_pase": "Visita General",
         "custom": True,
         "descripcion": "Descripcion de la cita",
-        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "fecha_desde_visita": fecha_desde,
         "status_pase": "Activo",
         "link": {
             "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -87,7 +90,7 @@ list_of_access_pass = [
         "perfil_pase": "Visita General",
         "custom": True,
         "descripcion": "Descripcion de la cita",
-        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "fecha_desde_visita": fecha_desde,
         "status_pase": "Activo",
         "link": {
             "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -114,7 +117,7 @@ list_of_access_pass = [
         "perfil_pase": "Visita General",
         "custom": True,
         "descripcion": "Descripcion de la cita",
-        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "fecha_desde_visita": fecha_desde,
         "status_pase": "Activo",
         "link": {
             "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -141,7 +144,7 @@ list_of_access_pass = [
         "perfil_pase": "Visita General",
         "custom": True,
         "descripcion": "Descripcion de la cita",
-        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "fecha_desde_visita": fecha_desde,
         "status_pase": "Activo",
         "link": {
             "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -168,7 +171,7 @@ list_of_access_pass = [
         "perfil_pase": "Visita General",
         "custom": True,
         "descripcion": "Descripcion de la cita",
-        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "fecha_desde_visita": fecha_desde,
         "status_pase": "Activo",
         "link": {
             "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -195,7 +198,7 @@ list_of_access_pass = [
         "perfil_pase": "Visita General",
         "custom": True,
         "descripcion": "Descripcion de la cita",
-        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "fecha_desde_visita": fecha_desde,
         "status_pase": "Activo",
         "link": {
             "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -222,7 +225,7 @@ list_of_access_pass = [
         "perfil_pase": "Visita General",
         "custom": True,
         "descripcion": "Descripcion de la cita",
-        "fecha_desde_visita": "2025-04-24 13:00:00",
+        "fecha_desde_visita": fecha_desde,
         "status_pase": "Activo",
         "link": {
             "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -252,7 +255,7 @@ access_pass = {
     "perfil_pase": "Visita General",
     "custom": True,
     "descripcion": "Descripcion de la cita",
-    "fecha_desde_visita": "2025-04-24 13:00:00",
+    "fecha_desde_visita": fecha_desde,
     "status_pase": "Proceso",
     "link": {
         "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -277,10 +280,10 @@ access_pass_with_3_access = {
     "tema_cita": "Testing de la cita",
     "config_dia_de_acceso": "cualquier_d\u00eda",
     "perfil_pase": "Visita General",
-    "fecha_desde_hasta": "2025-04-27 00:00:00",
+    "fecha_desde_hasta": fecha_hasta,
     "custom": True,
     "descripcion": "Descripcion de la cita",
-    "fecha_desde_visita": "2025-04-23 00:00:00",
+    "fecha_desde_visita": fecha_desde,
     "status_pase": "Proceso",
     "link": {
         "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -335,10 +338,10 @@ access_pass_days_selected = {
     "tema_cita": "Testing de la cita",
     "config_dia_de_acceso": "limitar_d\u00edas_de_acceso",
     "perfil_pase": "Visita General",
-    "fecha_desde_hasta": "2025-04-28 00:00:00",
+    "fecha_desde_hasta": fecha_desde,
     "custom": True,
     "descripcion": "Descripcion de la cita",
-    "fecha_desde_visita": "2025-04-23 00:00:00",
+    "fecha_desde_visita": fecha_desde,
     "status_pase": "Proceso",
     "link": {
         "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -370,7 +373,7 @@ access_pass_no_completed = {
     "perfil_pase": "Visita General",
     "custom": True,
     "descripcion": "Descripcion de la cita",
-    "fecha_desde_visita": "2025-04-24 13:00:00",
+    "fecha_desde_visita": fecha_desde,
     "status_pase": "Proceso",
     "link": {
         "docs": ["agregarIdentificacion", "agregarFoto"],
@@ -1348,9 +1351,9 @@ class TestAccesos:
 
         test_pass_configs = [
             (TestAccesos.list_of_folios[0], True, True),
-            (TestAccesos.list_of_folios[1], True, False),
+            (TestAccesos.list_of_folios[1], False, True),
             (TestAccesos.list_of_folios[2], False, True),
-            (TestAccesos.list_of_folios[3], False, False),
+            (TestAccesos.list_of_folios[3], False, True),
             (TestAccesos.list_of_folios[4], True, True),
             (TestAccesos.list_of_folios[5], True, False),
             (TestAccesos.list_of_folios[6], False, True),
