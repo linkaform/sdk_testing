@@ -52,9 +52,10 @@ class TestStock(TestStock):
         product_code = TestStock.product_code
         product_sku = TestStock.product_sku
         product_name = TestStock.product_name
-        qty = 1000
-        TestStock.initial_move_qty = qty
-        metadata = self.recibo_de_material(product_code, product_sku, product_name, warehouse_in, location_in, qty)
+        product_code_2 = TestStock.product_code_2
+        product_sku_2 = TestStock.product_sku_2
+        product_name_2 = TestStock.product_name_2
+        metadata = self.recibo_de_material(warehouse_in, location_in)
         res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
         print('res_create',res_create)
         assert res_create['status_code'] == 201
@@ -72,26 +73,30 @@ class TestStock(TestStock):
         print('status=', status)
         print('TestStock.product_lot=', TestStock.product_lot)
         assert status == 'done'
-        self.do_test_stock(product_code, product_sku, TestStock.product_lot, warehouse_in, location_in, qty)
+        self.do_test_stock(product_code, product_sku, TestStock.product_lot, warehouse_in, location_in, TestStock.initial_move_qty)
+        self.do_test_stock(product_code_2, product_sku_2, TestStock.product_lot, warehouse_in, location_in, TestStock.initial_move_qty_2)
 
     def test_move_stock_warehouse(self):
         warehouse_from = TestStock.stock_warehouse_1
         location_from = TestStock.stock_warehouse_location_1
         # stock_location_1_qty = TestStock.stock_location_1_qty
         # print('stock_location_1_qty', stock_location_1_qty)
-        warehouse_to = 'IASA - Diana Lidia Reyes García'
-        warehouse_to = 'Victor Lopez'
-        location_to = 'Almacen Cobre'
-        move_qty = 300
-        product_code = TestStock.product_code
-        product_sku = TestStock.product_sku
-        product_name = TestStock.product_name
-        product_lot = TestStock.product_lot
-        metadata = self.move_metadata(product_code, product_sku, product_lot, warehouse_from, location_from, warehouse_to, location_to, move_qty)
+        warehouse_to = 'Almacen Central'
+        location_to = 'Tecnico Fernando Montes'
+        metadata = self.move_metadata(warehouse_from, location_from, warehouse_to, location_to)
         print('metadata', metadata)
         res_create = stock_obj.lkf_api.post_forms_answers(metadata)
         print('res_create', res_create)
-        qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_to, location_to, move_qty)
+        move_lines = metadata['answers'][stock_obj.f['move_group']]
+        for idx, move in enumerate(move_lines):
+            print('move', move)
+            if idx == 0 :
+                move_qty_1 = move[stock_obj.f['move_group_qty']]
+            elif idx == 1:
+                move_qty_2 = move[stock_obj.f['move_group_qty']]
+
+        qty = self.do_test_stock(TestStock.product_code, TestStock.product_sku, TestStock.product_lot, warehouse_to, location_to, move_qty_1)
+        qty = self.do_test_stock(TestStock.product_code_2, TestStock.product_sku_2, TestStock.product_lot, warehouse_to, location_to, move_qty_2)
         print('qty', qty)
         TestStock.stock_move_wh_1_qty = move_qty
         assert qty == move_qty

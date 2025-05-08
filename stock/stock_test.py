@@ -136,55 +136,7 @@ class TestStock:
         res = stock_obj.lkf_api.search_catalog( stock_obj.CATALOG_INVENTORY_ID, mango_query)
         return res
 
-    def recibo_de_material(self, product_code, product_sku, product_name, warehouse_in, location_in, qty):
-        print('entra aq test_crea_recepcion_materiales')
-        supplier_warehouse = TestStock.supplier_warehouse
-        supplier_wh_location = TestStock.supplier_wh_location
-        # warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location = self.get_warehouses()
-        TestStock.product_lot = self.get_product_lot()
-        metadata = {
-            "form_id": stock_obj.STOCK_IN_ONE_MANY_ONE,"geolocation": [],"start_timestamp": 1715787608.475,"end_timestamp": 1715788138.316,
-            "answers": {
-                stock_obj.f['grading_date']: fecha,
-                stock_obj.WH.WAREHOUSE_LOCATION_OBJ_ID: {
-                    stock_obj.WH.f['warehouse']: supplier_warehouse,
-                    stock_obj.WH.f['warehouse_location']: supplier_wh_location
-                },
-                stock_obj.WH.WAREHOUSE_LOCATION_DEST_OBJ_ID: {
-                    stock_obj.WH.f['warehouse_dest']: warehouse_in,
-                    stock_obj.WH.f['warehouse_location_dest']: location_in
-                },
-                stock_obj.f['move_group']: [
-                    {
-                        stock_obj.Product.SKU_OBJ_ID: {
-                            stock_obj.Product.f['product_code']: product_code,
-                            stock_obj.Product.f['product_sku']: product_sku,
-                            stock_obj.Product.f['product_name']: [
-                                product_name
-                            ],
-                            stock_obj.Product.f['sku_percontainer']: [
-                                1
-                            ]
-                        },
-                        stock_obj.f['product_lot']: TestStock.product_lot,
-                        stock_obj.f['inv_adjust_grp_status']: "todo",
-                        stock_obj.f['move_group_qty']: qty,
-                    }
-                ],
-                stock_obj.f['stock_status']: "to_do",
-                stock_obj.f['stock_move_comments']: f"Comentario pruebas unitarias: {stock_obj.today_str()}",
-                stock_obj.f['evidencia']: [{
-                            "file_name": "ejemplo_evidnecia.pdf",
-                            "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/67ead23eaf630d6b0af9cc29.pdf"
-                            }],
-            },
-            "folio":None, 
-            "properties":{ "device_properties":{"system":"Testing"} }
-        }
-
-        print('metadata', simplejson.dumps(metadata, indent=3))
-        return metadata
-        
+    
     def test_move_stock_in(self):
         warehouse_in = TestStock.stock_warehouse_1
         location_in = TestStock.stock_warehouse_location_1

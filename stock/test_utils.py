@@ -45,17 +45,24 @@ fecha_datetime = fecha.strftime('%Y-%m-%d %H:%M:%S')
 class TestStock:
 
     supplier_warehouse = 'Proveedores'
-    supplier_wh_location = 'CONDUMEX'
+    supplier_wh_location = 'Proveedor de Piezas'
 
-    stock_warehouse_1 = 'Almacen Auxiliar'
-    stock_warehouse_location_1 = 'Monterrey'
+    stock_warehouse_1 = 'Almacen Central'
+    stock_warehouse_location_1 = 'Bodega Producto Terminado'
 
     product_lot =  None
-    product_code = "1000887"
-    product_sku = "R1000887"
-    product_name = "VALVULA DE PRUEBA"
 
-    initial_move_qty = 5
+    product_code = "TS-001"
+    product_sku = "TS-001-CH"
+    product_name = "Camisa Modelo 1"
+    initial_move_qty = 1000
+
+
+    product_code_2 = "MM-C14"
+    product_sku_2 = "MM-C14-10M"
+    product_name_2 = "Manguera 1/4"
+    initial_move_qty_2 = 2000
+
 
     def do_test_stock(self, product_code, sku, lot_number, warehouse, location, qty, extra_qty=0, sleep=True):
         print('do_test_stock qty=',qty)
@@ -142,7 +149,9 @@ class TestStock:
         res = stock_obj.lkf_api.search_catalog( stock_obj.CATALOG_INVENTORY_ID, mango_query)
         return res
 
-    def move_metadata(self, product_code, product_sku, product_lot, warehouse_from, location_from, warehouse_to, location_to, qty):
+    def move_metadata(self, warehouse_from, location_from, warehouse_to, location_to ):
+        qty = 100
+        qty2 = 200
         metadata = {
             "form_id": stock_obj.STOCK_ONE_MANY_ONE, "geolocation": [], "start_timestamp": 1715787608.475, "end_timestamp": 1715788138.316,
             "answers": {
@@ -156,26 +165,31 @@ class TestStock:
                         stock_obj.WH.f['warehouse_dest']: warehouse_to,
                         stock_obj.WH.f['warehouse_location_dest']: location_to,
                     },
-                stock_obj.f['move_group']: [{
+                stock_obj.f['move_group']: [
+                    {
                     stock_obj.CATALOG_INVENTORY_OBJ_ID: {
-                        stock_obj.Product.f['product_code']: product_code,
-                        stock_obj.Product.f['product_sku']: product_sku,
-                        stock_obj.f['product_lot']: product_lot,
+                        stock_obj.Product.f['product_code']: TestStock.product_code,
+                        stock_obj.Product.f['product_sku']: TestStock.product_sku,
+                        stock_obj.f['product_lot']: TestStock.product_lot,
                         },
                     stock_obj.f['move_group_qty']: qty,
-                    }],
+                    },
+                    {
+                    stock_obj.CATALOG_INVENTORY_OBJ_ID: {
+                        stock_obj.Product.f['product_code']: TestStock.product_code_2,
+                        stock_obj.Product.f['product_sku']: TestStock.product_sku_2,
+                        stock_obj.f['product_lot']: TestStock.product_lot,
+                        },
+                    stock_obj.f['move_group_qty']: qty2,
+                    }
+                    ],
                 stock_obj.f['inv_adjust_status']: 'to_do',
-                stock_obj.f['observaciones_move_stock']: 'Pruebas Unitarias Movimiento de almacen',
-                stock_obj.f['evidencia_salida']: [{
-                            "file_name": "ejemplo_evidnecia.pdf",
-                            "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/67ead23eaf630d6b0af9cc29.pdf"
-                            }],
             },
             "properties": {"device_properties": {"system": "Testing"}}
         }
         return metadata
 
-    def recibo_de_material(self, product_code, product_sku, product_name, warehouse_in, location_in, qty):
+    def recibo_de_material(self, warehouse_in, location_in):
         print('entra aq test_crea_recepcion_materiales')
         supplier_warehouse = TestStock.supplier_warehouse
         supplier_wh_location = TestStock.supplier_wh_location
@@ -196,10 +210,10 @@ class TestStock:
                 stock_obj.f['move_group']: [
                     {
                         stock_obj.Product.SKU_OBJ_ID: {
-                            stock_obj.Product.f['product_code']: product_code,
-                            stock_obj.Product.f['product_sku']: product_sku,
+                            stock_obj.Product.f['product_code']: TestStock.product_code,
+                            stock_obj.Product.f['product_sku']: TestStock.product_sku,
                             stock_obj.Product.f['product_name']: [
-                                product_name
+                                TestStock.product_name
                             ],
                             stock_obj.Product.f['sku_percontainer']: [
                                 1
@@ -207,15 +221,26 @@ class TestStock:
                         },
                         stock_obj.f['product_lot']: TestStock.product_lot,
                         stock_obj.f['inv_adjust_grp_status']: "todo",
-                        stock_obj.f['move_group_qty']: qty,
+                        stock_obj.f['move_group_qty']: TestStock.initial_move_qty,
+                    },
+                     {
+                        stock_obj.Product.SKU_OBJ_ID: {
+                            stock_obj.Product.f['product_code']: TestStock.product_code_2,
+                            stock_obj.Product.f['product_sku']: TestStock.product_sku_2,
+                            stock_obj.Product.f['product_name']: [
+                                TestStock.product_name_2
+                            ],
+                            stock_obj.Product.f['sku_percontainer']: [
+                                1
+                            ]
+                        },
+                        stock_obj.f['product_lot']: TestStock.product_lot,
+                        stock_obj.f['inv_adjust_grp_status']: "todo",
+                        stock_obj.f['move_group_qty']: TestStock.initial_move_qty_2,
                     }
                 ],
                 stock_obj.f['stock_status']: "to_do",
                 stock_obj.f['stock_move_comments']: f"Comentario pruebas unitarias: {stock_obj.today_str()}",
-                stock_obj.f['evidencia']: [{
-                            "file_name": "ejemplo_evidnecia.pdf",
-                            "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/67ead23eaf630d6b0af9cc29.pdf"
-                            }],
             },
             "folio":None, 
             "properties":{ "device_properties":{"system":"Testing"} }
