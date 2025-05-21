@@ -64,6 +64,10 @@ class TestStock:
     product_name_2 = "Fibra Condumex, Fibra Fiber Home, Fibra Huawei, Fibra ZTE"
     initial_move_qty_2 = 2000
 
+    ont_code = "1468270"
+    ont_sku = "F1468270"
+    ont_name = "ONT FIBRA"
+
     #initial_move_qty = 5
 
     def do_test_stock(self, product_code, sku, lot_number, warehouse, location, qty, extra_qty=0, sleep=True):
@@ -115,6 +119,12 @@ class TestStock:
         if sleep:
             time.sleep(5)
         form_id = stock_obj.FORM_INVENTORY_ID
+        print('form_id=',form_id)
+        print('product_code=',product_code)
+        print('sku  =',sku)
+        print('lot_number=',lot_number)
+        print('warehouse=',warehouse)
+        print('location=',location)
         stock_res_loc1 = stock_obj.get_invtory_record_by_product(form_id, product_code, sku, lot_number, warehouse, location)
 
         print('stock_res_loc1', stock_res_loc1)
@@ -259,10 +269,56 @@ class TestStock:
             "folio":None, 
             "properties":{ "device_properties":{"system":"Testing"} }
         }
-
-        # print('metadata', simplejson.dumps(metadata, indent=3))
         return metadata
-        
+    
+    def recibo_de_ont(self, product_code, product_sku, product_name, warehouse_in, location_in, qty):
+        print('entra aq test_crea_recepcion_materiales')
+        supplier_warehouse = TestStock.supplier_warehouse
+        supplier_wh_location = TestStock.supplier_wh_location
+        # warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location = self.get_warehouses()
+        metadata = {
+            "form_id": stock_obj.STOCK_IN_ONE_MANY_ONE,"geolocation": [],"start_timestamp": 1715787608.475,"end_timestamp": 1715788138.316,
+            "answers": {
+                stock_obj.f['grading_date']: fecha_datetime,
+                stock_obj.WH.WAREHOUSE_LOCATION_OBJ_ID: {
+                    stock_obj.WH.f['warehouse']: supplier_warehouse,
+                    stock_obj.WH.f['warehouse_location']: supplier_wh_location
+                },
+                stock_obj.WH.WAREHOUSE_LOCATION_DEST_OBJ_ID: {
+                    stock_obj.WH.f['warehouse_dest']: warehouse_in,
+                    stock_obj.WH.f['warehouse_location_dest']: location_in
+                },
+                stock_obj.f['move_group']: [
+                    {
+                        stock_obj.Product.SKU_OBJ_ID: {
+                            stock_obj.Product.f['product_code']: TestStock.ont_code,
+                            stock_obj.Product.f['product_sku']: TestStock.ont_sku,
+                            stock_obj.Product.f['product_name']: [
+                                TestStock.ont_name
+                            ],
+                            stock_obj.Product.f['sku_percontainer']: [
+                                1
+                            ]
+                        },
+                        stock_obj.f['inv_adjust_grp_status']: "todo",
+                    },
+                ],
+                stock_obj.f['stock_status']: "to_do",
+                stock_obj.f['stock_move_comments']: f"Comentario pruebas unitarias: {stock_obj.today_str()}",
+                stock_obj.mf['xls_file']: [{
+                            "file_name": "ONT_test.xlsx",
+                            "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/682d4d99ed7a3bd85bd32ac9.xlsx"
+                            # "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/682d4937d352be8d89cea22c.xlsx"
+                            }],
+                stock_obj.f['evidencia']: [{
+                            "file_name": "ejemplo_evidnecia.pdf",
+                            "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/67ead23eaf630d6b0af9cc29.pdf"
+                            }],
+            },
+            "folio":None, 
+            "properties":{ "device_properties":{"system":"Testing"} }
+        }
+        return metadata        
 
     # def test_create_inventory_adjustment(self):
     #     metadata = {
