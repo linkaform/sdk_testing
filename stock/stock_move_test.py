@@ -55,20 +55,14 @@ class TestStock(TestStock):
         qty = TestStock.initial_move_qty
         metadata = self.recibo_de_material(product_code, product_sku, product_name, warehouse_in, location_in, qty)
         res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
-        print('res_create',res_create)
         assert res_create['status_code'] == 201
         time.sleep(1)
-        print('TERMINO ----test_crea_recepcion_materiales---')
         TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
         TestStock.prod_id_1 = res_create.get('json', {}).get('id')
         record = stock_obj.get_record_by_id(TestStock.prod_id_1)
         answers = record['answers']
-        print('answers', answers)
         stock_move = answers[stock_obj.f['move_group']]
-        print('stock_move=', stock_move)
         status = stock_move[0][stock_obj.f['stock_move_status']]
-        print('status=', status)
-        print('TestStock.product_lot=', TestStock.product_lot)
         assert status == 'done'
         self.do_test_stock(product_code, product_sku, TestStock.product_lot, warehouse_in, location_in, qty)
 
@@ -93,14 +87,10 @@ class TestStock(TestStock):
             move_qty,
             move_qty2)
         res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-        print('res_create', res_create)
+        assert res_create['status_code'] == 201
         qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_to, location_to, move_qty)
-        print('qty', qty)
-        print('move_qty', move_qty)
         TestStock.stock_move_wh_1_qty = move_qty
         assert qty == move_qty
         cant_restante = TestStock.initial_move_qty - move_qty
-        print('cant_restante', cant_restante)
         qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_from, location_from, cant_restante )
-        print(f'Quedan en {warehouse_from} qty', qty)
         assert qty  == cant_restante

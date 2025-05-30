@@ -47,6 +47,9 @@ fecha_datetime = fecha.strftime('%Y-%m-%d %H:%M:%S')
 class TestStock(TestStock):
 
     def test_move_stock_in(self):
+        stock_obj.set_mongo_connections()
+        stock_obj.ont_cr.delete_many({})
+        stock_obj.records_cr.delete_many({'form_id':{'$in':[133063,133061,133064]}})
         warehouse_in = TestStock.stock_warehouse_1
         location_in = TestStock.stock_warehouse_location_1
         product_code = TestStock.ont_code
@@ -55,15 +58,12 @@ class TestStock(TestStock):
         qty = 1
         metadata = self.recibo_de_ont(product_code, product_sku, product_name, warehouse_in, location_in, qty)
         res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
-        print('res_create',res_create)
         assert res_create['status_code'] == 201
         time.sleep(1)
-        print('TERMINO ----test_crea_recepcion_materiales---')
         TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
         TestStock.prod_id_1 = res_create.get('json', {}).get('id')
         record = stock_obj.get_record_by_id(TestStock.prod_id_1)
         answers = record['answers']
-        print('answers', answers)
         stock_move = answers[stock_obj.f['move_group']]
         for move in stock_move:
             prod_catalog = move.get(stock_obj.Product.SKU_OBJ_ID)
@@ -71,43 +71,44 @@ class TestStock(TestStock):
             product_sku = prod_catalog.get(stock_obj.f['sku'])
             product_lot = move.get(stock_obj.f['product_lot'])
             qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_in, location_in, 1 )
-        print('stock_move=', stock_move)
         status = stock_move[0][stock_obj.f['stock_move_status']]
-        print('status=', status)
         assert status == 'done'
 
+    def test_move_stock_in_ont_repetidas(self):
+        warehouse_in = TestStock.stock_warehouse_1
+        location_in = TestStock.stock_warehouse_location_1
+        product_code = TestStock.ont_code
+        product_sku = TestStock.ont_sku
+        product_name = TestStock.ont_name
+        qty = 1
+        metadata = self.recibo_de_ont(product_code, product_sku, product_name, warehouse_in, location_in, qty)
+        res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
+        assert res_create['status_code'] == 400
         
             
 
-    # def test_move_stock_warehouse(self):
-    #     warehouse_from = TestStock.stock_warehouse_1
-    #     location_from = TestStock.stock_warehouse_location_1
-    #     # stock_location_1_qty = TestStock.stock_location_1_qty
-    #     # print('stock_location_1_qty', stock_location_1_qty)
-    #     warehouse_to = TestStock.stock_warehouse_to
-    #     warehouse_to = TestStock.stock_warehouse_location_to
-    #     location_to = 'Almacen Cobre'
-    #     move_qty = 300
-    #     move_qty2 = 400
-    #     product_code = TestStock.product_code
-    #     product_sku = TestStock.product_sku
-    #     product_name = TestStock.product_name
-    #     product_lot = TestStock.product_lot
-    #     metadata = self.move_metadata(
-    #         product_code, 
-    #         product_sku, 
-    #         product_lot, warehouse_from, location_from, warehouse_to, location_to, 
-    #         move_qty,
-    #         move_qty2)
-    #     res_create = stock_obj.lkf_api.post_forms_answers(metadata)
-    #     print('res_create', res_create)
-    #     qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_to, location_to, move_qty)
-    #     print('qty', qty)
-    #     print('move_qty', move_qty)
-    #     TestStock.stock_move_wh_1_qty = move_qty
-    #     assert qty == move_qty
-    #     cant_restante = TestStock.initial_move_qty - move_qty
-    #     print('cant_restante', cant_restante)
-    #     qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_from, location_from, cant_restante )
-    #     print(f'Quedan en {warehouse_from} qty', qty)
-    #     assert qty  == cant_restante
+    def test_move_stock_warehouse(self):
+        warehouse_from = TestStock.stock_warehouse_1
+        location_from = TestStock.stock_warehouse_location_1
+        warehouse_to = TestStock.stock_warehouse_to
+        warehouse_to = TestStock.stock_warehouse_location_to
+        location_to = 'Almacen Cobre'
+        move_qty = 1
+        move_qty2 = 1
+        product_code = TestStock.ont_code
+        product_sku = TestStock.ont_sku
+        product_name = TestStock.ont_name
+        product_lot = None
+        metadata = self.salida_ont_metadata(
+            product_code, 
+            product_sku, 
+            product_lot, warehouse_from, location_from, warehouse_to, location_to, 
+            move_qty,
+            move_qty2)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_to, location_to, move_qty)
+        TestStock.stock_move_wh_1_qty = move_qty
+        assert qty == move_qty
+        cant_restante = TestStock.initial_move_qty - move_qty
+        qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_from, location_from, cant_restante )
+        assert qty  == cant_restante
