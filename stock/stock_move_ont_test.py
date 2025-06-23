@@ -204,26 +204,26 @@ class TestStock(TestStock):
             print('qty', qty)
             assert qty  == 0
 
-    # def test_move_stock_in_10024(self):
-        # warehouse_in = TestStock.stock_warehouse_1
-        # location_in = TestStock.stock_warehouse_location_1
-        # product_code = TestStock.ont_code
-        # product_sku = TestStock.ont_sku
-        # product_name = TestStock.ont_name
-        # file_url = "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/6850eed4dc61bfed1f80e43b.xlsx"
-        # metadata = self.recibo_de_ont(product_code, product_sku, product_name, warehouse_in, location_in, file_url=file_url)
-        # res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
-        # assert res_create['status_code'] == 201
-        # TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
-        # TestStock.prod_id_1 = res_create.get('json', {}).get('id')
-        # record = stock_obj.get_record_by_id(TestStock.prod_id_1)
-        # answers = record['answers']
-        # stock_move = answers[stock_obj.f['move_group']]
-        # # for move in stock_move:
-        # #     prod_catalog = move.get(stock_obj.Product.SKU_OBJ_ID)
-        # #     product_code = prod_catalog.get(stock_obj.f['product_code'])
-        # #     product_sku = prod_catalog.get(stock_obj.f['sku'])
-        # #     product_lot = move.get(stock_obj.f['product_lot'])
-        # #     qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_in, location_in, 1 )
-        # status = stock_move[0][stock_obj.f['stock_move_status']]
-        # assert status == 'done'
+    def test_move_stock_in_10024(self):
+        warehouse_in = TestStock.stock_warehouse_1
+        location_in = TestStock.stock_warehouse_location_1
+        product_code = TestStock.ont_code
+        product_sku = TestStock.ont_sku
+        product_name = TestStock.ont_name
+        file_url = "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/6850eed4dc61bfed1f80e43b.xlsx"
+        metadata = self.recibo_de_ont(product_code, product_sku, product_name, warehouse_in, location_in, file_url=file_url)
+        res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
+        assert res_create['status_code'] == 201
+        TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
+        TestStock.prod_id_1 = res_create.get('json', {}).get('id')
+        record = stock_obj.get_record_by_id(TestStock.prod_id_1)
+        answers = record['answers']
+        stock_move = answers[stock_obj.f['move_group']]
+        # for move in stock_move:
+        #     prod_catalog = move.get(stock_obj.Product.SKU_OBJ_ID)
+        #     product_code = prod_catalog.get(stock_obj.f['product_code'])
+        #     product_sku = prod_catalog.get(stock_obj.f['sku'])
+        #     product_lot = move.get(stock_obj.f['product_lot'])
+        #     qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_in, location_in, 1 )
+        status = stock_move[0][stock_obj.f['stock_move_status']]
+        assert status == 'done'
