@@ -81,6 +81,7 @@ class TestStock:
         for rec in catalog_records:
             catalog_records_qty = rec.get(stock_obj.f['actuals'])
         assert qty == catalog_records_qty
+        print('TODO habilitar assert')
         return qty
 
     def create_warehouse(self, warehouse_name):
@@ -113,11 +114,9 @@ class TestStock:
         # print('sku',sku)
         # Va a revisar el almacen de location 1
         if sleep:
-            time.sleep(5)
+            time.sleep(2)
         form_id = stock_obj.FORM_INVENTORY_ID
         stock_res_loc1 = stock_obj.get_invtory_record_by_product(form_id, product_code, sku, lot_number, warehouse, location)
-        stock_res_loc1 = stock_obj.get_invtory_record_by_product(form_id, product_code, sku, lot_number, warehouse, location)
-        acutalas_1 = stock_res_loc1['answers'][stock_obj.f['actuals']]
         acutalas_1 = stock_res_loc1['answers'][stock_obj.f['actuals']]
         assert acutalas_1 == int(qty+extra_qty)
         calc_actuals = stock_obj.get_product_stock(product_code, sku=sku, lot_number=lot_number, warehouse=warehouse, location=location)
@@ -138,7 +137,6 @@ class TestStock:
             stock_obj.f['warehouse_location']:location,
         }
         mango_query['selector']['answers'].update(query)
-        print('mango_query=', simplejson.dumps(mango_query, indent=3))
         if False:
             #TODO gargabe collector
             mango_query['selector']['answers'].update({stock_obj.f['inventory_status']: "Done"})
@@ -194,6 +192,10 @@ class TestStock:
     def salida_ont_metadata(self, product_code, product_sku, product_lot, warehouse_from, location_from, warehouse_to, location_to, qty, qty2, **kwargs):
         product_code_2 = kwargs.get('product_code_2', TestStock.product_code_2)
         product_sku_2 = kwargs.get('product_sku_2', TestStock.product_sku_2)
+        if kwargs.get('file_url'):
+            file_url = kwargs.get('file_url')
+        else:
+            file_url = "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/682d4d99ed7a3bd85bd32ac9.xlsx"
         metadata = {
             "form_id": stock_obj.STOCK_ONE_MANY_ONE, "geolocation": [], "start_timestamp": 1715787608.475, "end_timestamp": 1715788138.316,
             "answers": {
@@ -226,7 +228,7 @@ class TestStock:
                 stock_obj.f['observaciones_move_stock']: 'Pruebas Unitarias Salidas de ONT',
                 stock_obj.mf['xls_file']: [{
                             "file_name": "ONT_test.xlsx",
-                            "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/682d4d99ed7a3bd85bd32ac9.xlsx"
+                            "file_url": file_url
                             # "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/682d4937d352be8d89cea22c.xlsx"
                             }],
                 stock_obj.f['evidencia_salida']: [{
@@ -238,12 +240,15 @@ class TestStock:
         }
         return metadata
 
-    def recibo_de_material(self, product_code, product_sku, product_name, warehouse_in, location_in, qty):
+    def recibo_de_material(self, product_code, product_sku, product_name, warehouse_in, location_in, qty, product_lot=None):
         print('entra aq test_crea_recepcion_materiales')
         supplier_warehouse = TestStock.supplier_warehouse
         supplier_wh_location = TestStock.supplier_wh_location
         # warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location = self.get_warehouses()
-        TestStock.product_lot = self.get_product_lot()
+        if not product_lot:
+            TestStock.product_lot = self.get_product_lot()
+        else:
+            TestStock.product_lot = product_lot
         metadata = {
             "form_id": stock_obj.STOCK_IN_ONE_MANY_ONE,"geolocation": [],"start_timestamp": 1715787608.475,"end_timestamp": 1715788138.316,
             "answers": {
@@ -300,8 +305,7 @@ class TestStock:
         }
         return metadata
     
-    def recibo_de_ont(self, product_code, product_sku, product_name, warehouse_in, location_in, qty):
-        print('entra aq test_crea_recepcion_materiales')
+    def recibo_de_ont(self, product_code, product_sku, product_name, warehouse_in, location_in, file_url=None):
         supplier_warehouse = TestStock.supplier_warehouse
         supplier_wh_location = TestStock.supplier_wh_location
         # warehouse_in, warehouse_in_location, warehouse_from, warehouse_from_location = self.get_warehouses()
@@ -336,8 +340,7 @@ class TestStock:
                 stock_obj.f['stock_move_comments']: f"Comentario pruebas unitarias: {stock_obj.today_str()}",
                 stock_obj.mf['xls_file']: [{
                             "file_name": "ONT_test.xlsx",
-                            "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/682d4d99ed7a3bd85bd32ac9.xlsx"
-                            # "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/71202/6650c41a967ad190e6a76dd3/682d4937d352be8d89cea22c.xlsx"
+                            "file_url": file_url
                             }],
                 stock_obj.f['evidencia']: [{
                             "file_name": "ejemplo_evidnecia.pdf",

@@ -47,13 +47,17 @@ fecha_datetime = fecha.strftime('%Y-%m-%d %H:%M:%S')
 class TestStock(TestStock):
 
     def test_move_stock_in(self):
+        """
+        Prueba movimiento de entrada a stock
+        """
         warehouse_in = TestStock.stock_warehouse_1
         location_in = TestStock.stock_warehouse_location_1
         product_code = TestStock.product_code
         product_sku = TestStock.product_sku
         product_name = TestStock.product_name
         qty = TestStock.initial_move_qty
-        metadata = self.recibo_de_material(product_code, product_sku, product_name, warehouse_in, location_in, qty)
+        TestStock.product_lot1 = self.get_product_lot()
+        metadata = self.recibo_de_material(product_code, product_sku, product_name, warehouse_in, location_in, qty, product_lot=TestStock.product_lot1)
         res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
         assert res_create['status_code'] == 201
         time.sleep(1)
@@ -67,6 +71,9 @@ class TestStock(TestStock):
         self.do_test_stock(product_code, product_sku, TestStock.product_lot, warehouse_in, location_in, qty)
 
     def test_move_stock_warehouse(self):
+        """
+        Prueba movimiento de  stock entre almacenes
+        """
         warehouse_from = TestStock.stock_warehouse_1
         location_from = TestStock.stock_warehouse_location_1
         # stock_location_1_qty = TestStock.stock_location_1_qty
@@ -94,3 +101,67 @@ class TestStock(TestStock):
         cant_restante = TestStock.initial_move_qty - move_qty
         qty = self.do_test_stock(product_code, product_sku, product_lot, warehouse_from, location_from, cant_restante )
         assert qty  == cant_restante
+
+    def test_move_stock_warehouse_too_many(self):
+        """
+        Prueba movimiento de stock con cantidad mayor a la disponible
+        """
+        warehouse_from = TestStock.stock_warehouse_1
+        location_from = TestStock.stock_warehouse_location_1
+        # stock_location_1_qty = TestStock.stock_location_1_qty
+        # print('stock_location_1_qty', stock_location_1_qty)
+        warehouse_to = TestStock.stock_warehouse_to
+        warehouse_to = TestStock.stock_warehouse_location_to
+        location_to = 'Almacen Cobre'
+        move_qty = 6000
+        move_qty2 = 7000
+        product_code = TestStock.product_code
+        product_sku = TestStock.product_sku
+        product_name = TestStock.product_name
+        product_lot = TestStock.product_lot
+        metadata = self.move_metadata(
+            product_code, 
+            product_sku, 
+            product_lot, warehouse_from, location_from, warehouse_to, location_to, 
+            move_qty,
+            move_qty2)
+        res_create = stock_obj.lkf_api.post_forms_answers(metadata)
+        assert res_create['status_code'] == 400
+
+    def test_move_stock_in_sum(self):
+        """
+        Prueba movimiento de entrada a stock sumando
+        """
+        warehouse_in = TestStock.stock_warehouse_1
+        location_in = TestStock.stock_warehouse_location_1
+        product_code = TestStock.product_code
+        product_sku = TestStock.product_sku
+        product_name = TestStock.product_name
+        qty = TestStock.initial_move_qty
+        metadata = self.recibo_de_material(product_code, product_sku, product_name, warehouse_in, location_in, qty, product_lot=TestStock.product_lot1)
+        metadata['answers'][stock_obj.f['move_group']].append({
+            stock_obj.Product.SKU_OBJ_ID: {
+                stock_obj.Product.f['product_code']: TestStock.product_code,
+                stock_obj.Product.f['product_sku']: TestStock.product_sku,
+                stock_obj.Product.f['product_name']: [
+                    TestStock.product_name
+                ],
+                stock_obj.Product.f['sku_percontainer']: [
+                    1
+                ]
+            },
+            stock_obj.f['product_lot']: 'LotePCI1',
+            stock_obj.f['inv_adjust_grp_status']: "todo",
+            stock_obj.f['move_group_qty']: TestStock.initial_move_qty,
+        })
+        res_create =  stock_obj.lkf_api.post_forms_answers(metadata)
+        assert res_create['status_code'] == 201
+        time.sleep(1)
+        TestStock.prod_folio_1 = res_create.get('json', {}).get('folio')
+        TestStock.prod_id_1 = res_create.get('json', {}).get('id')
+        record = stock_obj.get_record_by_id(TestStock.prod_id_1)
+        answers = record['answers']
+        stock_move = answers[stock_obj.f['move_group']]
+        status = stock_move[0][stock_obj.f['stock_move_status']]
+        assert status == 'done'
+        #self.do_test_stock(product_code, product_sku, TestStock.product_lot, warehouse_in, location_in, qty)
