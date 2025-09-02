@@ -500,7 +500,7 @@ class TestAccesos:
             print('No eres ganador.')
 
     def test_number_one(self):
-        logging.info('Arranca test #1: Se simula un recorrido completo en offline con 5 checks.')
+        logging.info('Arranca test #1: Se simula un recorrido completo en offline con 5 checks que se realizaron hace mas de una hora.')
         
         checks = [
             {
@@ -598,3 +598,21 @@ class TestAccesos:
                 )
             # Esperar a que todos terminen (opcional)
             concurrent.futures.wait(futures)
+
+    def test_number_two(self):
+        logging.info('Arranca test #2: Se hace un check posterior a un recorrido que ya tiene mas de una hora de su ultimo check.')
+        answers = {
+            "681144fb0d423e25b42818d3": [], 
+            "681fa6a8d916c74b691e174b": "continuar_siguiente_punto_de_inspecci\u00f3n", 
+            "66a83a77cfed7f342775c161": {
+                "663e5c57f5b8a7ce8211ed0b": ["Planta Monterrey"], 
+                "663e5e68f5b8a7ce8211ed18": ["Almacen"], 
+                "663e5d44f5b8a7ce8211ed0f": ["Almac\u00e9n de inventario"], 
+                "6762f7b0922cc2a2f57d4044": "687e899c3c2cab8e6307f679", 
+                "6763096aa99cee046ba766ad": []
+            }
+        }
+        folio = "4159-10"
+        record_id = "68b77e094d3341150d152f21"
+        timestamp = 1756853534.814
+        self.rondines_cache(timestamp, answers, record_id, folio)
