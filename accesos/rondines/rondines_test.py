@@ -250,12 +250,12 @@ class TestAccesos:
         
         format_list_incidencias = []
         for incidencia in rondin.get('bitacora_rondin_incidencias', []):
-            inc = incidencia.get(self.accesos.f['tipo_de_incidencia'])
+            inc = incidencia.get(self.accesos.f['incidencia'])
             if inc:
-                incidencia.pop(self.accesos.f['tipo_de_incidencia'], None)
+                incidencia.pop(self.accesos.f['incidencia'], None)
                 incidencia.update({
                     self.accesos.LISTA_INCIDENCIAS_CAT_OBJ_ID: {
-                        self.accesos.f['tipo_de_incidencia']: inc
+                        self.accesos.f['incidencia']: inc
                     }
                 })
                 format_list_incidencias.append(incidencia)
