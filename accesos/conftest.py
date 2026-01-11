@@ -7,7 +7,9 @@ def accesos_no_api():
     """
     Accesos SIN pegar a API / prod
     """
-    return Accesos(settings, use_api=False)
+    acc = Accesos(settings, use_api=False)
+    acc.user = {"user_id": 10}
+    return acc
 
 @pytest.fixture
 def accesos_api():
@@ -16,5 +18,4 @@ def accesos_api():
     """
     acc = Accesos(settings, use_api=True)
     acc.user = {"user_id": 10}
-    # acc.employee_fields = {"user_id_id": "user_id"}
     return acc
