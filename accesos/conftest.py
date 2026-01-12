@@ -4,18 +4,18 @@ from account_settings import settings
 
 @pytest.fixture
 def accesos_no_api():
-    """
-    Accesos SIN pegar a API / prod
-    """
     acc = Accesos(settings, use_api=False)
-    acc.user = {"user_id": 10}
+    acc.user = {"user_id": 10, "email": "seguridad@linkaform.com"}
     return acc
 
 @pytest.fixture
 def accesos_api():
-    """
-    Accesos con llamadas reales a API
-    """
     acc = Accesos(settings, use_api=True)
-    acc.user = {"user_id": 10}
+    acc.user = {"user_id": 10, "email": "seguridad@linkaform.com"}
+    return acc
+
+@pytest.fixture
+def accesos_api_15864():
+    acc = Accesos(settings, use_api=True)
+    acc.user = {"user_id": 15864, "email": "juan.escutia@linkaform.com"}
     return acc
