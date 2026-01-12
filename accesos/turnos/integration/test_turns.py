@@ -1,4 +1,4 @@
-from lkf_modules.accesos.items.scripts.Accesos.turnos import get_turn_data, start_turn, end_turn
+from lkf_modules.accesos.items.scripts.Accesos.accesos_domain import get_turn_data, start_turn, end_turn
 from .fixtures import accesos_turnos_api, accesos_turnos_api_15864
 import logging
 
