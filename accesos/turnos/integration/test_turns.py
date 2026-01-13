@@ -1,4 +1,4 @@
-from lkf_modules.accesos.items.scripts.Accesos.accesos_domain import get_turn_data, start_turn, end_turn
+from lkf_modules.accesos.items.scripts.Accesos.accesos_domain import get_shift_data, do_checkin, do_checkout
 from .fixtures import accesos_turnos_api, accesos_turnos_api_15864
 import logging
 
@@ -16,7 +16,7 @@ def test_turn_happy_path(accesos_turnos_api):
     checkin_id = None
     turn_closed = False
 
-    turn_data = get_turn_data(accesos_turnos_api, {
+    turn_data = get_shift_data(accesos_turnos_api, {
         "location": "Planta Monterrey", 
         "area": "Caseta Principal"
     })
@@ -24,7 +24,7 @@ def test_turn_happy_path(accesos_turnos_api):
     logging.info('================> Paso 1: COMPLETADO')
 
     try:
-        start_turn_data = start_turn(accesos_turnos_api, {
+        start_turn_data = do_checkin(accesos_turnos_api, {
             "location": "Planta Monterrey",
             "area": "Caseta Principal",
             "employee_list": [],
@@ -45,14 +45,14 @@ def test_turn_happy_path(accesos_turnos_api):
         assert checkin_id != "", "Error al iniciar turno: checkin_id es vacio"
         logging.info('================> Paso 2: COMPLETADO')
 
-        turn_data = get_turn_data(accesos_turnos_api, {
+        turn_data = get_shift_data(accesos_turnos_api, {
             "location": "Planta Monterrey",
             "area": "Caseta Principal",
         })
         assert isinstance(turn_data, dict), "Error al obtener turno: no es un diccionario"
         logging.info('================> Paso 3: COMPLETADO')
 
-        end_turn_data = end_turn(accesos_turnos_api, {
+        end_turn_data = do_checkout(accesos_turnos_api, {
             "location": "Planta Monterrey", 
             "area": "Caseta Principal",
             "checkin_id": checkin_id, # <--- Obligatorio
@@ -71,7 +71,7 @@ def test_turn_happy_path(accesos_turnos_api):
     finally:
         if checkin_id and not turn_closed:
             logging.info("Cleanup: cerrando turno por seguridad")
-            end_turn(accesos_turnos_api, {
+            do_checkout(accesos_turnos_api, {
                 "location": "Planta Monterrey",
                 "area": "Caseta Principal",
                 "checkin_id": checkin_id,
@@ -97,7 +97,7 @@ def test_multiple_guards_same_booth_sequential_checkout(accesos_turnos_api, acce
     turn_closed_2 = False
 
     try:
-        start_turn_data_10 = start_turn(accesos_turnos_api, {
+        start_turn_data_10 = do_checkin(accesos_turnos_api, {
             "location": "Planta Monterrey",
             "area": "Caseta Principal",
             "employee_list": [],
@@ -118,7 +118,7 @@ def test_multiple_guards_same_booth_sequential_checkout(accesos_turnos_api, acce
         assert checkin_id_1 != "", "Error al iniciar turno - usuario 10: checkin_id es vacio"
         logging.info('================> Paso 1: COMPLETADO')
 
-        start_turn_data_15864 = start_turn(accesos_turnos_api_15864, {
+        start_turn_data_15864 = do_checkin(accesos_turnos_api_15864, {
             "location": "Planta Monterrey",
             "area": "Caseta Principal",
             "employee_list": [],
@@ -134,7 +134,7 @@ def test_multiple_guards_same_booth_sequential_checkout(accesos_turnos_api, acce
         # assert start_turn_data_15864.get("registro_de_asistencia") == "Correcto", "Error al iniciar turno - usuario 15864: registro_de_asistencia != Correcto"
         logging.info('================> Paso 2: COMPLETADO')
 
-        end_turn_data_10 = end_turn(accesos_turnos_api, {
+        end_turn_data_10 = do_checkout(accesos_turnos_api, {
             "location": "Planta Monterrey", 
             "area": "Caseta Principal",
             "checkin_id": checkin_id_1, # <--- Obligatorio para cerrar turno abierto
@@ -151,7 +151,7 @@ def test_multiple_guards_same_booth_sequential_checkout(accesos_turnos_api, acce
         turn_closed_1 = True
         logging.info('================> Paso 3: COMPLETADO')
 
-        end_turn_data_15864 = end_turn(accesos_turnos_api_15864, {
+        end_turn_data_15864 = do_checkout(accesos_turnos_api_15864, {
             "location": "Planta Monterrey", 
             "area": "Caseta Principal",
             "checkin_id": checkin_id_1, # <--- Obligatorio para cerrar turno abierto
@@ -171,7 +171,7 @@ def test_multiple_guards_same_booth_sequential_checkout(accesos_turnos_api, acce
     finally:
         if checkin_id_1 and not turn_closed_1:
             logging.info("Cleanup: cerrando turno por seguridad")
-            end_turn(accesos_turnos_api, {
+            do_checkout(accesos_turnos_api, {
                 "location": "Planta Monterrey",
                 "area": "Caseta Principal",
                 "checkin_id": checkin_id_1,
@@ -181,7 +181,7 @@ def test_multiple_guards_same_booth_sequential_checkout(accesos_turnos_api, acce
             })
         if checkin_id_1 and not turn_closed_2:
             logging.info("Cleanup: cerrando turno por seguridad")
-            end_turn(accesos_turnos_api_15864, {
+            do_checkout(accesos_turnos_api_15864, {
                 "location": "Planta Monterrey",
                 "area": "Caseta Principal",
                 "checkin_id": checkin_id_1,
