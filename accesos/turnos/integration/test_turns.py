@@ -1,4 +1,4 @@
-from lkf_modules.accesos.items.scripts.Accesos.accesos_domain import get_shift_data, do_checkin, do_checkout
+from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import get_shift_data, do_checkin, do_checkout
 from .fixtures import accesos_turnos_api, accesos_turnos_api_15864
 import logging
 

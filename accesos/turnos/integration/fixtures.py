@@ -1,5 +1,5 @@
 import pytest
-from lkf_modules.accesos.items.scripts.Accesos.accesos_domain import Accesos
+from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import Accesos
 from account_settings import settings
 
 @pytest.fixture
