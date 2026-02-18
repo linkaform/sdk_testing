@@ -16,29 +16,13 @@ def today_str(tz_name='America/Monterrey', date_format='date'):
 current_time = datetime.now().strftime("%H:%M")
 today = today_str(date_format='datetime')
 
-LOCATION_AREAS_LKF = {
-    'Linkaform Ciudad de México':['Caseta Ciudad de México', 'Centro de Control', 'Cocina de Empleados', 'Lavandería', 'Recepción'],
-    'Linkaform Yucatán':['Antenas', 'Caseta Yucatán', 'Piscina', 'Recepción', 'Restaurante', 'Salón de Eventos', 'Spa Unisex'],
-    'Linkaform Tamaulipas':['Almacén de Materia Prima', 'Canchas de Voleibol', 'Caseta Tamaulipas', 'Comedor de empleados', 'Departamento RH', 'Estacionamiento', 'Estacionamiento de Estadio Marte R. Gomez', 'Lobby'],
-    'Linkaform Puebla': ['Auditorio de Eventos', 'Caseta Puebla', 'Lobby', 'Recursos de Agua Potable'],
-    'Linkaform Mty':['Almacén de Equipos', 'Avispones', 'Bar Pared Sur Ventana A', 'Bar Parted Sur ventana B', 'Baño Hombres', 'Baño Mujeres', 'Baño Officina', 'Bodega Herramienta ', 'Bodega Herramientas Codigo B', 'Boiler Maria', 'Bolier Principal', 'Buzon', 'Caja Himel Boiler', 'Carpinteria', 'Casa del Arbol', 'Caseta Monterrey', 'Centeo de Carga Bomba', 'Centro de Carga A', 'Centro de Carga Puerta B', 'Clima Central', 'Clima Cuarto de Servicio', 'Control de Riego', 'Cuarto Herramientas Puera', 'Dado Cara 5', 'Dado Lado 1', 'Dado Lado 2', 'Demo Calentador', 'Demo Lamina', 'Entrada Principal', 'Estacionamiento', 'Estación Meteorológica', 'Huerto Aguacate', 'Lado 4 de dado', 'Medidor de Agua', 'Medidor de Luz', 'Oficina JP', 'Oficina Principal', 'Porton de Entrada Principal puerta A', 'Porton de Entrada Puerta B', 'Pruebas Madera', 'Recepción', 'Restaurante', 'Sala de Conferencias', 'Señalamiento', 'Sink - Boiler Puerta A', 'Sink - Boiler Puerta B', 'Subestacion', 'Tinaco Tortugas'],
-    'Linkaform Jalisco':['Caseta Jalisco', 'Recepción', 'Restaurante'],
-    'Linkaform Oaxaca': ['Bar Luces', 'Baño de Mujeres', 'Biblioteca', 'Caseta Oaxaca', 'Lobby']
-}
-
 LOCATION_AREAS = {
-    'Edificio CDMX':['Caseta seguridad principal', 'Comedor empleados 2', 'Estacionamiento A', 'Estacionamiento A'],
-    'Planta Guadalajara': [],
-    'Planta Monterrey': ['Almacén de inventario', 'Antenas', 'Caseta 1 - Mty', 'Caseta 2 - Mty', 'Caseta 6 Poniente', 'Caseta Principal', 'Cuarto MC', 'Recursos de agua potable', 'Recursos eléctricos', 'Sala de Juntas Planta Baja'],
-    'Litoprocess': ['Sala de Juntas'],
-    'Planta Durango':  ['Caseta 2 - Dro', 'Caseta Principal -Dro', 'Cuarto de servidoress'],
+    'Litoprocess':['Almacen de producto terminado', 'Almacen de residuos peligrosos', 'Almacen general', 'Basura general', 'Báscula andenes', 'Caseta Anden', 'Caseta Oficinas', 'Comedor', 'Comedor general', 'Comedor proveedores', 'Digital', 'Direccion', 'Embarques', 'Estacionamiento externo', 'Estacionamiento principal', 'Laboratorio de pintura', 'Litografia', 'Lockers hombres', 'Lockers mujeres', 'Mezannine', 'Offset', 'Oficina de dirección de operaciones', 'Oficina de dirección general', 'Oficina de presidencia', 'Oficinas', 'Oficinas compras', 'Oficinas generales', 'Oficinas ventas', 'Patio de maniobras', 'Preprensa', 'Preprensa', 'Producción', 'Proveedores', 'Recepción', 'Recepción de Materia Prima', 'Residuos peligrosos', 'Roof Garden', 'Sala de Capacitación', 'Sala de Juntas', 'Servicio medico', 'Sistemas', 'Ventas', 'Viruta', 'Zona de Fumadores'],
 }
 
+ubicacion = list(LOCATION_AREAS.keys())[0]
 
-LOCATION_AREAS = {
-    'Corporativo Tiendas 3B':['Entrada caseta principal', 'Estacionamiento', 'Lobby', 'Oficinas Administrativas', 'Recepción', 'Sala de juntas planta baja'], 'Visita_a': ['Administración Tiendas 3B', 'Andrea Bustos Carranza', 'Enrique Iván Delgado Ayala', 'Giselle Jocelyn Mayorga Ruiz', 'Janeth Itzel Carbajal Estrella', 'Jessica Marsha Meza Vargas', 'Martín de Jesús Romero Chávez', 'Rolando Muñiz Campos', 'Zurisadai Camacho Contreras'],
-}
-
+account_id = 29572
 
 PASE = {
     "selected_visita_a": "",
@@ -48,8 +32,7 @@ PASE = {
     "telefono": "+521234567890",
     "ubicacion": "Planta Monterrey",
     "ubicaciones": [
-      "Planta Monterrey",
-      "Planta Durango"
+      ubicacion,
     ],
     "tema_cita": "Pruebas Automaticas",
     "descripcion": "Comenatrio de Pruebas",
@@ -88,76 +71,24 @@ PASE = {
     "created_from": "web"
   }
 
-PASE_FECHA_FIJA_OLD = {
-    "selected_visita_a": "",
-    "nombre": "Pruebas Fecha Fija",
-    "empresa": "Empresa de Pruebas",
-    "email": "pruebas@clave10.com",
-    "telefono": "+521234567890",
-    "ubicacion": "Planta Monterrey",
-    "ubicaciones": [
-      "Planta Monterrey",
-      "Planta Durango"
-    ],
-    "tema_cita": "Pruebas Automaticas",
-    "descripcion": "Comenatrio de Pruebas",
-    "perfil_pase": "Visita General",
-    "status_pase": "Proceso",
-    "visita_a": ["Emiliano Zapata",],
-    "custom": True,
-    "link": {
-      "link": "https://web.clave10.com/dashboard/pase-update",
-      "docs": [
-        "agregarFoto",
-        "agregarIdentificacion"
-      ],
-      "creado_por_id": 10,
-      "creado_por_email": "seguridad@linkaform.com"
-    },
-    "enviar_correo_pre_registro": [
-      "enviar_correo_pre_registro",
-      "enviar_sms_pre_registro"
-    ],
-    "tipo_visita_pase": "fecha_fija",
-    "fechaFija": "",
-    "fecha_desde_visita": "2026-02-06 00:00:00",
-    "config_dia_de_acceso": "cualquier_día",
-    "config_dias_acceso": [],
-    "config_limitar_acceso": 3,
-    "areas": [],
-    "comentarios": [],
-    "enviar_pre_sms": {
-      "from": "enviar_pre_sms",
-      "mensaje": "SOY UN MENSAJE",
-      "numero": "+521234567890"
-    },
-    "todas_las_areas": False,
-    "created_from": "web"
-  }
-
-
 PASE_FECHA_FIJA = {"access_pass": 
     {"created_from":"web",
-    # "selected_visita_a":"",
     "nombre":f"Pruebas Fecha Fija {current_time}",
     "empresa":"Clave10",
     "email":"pruebas@clave10.com",
     "telefono":"+52811500000",
-    # "ubicacion":"Corporativo Tiendas 3B",
-    "ubicaciones":["Corporativo Tiendas 3B"],
+    "ubicaciones":[ubicacion],
     "tema_cita":"Pruebas",
     "descripcion":"Descripcion Pruebas",
     "perfil_pase":"Visita General",
     "status_pase":"Proceso",
     "visita_a":["Usuario Actual"],
-    # "custom":True,
     "link":{"link":"https://web.clave10.com/dashboard/pase-update",
     "docs":["agregarIdentificacion","agregarFoto"],
     "creado_por_id":29909,
     "creado_por_email":"jme@tiendas3b.com"},
     "enviar_correo_pre_registro":["enviar_sms_pre_registro","enviar_correo_pre_registro"],
     "tipo_visita_pase":"fecha_fija",
-    # "fechaFija":"2026-02-17 20:00:00",
     "fecha_desde_visita":today,
     "fecha_desde_hasta":"",
     "config_dia_de_acceso":"cualquier_día",
@@ -167,18 +98,9 @@ PASE_FECHA_FIJA = {"access_pass":
     "comentarios":[],
     "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
     "todas_las_areas":False},
-    # "location":"Corporativo Tiendas 3B",
     "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
     "option":"create_access_pass",
     "script_name":"pase_de_acceso.py"}
-
-
-
-
-
-
-
-
 
 PASE_APP = {
     "selected_visita_a": "",
@@ -188,8 +110,7 @@ PASE_APP = {
     "telefono": "+521234567890",
     "ubicacion": "Planta Monterrey",
     "ubicaciones": [
-      "Planta Monterrey",
-      "Planta Durango"
+      ubicacion
     ],
     "tema_cita": "Pruebas Automaticas",
     "descripcion": "Comenatrio de Pruebas",
@@ -248,37 +169,12 @@ PASE_AUTO_REGISTRO = {
         "email": "",
         "visita_a": {"nombre":"lkf", "email":'josepato@hotmail.com', 'telefono':"88605"},
     "account_id": "10",
-    "ubicaciones": ["Planta Monterrey",],
+    "ubicaciones": [ubicacion,],
     "option": "create_access_pass",
     "script_name": "pase_de_acceso_use_api.py",
     "created_from": "auto_registro"
     }
 
-# PASE_AUTO_REGISTRO_SIN_VISTA_A = {
-#         "email": "",
-#         "nombre": "Sin Vista A",
-#         "empresa": "Pruebas Clave 10",
-#         "foto": [ {
-#                 "file_name": "imageUser.png",
-#                 "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/68600/6076166dfd84fa7ea446b917/2026-02-10T18:36:13_2.png"
-#             }],
-#         "identificacion": [
-           
-#             {
-#                 "file_name": "imageCard.png",
-#                 "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/68600/6076166dfd84fa7ea446b917/2026-02-10T18:36:11_1.png"
-#             }
-#         ],
-#         "perfil_pase": "Walkin",
-#         "telefono": "",
-#         "email": "",
-#         "visita_a": {"nombre":"", "email":'', 'telefono':""},
-#     "account_id": "10",
-#     "ubicaciones": ["Planta Monterrey",],
-#     "option": "create_access_pass",
-#     "script_name": "pase_de_acceso_use_api.py",
-#     "created_from": "auto_registro"
-#     }
 
 PASE_NUEVA_VISTA =   {
     "foto": {
@@ -319,7 +215,7 @@ UPDATE_PASS_APP = {
       "email": "josepato@hotmail.com",
       "status_pase": "activo",
       "ubicacion": [
-        "Corporativo Tiendas 3B"
+        ubicacion
       ],
       "nombre": "Jose Pruebas",
       "visita_a": [
@@ -344,7 +240,7 @@ UPDATE_PASS_APP = {
 }
 
 PASE_AUTO_REGISTRO_SIN_VISTA_A ={"script_name":"pase_de_acceso_use_api.py","option":"create_access_pass",
-        "access_pass":{"ubicaciones":["Corporativo Tiendas 3B"],
+        "access_pass":{"ubicaciones":[ubicacion],
         "nombre":f"Prueba {current_time}",
         "perfil_pase":"Walkin",
         "telefono":"811-500-0000",
@@ -360,14 +256,14 @@ PASE_AUTO_REGISTRO_SIN_VISTA_A ={"script_name":"pase_de_acceso_use_api.py","opti
         "equipos":[],
         "motivo":"Motivo 1",
         "created_from":"auto_registro"},
-        "account_id":"29909"}
+        "account_id":f"{account_id}"}
 
 COMPLETAR_PASE_USAURIO_ACTUAL = {"script_name":"pase_de_acceso_use_api.py","option":"update_pass",
     "access_pass":{
         "visita_a":["Usuario Actual"]
     },
     "folio":"69935f45364424902060f464",
-    "account_id":29909}
+    "account_id":account_id}
 
 
 # pase de entrada web
