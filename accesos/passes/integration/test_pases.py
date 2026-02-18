@@ -80,7 +80,8 @@ def test_create_pase_fecha_fija(accesos_obj, mock_pase_fecha_fija):
     """
     logging.info('Test: test_create_pase_fecha_fija')
     accesos_obj.use_api = False
-    res = accesos_obj.create_access_pass(mock_pase_fecha_fija)
+    access_pass = mock_pase_fecha_fija['access_pass']
+    res = accesos_obj.create_access_pass(access_pass)
     print('res=',res)
     assert res['status_code'] == 201
     qr_code = res.get('json',{}).get('id')
