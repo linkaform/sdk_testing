@@ -1,7 +1,20 @@
 # coding: utf-8
 from datetime import datetime
+from pytz import timezone
+
+
+
+def today_str(tz_name='America/Monterrey', date_format='date'):
+    today = datetime.now()
+    today = today.astimezone(timezone(tz_name))
+    if date_format == 'datetime':
+        str_today = datetime.strftime(today, '%Y-%m-%d %H:%M:%S')
+    else:
+        str_today = datetime.strftime(today, '%Y-%m-%d')
+    return str_today
 
 current_time = datetime.now().strftime("%H:%M")
+today = today_str(date_format='datetime')
 
 LOCATION_AREAS_LKF = {
     'Linkaform Ciudad de México':['Caseta Ciudad de México', 'Centro de Control', 'Cocina de Empleados', 'Lavandería', 'Recepción'],
@@ -75,7 +88,7 @@ PASE = {
     "created_from": "web"
   }
 
-PASE_FECHA_FIJA = {
+PASE_FECHA_FIJA_OLD = {
     "selected_visita_a": "",
     "nombre": "Pruebas Fecha Fija",
     "empresa": "Empresa de Pruebas",
@@ -121,6 +134,51 @@ PASE_FECHA_FIJA = {
     "todas_las_areas": False,
     "created_from": "web"
   }
+
+
+PASE_FECHA_FIJA = {"access_pass": 
+    {"created_from":"web",
+    # "selected_visita_a":"",
+    "nombre":f"Pruebas Fecha Fija {current_time}",
+    "empresa":"Clave10",
+    "email":"pruebas@clave10.com",
+    "telefono":"+52811500000",
+    # "ubicacion":"Corporativo Tiendas 3B",
+    "ubicaciones":["Corporativo Tiendas 3B"],
+    "tema_cita":"Pruebas",
+    "descripcion":"Descripcion Pruebas",
+    "perfil_pase":"Visita General",
+    "status_pase":"Proceso",
+    "visita_a":["Usuario Actual"],
+    # "custom":True,
+    "link":{"link":"https://web.clave10.com/dashboard/pase-update",
+    "docs":["agregarIdentificacion","agregarFoto"],
+    "creado_por_id":29909,
+    "creado_por_email":"jme@tiendas3b.com"},
+    "enviar_correo_pre_registro":["enviar_sms_pre_registro","enviar_correo_pre_registro"],
+    "tipo_visita_pase":"fecha_fija",
+    # "fechaFija":"2026-02-17 20:00:00",
+    "fecha_desde_visita":today,
+    "fecha_desde_hasta":"",
+    "config_dia_de_acceso":"cualquier_día",
+    "config_dias_acceso":[],
+    "config_limitar_acceso":1,
+    "areas":[],
+    "comentarios":[],
+    "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
+    "todas_las_areas":False},
+    # "location":"Corporativo Tiendas 3B",
+    "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
+    "option":"create_access_pass",
+    "script_name":"pase_de_acceso.py"}
+
+
+
+
+
+
+
+
 
 PASE_APP = {
     "selected_visita_a": "",
