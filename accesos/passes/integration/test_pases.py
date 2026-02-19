@@ -22,7 +22,6 @@ def test_setup_account(accesos_obj):
 def get_assets(accesos_obj, mock_location_areas):
     logging.info('=== GETTING LOCATIONS ===')
     response_location = accesos_obj.catalogos_pase_location()
-    breakpoint()
     location_uno = response_location['ubicaciones_default'][0]
     len_locations = len(response_location['ubicaciones_default'])
     if len_locations > 1:
