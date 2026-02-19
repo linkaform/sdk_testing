@@ -16,7 +16,6 @@ def test_setup_account(accesos_obj):
     for location in ubicaciones_user:
         areas = accesos_obj.catalogos_pase_area(location)
         res[location] = areas['areas_by_location']
-    print('LOCATION_AREAS = ', res)
     return True
 
 def get_assets(accesos_obj, mock_location_areas):
