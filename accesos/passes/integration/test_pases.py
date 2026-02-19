@@ -1,14 +1,28 @@
 # coding: utf-8
 
-from .fixtures import *
-import logging
+import logging, simplejson
+
 from urllib.parse import urlparse
 
+
+from .fixtures import *
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import *
+
+
+def test_setup_account(accesos_obj):
+    response_location = accesos_obj.catalogos_pase_location()
+    ubicaciones_user = response_location['ubicaciones_user']
+    res = {}
+    for location in ubicaciones_user:
+        areas = accesos_obj.catalogos_pase_area(location)
+        res[location] = areas['areas_by_location']
+    print('LOCATION_AREAS = ', res)
+    return True
 
 def get_assets(accesos_obj, mock_location_areas):
     logging.info('=== GETTING LOCATIONS ===')
     response_location = accesos_obj.catalogos_pase_location()
+    breakpoint()
     location_uno = response_location['ubicaciones_default'][0]
     len_locations = len(response_location['ubicaciones_default'])
     if len_locations > 1:
@@ -24,6 +38,7 @@ def get_assets(accesos_obj, mock_location_areas):
     assert 'Visita General' in assets_access_pass['Perfiles']
     assert 'Candidatos' in assets_access_pass['Perfiles']
     return response_area_uno
+
 
 def test_create_pase(accesos_obj, mock_pase, mock_location_areas):
     """
