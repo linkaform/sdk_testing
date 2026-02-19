@@ -21,7 +21,7 @@ LOCATION_AREAS =  {'Planta Guadalajara': ['Caseta 1', 'Caseta 2', 'Caseta 2', 'C
 
 ubicacion = list(LOCATION_AREAS.keys())[0]
 
-account_id = 29572
+account_id = 17779
 
 PASE = {
     "selected_visita_a": "",
