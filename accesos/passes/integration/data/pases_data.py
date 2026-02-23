@@ -16,6 +16,43 @@ def today_str(tz_name='America/Monterrey', date_format='date'):
 current_time = datetime.now().strftime("%H:%M")
 today = today_str(date_format='datetime')
 
+COMPLETA_PASE_APP = {
+   "script_name":"pase_de_acceso_use_api.py",
+   "option":"update_pass",
+   "access_pass":{
+      "grupo_vehiculos":[
+         
+      ],
+      "grupo_equipos":[
+         {
+            "color":"Gris",
+            "marca":"HP",
+            "modelo":"PavilonA1",
+            "nombre":"",
+            "serie":"ABCV123",
+            "tipo":"Computo"
+         }
+      ],
+      "status_pase":"Activo",
+      "walkin_fotografia":[
+         {
+            "file_url":"https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/698cbd5a47fa1a68268199be.jpeg",
+            "file_name":"fotografia.jpeg"
+         }
+      ],
+      "walkin_identificacion":[
+         {
+            "file_url":"https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/698cbd5ebad873a7387b9606.jpeg",
+            "file_name":"identificacion.jpeg"
+         }
+      ],
+      "acepto_aviso_privacidad":"sí",
+      "conservar_datos_por":"3 meses"
+   },
+   "folio":"699caa78adf811c70d483609",
+   "account_id":29909
+}
+
 LOCATION_AREAS_LKF = {
     'Linkaform Ciudad de México':['Caseta Ciudad de México', 'Centro de Control', 'Cocina de Empleados', 'Lavandería', 'Recepción'],
     'Linkaform Yucatán':['Antenas', 'Caseta Yucatán', 'Piscina', 'Recepción', 'Restaurante', 'Salón de Eventos', 'Spa Unisex'],
@@ -34,11 +71,9 @@ LOCATION_AREAS = {
     'Planta Durango':  ['Caseta 2 - Dro', 'Caseta Principal -Dro', 'Cuarto de servidoress'],
 }
 
-
 LOCATION_AREAS = {
     'Corporativo Tiendas 3B':['Entrada caseta principal', 'Estacionamiento', 'Lobby', 'Oficinas Administrativas', 'Recepción', 'Sala de juntas planta baja'], 'Visita_a': ['Administración Tiendas 3B', 'Andrea Bustos Carranza', 'Enrique Iván Delgado Ayala', 'Giselle Jocelyn Mayorga Ruiz', 'Janeth Itzel Carbajal Estrella', 'Jessica Marsha Meza Vargas', 'Martín de Jesús Romero Chávez', 'Rolando Muñiz Campos', 'Zurisadai Camacho Contreras'],
 }
-
 
 PASE = {
     "selected_visita_a": "",
@@ -135,7 +170,6 @@ PASE_FECHA_FIJA_OLD = {
     "created_from": "web"
   }
 
-
 PASE_FECHA_FIJA = {"access_pass": 
     {"created_from":"web",
     # "selected_visita_a":"",
@@ -171,14 +205,6 @@ PASE_FECHA_FIJA = {"access_pass":
     "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
     "option":"create_access_pass",
     "script_name":"pase_de_acceso.py"}
-
-
-
-
-
-
-
-
 
 PASE_APP = {
     "selected_visita_a": "",
@@ -228,6 +254,78 @@ PASE_APP = {
     "created_from": "app"
   }
 
+PASE_APP_SALA = {
+    "script_name": "pase_de_acceso.py",
+    "option": "create_access_pass",
+    "access_pass": {
+      "empresa": "Clave 10",
+      "config_dia_de_acceso": "cualquier_día",
+      "created_from": "app",
+      "descripcion": "",
+      "config_dias_acceso": [],
+      "ubicaciones": [
+        "Corporativo Tiendas 3B"
+      ],
+      "tipo_visita_pase": "fecha_fija",
+      "comentarioArea": "",
+      "custom": True,
+      "fecha_desde_hasta": "",
+      "status_pase": "Proceso",
+      "nombre": "Pruebas Invitado",
+      "telefono": "+528115778605",
+      "email": "josepato@clave10.com",
+      "enviar_correo_pre_registro": [
+        "enviar_correo_pre_registro",
+        "enviar_sms_pre_registro"
+      ],
+      "fecha_desde_visita": "2026-02-23 13:00:00",
+      "link": {
+        "docs": [
+          "agregarIdentificacion",
+          "agregarFoto"
+        ],
+        "creado_por_email": "jme@tiendas3b.com",
+        "link": "https://web.clave10.com/dashboard/pase-update",
+        "creado_por_id": 29909
+      },
+      "perfil_pase": "Proveedores",
+      "config_limitar_acceso": 1,
+      "visita_a": [
+        "Tiendas 3B",
+        "Administración Tiendas 3B"
+      ],
+      "areas": [
+        {
+          "nombre_area": "Administración y Finanzas",
+          "commentario_area": ""
+        },
+        {
+          "nombre_area": "Caseta Principal",
+          "commentario_area": ""
+        },
+        {
+          "nombre_area": "Compras",
+          "commentario_area": ""
+        }
+      ],
+      "tema_cita": "Motivo",
+      "todas_las_areas": False,
+      "sala": "Sala Canela P4 (2p)",
+      "comentarios": [
+        {
+          "tipo_comentario": "Pase",
+          "comentario_pase": "Descripcion\n"
+        }
+      ]
+    },
+    "enviar_pre_sms": {
+      "mensaje": "",
+      "from": "enviar_pre_sms",
+      "numero": "+528115778605"
+    },
+    "location": ""
+  }
+ 
 PASE_AUTO_REGISTRO = {
         "email": "",
         "nombre": "Marta Garza",
@@ -254,32 +352,6 @@ PASE_AUTO_REGISTRO = {
     "created_from": "auto_registro"
     }
 
-# PASE_AUTO_REGISTRO_SIN_VISTA_A = {
-#         "email": "",
-#         "nombre": "Sin Vista A",
-#         "empresa": "Pruebas Clave 10",
-#         "foto": [ {
-#                 "file_name": "imageUser.png",
-#                 "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/68600/6076166dfd84fa7ea446b917/2026-02-10T18:36:13_2.png"
-#             }],
-#         "identificacion": [
-           
-#             {
-#                 "file_name": "imageCard.png",
-#                 "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/68600/6076166dfd84fa7ea446b917/2026-02-10T18:36:11_1.png"
-#             }
-#         ],
-#         "perfil_pase": "Walkin",
-#         "telefono": "",
-#         "email": "",
-#         "visita_a": {"nombre":"", "email":'', 'telefono':""},
-#     "account_id": "10",
-#     "ubicaciones": ["Planta Monterrey",],
-#     "option": "create_access_pass",
-#     "script_name": "pase_de_acceso_use_api.py",
-#     "created_from": "auto_registro"
-#     }
-
 PASE_NUEVA_VISTA =   {
     "foto": {
       "file_name": "7e2cb0e6-e789-40e3-a356-aee9fbe0a32c.jpeg",
@@ -299,49 +371,6 @@ PASE_NUEVA_VISTA =   {
     "telefono": "",
     "email": ""
   }
-
-UPDATE_PASS_APP = {
-  "access_pass": {
-    "account_id": 29909,
-    "folio": "698f41bc5a5cf33dcae8bce8",
-    "option": "update_pass",
-    "script_name": "pase_de_acceso_use_api.py",
-    "access_pass": {
-      "acepto_aviso_privacidad": "sí",
-      "conservar_datos_por": "3 meses",
-      "walkin_fotografia": [
-        {
-          "file_name": "imageUser.png",
-          "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/698f418a55839de9834650ea.png"
-        }
-      ],
-      "grupo_equipos": [],
-      "email": "josepato@hotmail.com",
-      "status_pase": "activo",
-      "ubicacion": [
-        "Corporativo Tiendas 3B"
-      ],
-      "nombre": "Jose Pruebas",
-      "visita_a": [
-        "Martín de Jesús Romero Chávez",
-        "Jessica Marsha Meza Vargas"
-      ],
-      "walkin_identificacion": [
-        {
-          "file_name": "imageCard.png",
-          "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/698f418f496537548215bf96.png"
-        }
-      ],
-      "telefono": "8115778605",
-      "grupo_vehiculos": []
-    }
-  },
-  "account_id": 29909,
-  "docker_image": "linkaform/addons:latest",
-  "script_name": "pase_de_acceso_use_api.py",
-  "option": "update_pass",
-  "folio": "698e3d64c2f5cda61092084e"
-}
 
 PASE_AUTO_REGISTRO_SIN_VISTA_A ={"script_name":"pase_de_acceso_use_api.py","option":"create_access_pass",
         "access_pass":{"ubicaciones":["Corporativo Tiendas 3B"],

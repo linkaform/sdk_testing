@@ -47,6 +47,17 @@ def mock_pase_fecha_fija():
     return pase
 
 @pytest.fixture
+def mock_pase_app():
+    data = copy.deepcopy(PASE_APP_SALA)
+    data = data['access_pass']
+    return data
+
+@pytest.fixture
+def mock_pase_app_update():
+    data = copy.deepcopy(COMPLETA_PASE_APP)
+    return data
+
+@pytest.fixture
 def mock_pase_auto_registro():
     return copy.deepcopy(PASE_AUTO_REGISTRO)
 

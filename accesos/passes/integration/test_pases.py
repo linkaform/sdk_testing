@@ -61,12 +61,13 @@ def check_catalog_pase_response(data):
     # breakpoint()
     # assert isinstance(pase['visita_a'][0]['nombre'], str)
 
-def completar_pase(accesos_obj, res, mock_completar_pase_usaurio_actual):
-    access_pass = mock_completar_pase_usaurio_actual.get('access_pass')
+def completar_pase(accesos_obj, res, mock_pase_app_update):
+    access_pass = mock_pase_app_update.get('access_pass')
     folio = res['json'].get('id')
-    mock_completar_pase_usaurio_actual['folio'] = folio
+    mock_pase_app_update['folio'] = folio
     response = accesos_obj.update_pass(access_pass, folio)
     assert response['status_code'] == 202
+    return response
 
 def test_create_pase_fecha_fija(accesos_obj, mock_pase_fecha_fija):
     """
@@ -104,6 +105,19 @@ def test_create_pase_nueva_visita(accesos_obj, mock_pase_nueva_vista):
     res = accesos_obj.create_access_pass(mock_pase_nueva_vista)
     print('res=',res)
     assert res['status_code'] == 201
+
+def test_create_pase_app(accesos_obj, mock_pase_app, mock_pase_app_update):
+    """
+    Creacion de pase con datos desde app
+    """
+    def verify_completar_pase(res):
+        res = completar_pase(accesos_obj, res, mock_pase_app_update )
+    logging.info('================> Arranca Crea pase desde app #4: ....')
+    res = accesos_obj.create_access_pass(mock_pase_app)
+    print('res=',res)
+    assert res['status_code'] == 201
+    verify_completar_pase(res)
+
   
 def test_create_pase_auto_registro(accesos_obj, mock_pase_auto_registro):
     """
