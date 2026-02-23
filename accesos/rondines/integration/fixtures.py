@@ -7,7 +7,7 @@ from datetime import datetime
 from pytz import timezone
 
 ###
-from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import Accesos
+from lkf_modules.accesos.items.scripts.Accesos.rondines import Accesos
 from account_settings import settings
 from .data.rondines_data import *
 
@@ -50,6 +50,11 @@ def mock_pase_fecha_fija():
 def mock_pase_auto_registro():
     return copy.deepcopy(PASE_AUTO_REGISTRO)
 
+
+@pytest.fixture
+def mock_locations():
+    return copy.deepcopy(LOCATIONS)
+
 @pytest.fixture
 def mock_pase_auto_registro_sin_vista_a():
     data = copy.deepcopy(PASE_AUTO_REGISTRO_SIN_VISTA_A)
@@ -72,7 +77,9 @@ def mock_location_areas():
 def mock_completar_pase_usaurio_actual():
     return copy.deepcopy(COMPLETAR_PASE_USAURIO_ACTUAL)
 
-
+@pytest.fixture
+def mock_crear_rondin():
+    return copy.deepcopy(CREATE_RONDIN)
 
 # @pytest.fixture
 # def accesos_turnos_api_15864():
