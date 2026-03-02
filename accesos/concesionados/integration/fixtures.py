@@ -7,16 +7,12 @@ import logging
 ###
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import Accesos
 from account_settings import settings
-from data.concesiones_data import CONCESION_BASE
+from .data.concesiones_data import *
 
 @pytest.fixture
 def acceso_obj():
     acc = Accesos(settings, use_api=True)
     return acc
-
-@pytest.fixture
-def mock_crea_consecion():
-    return copy.deepcopy(CONCESION_BASE)
 
 @pytest.fixture
 def accesos_turnos_api_15864():
@@ -33,3 +29,21 @@ def accesos_turnos_api_15864():
     }
     return acc
 
+@pytest.fixture
+def mock_crea_consecion():
+    data = copy.deepcopy(CONCESION_BASE)
+    return data['data_artilce']
+
+@pytest.fixture
+def mock_crea_consecion_otro():
+    data = copy.deepcopy(CONCESION_BASE_OTRO)
+    return data['data_artilce']
+
+@pytest.fixture
+def mock_lista_concesionados():
+    res = {}
+    data = copy.deepcopy(CONCESION_BASE)
+    res['location'] = data['data_artilce']['ubicacion_concesion']
+    res['area'] = data['data_artilce']['area_concesion']
+    res['filterDate'] = None #data['fecha_concesion'] #crear rango
+    return res
