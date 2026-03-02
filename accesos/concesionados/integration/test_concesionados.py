@@ -1,26 +1,103 @@
 # coding: utf-8
 
-from .fixtures import accesos_obj, mock_crea_consecion
+from .fixtures import *
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import *
 import logging
 
-def test_create_concesionado(accesos_obj, mock_crea_consecion):
+
+
+
+def test_get_articulos_list(acceso_obj, mock_lista_concesionados, mock_crea_consecion_otro, mock_crea_consecion):
     """
-    Crea un articulo concesionado con varios equipos. 
+    Provamos que la lista nos regres un numero de articulos concesionados, luego agreagmos 2 y vemos q la lista regrese 2 mas
+    """
+    def create_concesionado(acceso_obj, mock_crea_consecion, mock_crea_consecion_otro ):
+        """
+        Crea un articulo concesionado con varios equipos. 
+        
+        Detalles:
+            1. Se obtiene informacion del turno
+            2. Se inicia el turno
+            3. Se obtiene informacion del turno
+            4. Se finaliza el turno
+        """
+        logging.info('================> Arranca TEST #1: Creando Articulo concesionado2...')
+        articulo = create_article_concessioned(acceso_obj, mock_crea_consecion)
+        assert articulo.get("status_code") == 201
+        articulo_otro = create_article_concessioned(acceso_obj, mock_crea_consecion_otro)
+        assert articulo_otro.get("status_code") == 201
+        logging.info(f'articulo {articulo}')
+        print('articulo', articulo)
+        record_id = articulo.get('id')
+        return articulo, articulo_otro
     
-    Detalles:
-        1. Se obtiene informacion del turno
-        2. Se inicia el turno
-        3. Se obtiene informacion del turno
-        4. Se finaliza el turno
-    """
-    logging.info('================> Arranca TEST #1: Creando Articulo concesionado2...')
-    articulo = create_article_concessioned(accesos_obj, mock_crea_consecion)
-    assert articulo.get("status_code") == 201
-    logging.info(f'articulo {articulo}')
-    print('articulo', articulo)
-    record_id = articulo.get('id')
-    get_list_articulos_concesionados
+    
+    def partial_return(articulo, data_concesion):
+        equipos = data_concesion['equipos']
+        data = {
+            'record_id' : articulo['id'],
+            'status' : 'partial',
+            'quien_entrega' :  data_concesion['persona_nombre_otro'],
+            'identificacion_entrega' : data_concesion['persona_identificacion_otro'],
+            'comentarios' : "Devolucion de Parical: partial_return",
+            'entregado_por': "otro",
+            'equipos' : []
+            }
+        for equipo in equipos:
+            row = {}
+            row['id_movimiento'] = equipo['id_movimiento']
+            row['cantidad_devuelta'] = round(equipo['cantidad_equipo_concesion']/3)
+            row['state'] = "complete"
+            row['evidencia'] = [{
+                'file_name':'equipo_total.png',
+                'file_url':'https://f001.backblazeb2.com/file/app-linkaform/public-client-126/68600/6076166dfd84fa7ea446b917/2026-02-25T11:44:39_5.png'}]
+            data['equipos'].append(row)
+        response = acceso_obj.update_article_concessioned(data, articulo['id'])
+        return True
+
+    def complete_return_empleado(articulo, data_concesion):
+        data = {
+            'record_id' : articulo['id'],
+            'status' : 'total',
+            'state' : 'complete',
+            'quien_entrega' :  data_concesion['persona_nombre_concesion'],
+            'identificacion_entrega' : data_concesion['persona_identificacion_otro'],
+            'comentarios' : "Devolucion de Pruebas: complete_return_empleado",
+            'evidencia' : [{
+                'file_name':'equipo_total.png',
+                'file_url':'https://f001.backblazeb2.com/file/app-linkaform/public-client-126/68600/6076166dfd84fa7ea446b917/2026-02-25T11:44:39_5.png'}]
+            }
+        response = acceso_obj.update_article_concessioned(data, articulo['id'])
+        return response
+
+    def one_article_return():
+        return True
+
+    location = mock_lista_concesionados['location']
+    area = ""
+    consecion_otro = copy.deepcopy(mock_crea_consecion_otro)
+    consecion_otro2 = copy.deepcopy(mock_crea_consecion_otro)
+    consecion_otro3 = copy.deepcopy(mock_crea_consecion_otro)
+    status = mock_lista_concesionados.get("dateFrom", "")
+    dateFrom = mock_lista_concesionados.get("dateFrom", "")
+    dateTo = mock_lista_concesionados.get("dateTo", "")
+    filterDate = mock_lista_concesionados.get("filterDate", "")
+    response = acceso_obj.get_list_articulos_concesionados(location, area, status, dateFrom=dateFrom, dateTo=dateTo, filterDate=filterDate)
+    cantidad_inicial = len(response)
+    assert isinstance(response, list)
+    articulo, articulo_otro = create_concesionado(acceso_obj, mock_crea_consecion, mock_crea_consecion_otro )
+    response_despues = acceso_obj.get_list_articulos_concesionados(location, area, status, dateFrom=dateFrom, dateTo=dateTo, filterDate=filterDate)
+    assert len(response_despues) == cantidad_inicial + 2
+    assert response_despues[0]['folio'] == articulo_otro['json']['folio']
+    assert response_despues[1]['folio'] == articulo['json']['folio']
+    devolucion = complete_return_empleado(articulo['json'], mock_crea_consecion)
+    if isinstance(devolucion, list):
+        assert devolucion[0]['status_code'] == 202
+    devolucion = partial_return(articulo_otro['json'], consecion_otro)
+    devolucion = partial_return(articulo_otro['json'], consecion_otro2)
+    devolucion = partial_return(articulo_otro['json'], consecion_otro3)
+
+
     # logging.info('================> Arranca TEST #1: Happy Path')
     # checkin_id = None
     # turn_closed = False
