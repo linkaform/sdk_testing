@@ -1,12 +1,25 @@
 # coding: utf-8
 
-from .fixtures import *
-import logging
+import logging, simplejson
+
 from urllib.parse import urlparse
 
+
+from .fixtures import *
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import *
 
-def get_assets(acceso_obj, mock_location_areas):
+
+
+def test_setup_account(accesos_obj):
+    response_location = accesos_obj.catalogos_pase_location()
+    ubicaciones_user = response_location['ubicaciones_user']
+    res = {}
+    for location in ubicaciones_user:
+        areas = accesos_obj.catalogos_pase_area(location)
+        res[location] = areas['areas_by_location']
+    return True
+
+def get_assets(accesos_obj, mock_location_areas):
     logging.info('=== GETTING LOCATIONS ===')
     response_location = acceso_obj.catalogos_pase_location()
     location_uno = response_location['ubicaciones_default'][0]
@@ -25,7 +38,8 @@ def get_assets(acceso_obj, mock_location_areas):
     assert 'Candidatos' in assets_access_pass['Perfiles']
     return response_area_uno
 
-def test_create_pase(acceso_obj, mock_pase, mock_location_areas):
+
+def test_create_pase(accesos_obj, mock_pase, mock_location_areas):
     """
     Crea un articulo concesionado con varios equipos. 
     
@@ -80,9 +94,9 @@ def test_create_pase_fecha_fija(acceso_obj, mock_pase_fecha_fija):
         4. Se finaliza el turno
     """
     logging.info('Test: test_create_pase_fecha_fija')
-    acceso_obj.use_api = False
+    accesos_obj.use_api = False
     access_pass = mock_pase_fecha_fija['access_pass']
-    res = acceso_obj.create_access_pass(access_pass)
+    res = accesos_obj.create_access_pass(access_pass)
     print('res=',res)
     assert res['status_code'] == 201
     qr_code = res.get('json',{}).get('id')
