@@ -7,10 +7,10 @@ import logging
 ###
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import Accesos
 from account_settings import settings
-from .data.concesiones_data import CONCESION_BASE
+from data.concesiones_data import CONCESION_BASE
 
 @pytest.fixture
-def accesos_obj():
+def acceso_obj():
     acc = Accesos(settings, use_api=True)
     return acc
 

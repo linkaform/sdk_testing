@@ -1,10 +1,10 @@
 # coding: utf-8
 
-from .fixtures import accesos_obj, mock_crea_consecion
+from fixtures import *
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import *
 import logging
 
-def test_create_concesionado(accesos_obj, mock_crea_consecion):
+def test_create_concesionado(acceso_obj, mock_crea_consecion):
     """
     Crea un articulo concesionado con varios equipos. 
     
@@ -15,7 +15,7 @@ def test_create_concesionado(accesos_obj, mock_crea_consecion):
         4. Se finaliza el turno
     """
     logging.info('================> Arranca TEST #1: Creando Articulo concesionado2...')
-    articulo = create_article_concessioned(accesos_obj, mock_crea_consecion)
+    articulo = create_article_concessioned(acceso_obj, mock_crea_consecion)
     assert articulo.get("status_code") == 201
     logging.info(f'articulo {articulo}')
     print('articulo', articulo)

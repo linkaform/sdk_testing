@@ -21,13 +21,13 @@ def today_str(tz_name='America/Monterrey', date_format='date'):
     return str_today
 
 @pytest.fixture
-def accesos_obj():
+def acceso_obj():
     acc = Accesos(settings, use_api=True)
     return acc
 
 @pytest.fixture
 def mock_pase():
-    # acc_obj = accesos_obj()
+    # acc_obj = acceso_obj()
     # today = acc_obj.get_today_format()
     # print('today=', today)
     pase = copy.deepcopy(PASE)
@@ -38,7 +38,7 @@ def mock_pase():
 
 @pytest.fixture
 def mock_pase_fecha_fija():
-    # acc_obj = accesos_obj()
+    # acc_obj = acceso_obj()
     # today = acc_obj.get_today_format()
     # print('today=', today)
     pase = copy.deepcopy(PASE_FECHA_FIJA)
