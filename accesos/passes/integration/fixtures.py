@@ -72,7 +72,14 @@ def mock_location_areas():
 def mock_completar_pase_usaurio_actual():
     return copy.deepcopy(COMPLETAR_PASE_USAURIO_ACTUAL)
 
+@pytest.fixture
+def mock_pase_app():
+    return copy.deepcopy(PASE_APP)
 
+@pytest.fixture
+def mock_pase_app_update():
+    data = copy.deepcopy(UPDATE_PASS_APP)
+    return data['data']
 
 # @pytest.fixture
 # def accesos_turnos_api_15864():
