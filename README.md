@@ -47,7 +47,7 @@ Cada módulo sigue esta estructura:
         ├── integration/     # Contra API real, sin mocks
         └── e2e/             # Flujos completos de usuario
 
-Para entender cómo agregar pruebas a un módulo, consulta el README interno de cada sección, por ejemplo `accesos/menus/README.md`.
+Para entender cómo agregar pruebas a un módulo, consulta `accesos/README.md`.
 
 ## Convenciones
 
