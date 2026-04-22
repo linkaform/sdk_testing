@@ -52,4 +52,4 @@ Para entender cómo agregar pruebas a un módulo, consulta `accesos/README.md`.
 ## Convenciones
 
 - Todos los tests deben tener `@pytest.mark.unit`, `@pytest.mark.integration` o `@pytest.mark.e2e`
-- Todos los tests deben tener docstring explicando qué valida y por qué importa
+- Todos los tests deben tener docstring explicando qué valida y/o por qué importa
