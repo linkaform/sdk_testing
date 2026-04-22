@@ -1,6 +1,6 @@
 import pytest, logging
 
-from menus.integration.data.expected_menu_data import EXPECTED_MENU_KEYS, VALID_MENUS
+from menus.data.expected_menu_data import EXPECTED_MENU_KEYS, VALID_MENUS
 
 @pytest.mark.integration
 def test_get_config_accesos_api(accesos_api):
