@@ -33,35 +33,35 @@ def test_flujo_turno_completo(accesos_api):
     )
     logging.info(f"Menús disponibles: {menu['menus']}")
 
-    # # -- Paso 2: Obtener información del turno
-    # turno = accesos_api.get_shift_data(booth_location=LOCATION, booth_area=AREA)
-    # assert isinstance(turno, dict), "get_shift_data no retornó un dict"
-    # assert "guard" in turno, "La respuesta del turno no tiene la clave 'guard'"
-    # logging.info(f"Turno obtenido: {turno.get('location')}")
+    # -- Paso 2: Obtener información del turno
+    turno = accesos_api.get_shift_data(booth_location=LOCATION, booth_area=AREA)
+    assert isinstance(turno, dict), "get_shift_data no retornó un dict"
+    assert "guard" in turno, "La respuesta del turno no tiene la clave 'guard'"
+    logging.info(f"Turno obtenido: {turno.get('location')}")
 
-    # # -- Paso 3: Hacer checkin
-    # checkin_resp = accesos_api.do_checkin(
-    #     location=LOCATION,
-    #     area=AREA,
-    #     fotografia=FOTOGRAFIA
-    # )
-    # assert isinstance(checkin_resp, dict), "do_checkin no retornó un dict"
-    # assert checkin_resp.get("status_code") == 201, (
-    #     f"Checkin falló con status {checkin_resp.get('status_code')}: {checkin_resp.get('json')}"
-    # )
-    # checkin_id = checkin_resp.get("json", {}).get("id")
-    # assert checkin_id, "No se obtuvo checkin_id del resultado del checkin"
-    # logging.info(f"Checkin exitoso, checkin_id: {checkin_id}")
+    # -- Paso 3: Hacer checkin
+    checkin_resp = accesos_api.do_checkin(
+        location=LOCATION,
+        area=AREA,
+        fotografia=FOTOGRAFIA
+    )
+    assert isinstance(checkin_resp, dict), "do_checkin no retornó un dict"
+    assert checkin_resp.get("status_code") == 201, (
+        f"Checkin falló con status {checkin_resp.get('status_code')}: {checkin_resp.get('json')}"
+    )
+    checkin_id = checkin_resp.get("json", {}).get("id")
+    assert checkin_id, "No se obtuvo checkin_id del resultado del checkin"
+    logging.info(f"Checkin exitoso, checkin_id: {checkin_id}")
 
-    # # -- Paso 4: Hacer checkout con el checkin_id obtenido
-    # checkout_resp = accesos_api.do_checkout(
-    #     checkin_id=checkin_id,
-    #     location=LOCATION,
-    #     area=AREA,
-    #     fotografia=FOTOGRAFIA
-    # )
-    # assert isinstance(checkout_resp, dict), "do_checkout no retornó un dict"
-    # assert checkout_resp.get("status_code") in [200, 201, 202], (
-    #     f"Checkout falló con status {checkout_resp.get('status_code')}: {checkout_resp.get('json')}"
-    # )
-    # logging.info(f"Checkout exitoso para checkin_id: {checkin_id}")
+    # -- Paso 4: Hacer checkout con el checkin_id obtenido
+    checkout_resp = accesos_api.do_checkout(
+        checkin_id=checkin_id,
+        location=LOCATION,
+        area=AREA,
+        fotografia=FOTOGRAFIA
+    )
+    assert isinstance(checkout_resp, dict), "do_checkout no retornó un dict"
+    assert checkout_resp.get("status_code") in [200, 201, 202], (
+        f"Checkout falló con status {checkout_resp.get('status_code')}: {checkout_resp.get('json')}"
+    )
+    logging.info(f"Checkout exitoso para checkin_id: {checkin_id}")
