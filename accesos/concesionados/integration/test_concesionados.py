@@ -27,7 +27,6 @@ def test_get_articulos_list(acceso_obj, mock_lista_concesionados, mock_crea_cons
         articulo_otro = create_article_concessioned(acceso_obj, mock_crea_consecion_otro)
         assert articulo_otro.get("status_code") == 201
         logging.info(f'articulo {articulo}')
-        print('articulo', articulo)
         record_id = articulo.get('id')
         return articulo, articulo_otro
     
@@ -96,6 +95,7 @@ def test_get_articulos_list(acceso_obj, mock_lista_concesionados, mock_crea_cons
     devolucion = partial_return(articulo_otro['json'], consecion_otro)
     devolucion = partial_return(articulo_otro['json'], consecion_otro2)
     devolucion = partial_return(articulo_otro['json'], consecion_otro3)
+    articulos = acceso_obj.get_list_articulos_concesionados(location)
 
 
     # logging.info('================> Arranca TEST #1: Happy Path')

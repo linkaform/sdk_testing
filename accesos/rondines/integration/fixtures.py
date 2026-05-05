@@ -1,4 +1,5 @@
 # coding: utf-8
+# fixtures.py
 
 import pytest
 import copy
@@ -11,6 +12,9 @@ from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import Accesos
 from account_settings import settings
 from .data.rondines_data import *
 
+
+print('loading fixtures....')
+
 def today_str(tz_name='America/Monterrey', date_format='date'):
     today = datetime.now()
     today = today.astimezone(timezone(tz_name))
@@ -20,72 +24,37 @@ def today_str(tz_name='America/Monterrey', date_format='date'):
         str_today = datetime.strftime(today, '%Y-%m-%d')
     return str_today
 
+def mock_airflow_params(form_id):
+    """
+    utiliza exactamente como dejaria los parametros en airflow.
+    """
+    params =  {'form_id': form_id, 
+            'answers': {
+                '66a83ad2e004a874a4a08d7f': {'663e5c57f5b8a7ce8211ed0b': 'Planta Monterrey', '6645050d873fc2d733961eba': 'NFC Rondin Oficina JP'}, 
+                '6760a8e68cef14ecd7f8b6fe': today, 
+                '6639b2744bb44059fc59eb62': 'programado', 
+                '69b9b98d2a02f4a0dd35f5c1': 'nfc'}
+            }
+    return params
+
 @pytest.fixture
 def acceso_obj():
     acc = Accesos(settings, use_api=True)
+    db_name = f"clave_{acc.user['user_id']}"
+    print('db_name', db_name)
+    acc.cr_db = acc.get_couch_user_db(db_name)
+    acc.test = True
     return acc
 
-@pytest.fixture
-def mock_pase():
-    # acc_obj = acceso_obj()
-    # today = acc_obj.get_today_format()
-    # print('today=', today)
-    pase = copy.deepcopy(PASE)
-    today = today_str()
-    pase["fecha_desde_visita"] = f"{today} 00:00:00"
-    pase["fecha_desde_hasta"] = f"{today} 00:00:00"
-    return pase
-
-@pytest.fixture
-def mock_pase_fecha_fija():
-    # acc_obj = acceso_obj()
-    # today = acc_obj.get_today_format()
-    # print('today=', today)
-    pase = copy.deepcopy(PASE_FECHA_FIJA)
-    today = today_str()
-    pase["fecha_desde_visita"] = f"{today} 00:00:00"
-    return pase
-
-@pytest.fixture
-def mock_pase_auto_registro():
-    return copy.deepcopy(PASE_AUTO_REGISTRO)
-
-@pytest.fixture
-def mock_pase_auto_registro_sin_vista_a():
-    data = copy.deepcopy(PASE_AUTO_REGISTRO_SIN_VISTA_A)
-    data = data['access_pass']
-    return data
-
-@pytest.fixture
-def mock_pase_nueva_vista():
-    return copy.deepcopy(PASE_NUEVA_VISTA)
-
-@pytest.fixture
-def mock_update_pass_app():
-    return copy.deepcopy(PASE_NUEVA_VISTA)
-    
-@pytest.fixture
-def mock_location_areas():
-    return copy.deepcopy(LOCATION_AREAS)
-
-@pytest.fixture
-def mock_completar_pase_usaurio_actual():
-    return copy.deepcopy(COMPLETAR_PASE_USAURIO_ACTUAL)
-
-
-
 # @pytest.fixture
-# def accesos_turnos_api_15864():
-#     acc = Accesos(settings, use_api=True)
-#     acc.user = {
-#         'username': 'juan.escutia@linkaform.com', 
-#         'parent_id': 15864, 
-#         'user_id': 15864, 
-#         'exp': 1768694174, 
-#         'timezone': 'America/Monterrey', 
-#         'is_mobile': False, 
-#         'device_os': 'web', 
-#         'email': 'juan.escutia@linkaform.com'
-#     }
-#     return acc
+# def mock_rondin():
+#     data = copy.deepcopy(RONDIN_EJEMPLO)
+#     return data
 
+
+
+
+@pytest.fixture
+def mock_check_basic():
+    data = copy.deepcopy(CHECK_BASIC)
+    return data
