@@ -4,6 +4,6 @@
 
 EXPECTED_MENU_KEYS = {"menus", "group_name", "alertas", "exclude_inputs", "include_inputs"}
 
-VALID_MENUS = ['bitacoras', 'accesos', 'notas', 'pases', 'turnos', 'rondines', 'incidencias', 'articulos']
+VALID_MENUS = ['bitacoras', 'accesos', 'notas', 'pases', 'turnos', 'rondines', 'incidencias', 'articulos', 'reportes']
 
 EXPECTED_ALERTA_KEYS = {"accion"}
