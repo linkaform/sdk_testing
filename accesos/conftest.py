@@ -22,6 +22,23 @@ import pytest
 from lkf_modules.accesos.items.scripts.Accesos.accesos_utils import Accesos
 from account_settings import settings
 
+PREPROD_HOST = 'preprod.linkaform.com'
+
+@pytest.fixture(autouse=True)
+def _requiere_entorno_preprod(request):
+    """
+    Los tests integration/e2e escriben datos reales (sin teardown). Si el
+    ENV activo no es preprod, se abortan antes de tocar la red para no
+    crear/mutar datos en una cuenta de producción por accidente.
+    """
+    marks = {m.name for m in request.node.iter_markers()}
+    if marks & {'integration', 'e2e'}:
+        host = settings.config.get('HOST')
+        assert host == PREPROD_HOST, (
+            f"Entorno activo apunta a '{host}', se esperaba '{PREPROD_HOST}'. "
+            "Verifica ENV en config/enviorment.py antes de correr integration/e2e."
+        )
+
 @pytest.fixture
 def accesos_no_api():
     """Retorna una instancia de Accesos configurada para autenticarse vía JWT (use_api=False)."""
