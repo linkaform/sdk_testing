@@ -4,6 +4,10 @@ from datetime import datetime
 import pytest
 from pytz import timezone
 
+import re
+
+from datetime import timedelta
+
 from passes.data.pase_entrada_data import PASE_ENTRADA
 
 
@@ -44,3 +48,64 @@ def test_create_access_pass_retorna_folio_valido(accesos_api):
     folio = res.get('json', {}).get('id')
     assert isinstance(folio, str)
     assert len(folio) == 24
+
+@pytest.mark.integration
+def test_create_access_pass_folio_formato_valido(accesos_api):
+    """
+    El campo 'folio' (identificador legible, ej. '70854029-10') debe
+    venir con el formato esperado. Un folio mal formado rompe la
+    impresion del pase o su busqueda posterior.
+    """
+    accesos_api.use_api = False
+    res = accesos_api.create_access_pass(_build_pase())
+    folio = res.get('json', {}).get('folio')
+    assert isinstance(folio, str)
+    assert re.match(r'^\d+-\d+$', folio), f"Folio con formato inesperado: {folio}"
+
+
+@pytest.mark.integration
+def test_create_access_pass_timestamps_coherentes(accesos_api):
+    """
+    'created_at' y 'updated_at' deben ser numericos y, al momento de
+    la creacion, updated_at debe ser mayor o igual a created_at.
+    """
+    accesos_api.use_api = False
+    res = accesos_api.create_access_pass(_build_pase())
+    data = res.get('json', {})
+    assert isinstance(data.get('created_at'), (int, float))
+    assert isinstance(data.get('updated_at'), (int, float))
+    assert data['updated_at'] >= data['created_at']
+
+@pytest.mark.integration
+def test_create_access_pass_sin_nombre_falla(accesos_api):
+    """
+    Un pase sin 'nombre' (Nombre Completo) no debe poder crearse.
+    Confirmado con la API: responde 400 con un mensaje de campo requerido.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase.pop('nombre', None)
+    res = accesos_api.create_access_pass(pase)
+
+    assert res['status_code'] == 400
+
+    errores = res.get('json', {})
+    mensajes = [v for v in errores.values() if isinstance(v, dict)]
+    assert any(
+        e.get('label') == 'Nombre Completo' and 'requerido' in ' '.join(e.get('msg', []))
+        for e in mensajes
+    ), f"No se encontro el error esperado para 'Nombre Completo': {errores}"
+
+@pytest.mark.integration
+def test_create_access_pass_fecha_pasado_no_bloquea_creacion(accesos_api):
+    """
+    Crear un pase con fecha de visita en el pasado NO es rechazado por la 
+    API (responde 201).
+    """
+    accesos_api.use_api = False
+    pase = copy.deepcopy(PASE_ENTRADA)
+    ayer = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')
+    pase['fecha_desde_visita'] = ayer
+    pase['fecha_desde_hasta'] = ayer
+    res = accesos_api.create_access_pass(pase)
+    assert res['status_code'] == 201
