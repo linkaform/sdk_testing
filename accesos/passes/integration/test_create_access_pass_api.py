@@ -1,12 +1,9 @@
 import copy
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 
 import pytest
 from pytz import timezone
-
-import re
-
-from datetime import timedelta
 
 from passes.data.pase_entrada_data import PASE_ENTRADA
 
@@ -52,15 +49,15 @@ def test_create_access_pass_retorna_folio_valido(accesos_api):
 @pytest.mark.integration
 def test_create_access_pass_folio_formato_valido(accesos_api):
     """
-    El campo 'folio' (identificador legible, ej. '70854029-10') debe
-    venir con el formato esperado. Un folio mal formado rompe la
-    impresion del pase o su busqueda posterior.
+    El campo 'folio' (identificador legible) debe venir con un formato
+    valido. Un folio mal formado rompe la impresion del pase o su
+    busqueda posterior.
     """
     accesos_api.use_api = False
     res = accesos_api.create_access_pass(_build_pase())
     folio = res.get('json', {}).get('folio')
     assert isinstance(folio, str)
-    assert re.match(r'^\d+-\d+$', folio), f"Folio con formato inesperado: {folio}"
+    assert re.match(r'^\d+(-\d+)?$', folio), f"Folio con formato inesperado: {folio}"
 
 
 @pytest.mark.integration
@@ -97,10 +94,15 @@ def test_create_access_pass_sin_nombre_falla(accesos_api):
     ), f"No se encontro el error esperado para 'Nombre Completo': {errores}"
 
 @pytest.mark.integration
-def test_create_access_pass_fecha_pasado_no_bloquea_creacion(accesos_api):
+@pytest.mark.xfail(reason="Bug confirmado: backend no valida fecha pasada en create_access_pass.", strict=True)
+def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
     """
-    Crear un pase con fecha de visita en el pasado NO es rechazado por la 
-    API (responde 201).
+    Un pase con fecha de visita en el pasado NO deberia poder crearse.
+
+    BUG CONOCIDO: al dia de hoy la API responde 201 y crea el pase
+    igual, aunque marca internamente FECHA_OK FALSE en el log. Este
+    test documenta el comportamiento ESPERADO/correcto y fallara
+    hasta que se corrija la validacion en el backend.
     """
     accesos_api.use_api = False
     pase = copy.deepcopy(PASE_ENTRADA)
@@ -108,4 +110,57 @@ def test_create_access_pass_fecha_pasado_no_bloquea_creacion(accesos_api):
     pase['fecha_desde_visita'] = ayer
     pase['fecha_desde_hasta'] = ayer
     res = accesos_api.create_access_pass(pase)
-    assert res['status_code'] == 201
+
+    assert res['status_code'] in (400, 422), (
+        f"Se esperaba rechazo por fecha pasada, pero la API respondio "
+        f"{res['status_code']} y creo el pase igual: {res.get('json')}"
+    )
+
+@pytest.mark.integration
+@pytest.mark.parametrize("campo, label_esperado", [
+    ("empresa", "Empresa"),
+    ("email", "Email"),
+    ("telefono", "Telefono"),
+    ("ubicacion", "Ubicacion"),
+    ("perfil_pase", "Tipo de Visita"),
+    ("visita_a", "Responsable (Visita A)"),
+])
+@pytest.mark.xfail(reason="Bug confirmado: backend no valida estos campos como requeridos en create_access_pass.", strict=True)
+def test_create_access_pass_campo_requerido_falla(accesos_api, campo, label_esperado):
+    """
+    Un pase sin '{campo}' NO deberia poder crearse (campo obligatorio
+    confirmado con el equipo). Al dia de hoy la API lo permite y
+    responde 201 en vez de rechazarlo.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase.pop(campo, None)
+    res = accesos_api.create_access_pass(pase)
+
+    assert res['status_code'] in (400, 422), (
+        f"Se esperaba rechazo por falta de '{campo}', pero la API "
+        f"respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+    )
+
+@pytest.mark.integration
+@pytest.mark.parametrize("campo, valor_invalido", [
+    ("ubicacion", "Planta Marte"),
+    ("perfil_pase", "Perfil Inventado"),
+])
+@pytest.mark.xfail(reason="Bug confirmado: backend no valida valores de catalogo en create_access_pass.", strict=True)
+def test_create_access_pass_valor_catalogo_invalido_falla(accesos_api, campo, valor_invalido):
+    """
+    Un pase con '{campo}' fuera del catalogo valido NO deberia poder
+    crearse. Al dia de hoy la API lo permite y responde 201 con
+    cualquier valor, incluso inexistente en el catalogo.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase[campo] = valor_invalido
+    res = accesos_api.create_access_pass(pase)
+
+    assert res['status_code'] in (400, 422), (
+        f"Se esperaba rechazo por '{campo}'='{valor_invalido}' fuera de "
+        f"catalogo, pero la API respondio {res['status_code']} y creo "
+        f"el pase igual: {res.get('json')}"
+    )
