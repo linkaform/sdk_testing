@@ -3,6 +3,7 @@ import re
 from datetime import datetime, timedelta
 
 import pytest
+import simplejson
 from pytz import timezone
 
 from passes.data.pase_entrada_data import PASE_ENTRADA
