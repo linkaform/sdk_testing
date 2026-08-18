@@ -1,5 +1,6 @@
 import copy
 import re
+import simplejson
 from datetime import datetime, timedelta
 
 import pytest
@@ -100,7 +101,7 @@ def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
     """
     accesos_api.use_api = False
     pase = copy.deepcopy(PASE_ENTRADA)
-    ayer = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')
+    ayer = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d 00:00:00')
     pase['fecha_desde_visita'] = ayer
     pase['fecha_desde_hasta'] = ayer
 
