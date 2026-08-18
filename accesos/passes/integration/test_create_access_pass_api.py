@@ -94,26 +94,22 @@ def test_create_access_pass_sin_nombre_falla(accesos_api):
     ), f"No se encontro el error esperado para 'Nombre Completo': {errores}"
 
 @pytest.mark.integration
-@pytest.mark.xfail(reason="Bug confirmado: backend no valida fecha pasada en create_access_pass.", strict=True)
 def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
     """
     Un pase con fecha de visita en el pasado NO deberia poder crearse.
-
-    BUG CONOCIDO: al dia de hoy la API responde 201 y crea el pase
-    igual, aunque marca internamente FECHA_OK FALSE en el log. Este
-    test documenta el comportamiento ESPERADO/correcto y fallara
-    hasta que se corrija la validacion en el backend.
     """
     accesos_api.use_api = False
     pase = copy.deepcopy(PASE_ENTRADA)
     ayer = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')
     pase['fecha_desde_visita'] = ayer
     pase['fecha_desde_hasta'] = ayer
-    res = accesos_api.create_access_pass(pase)
 
-    assert res['status_code'] in (400, 422), (
-        f"Se esperaba rechazo por fecha pasada, pero la API respondio "
-        f"{res['status_code']} y creo el pase igual: {res.get('json')}"
+    with pytest.raises(Exception) as exc_info:
+        accesos_api.create_access_pass(pase)
+
+    error = simplejson.loads(str(exc_info.value)).get("exception", {})
+    assert error.get("status") == 400, (
+        f"Se esperaba rechazo por fecha pasada con status 400, se obtuvo: {error}"
     )
 
 @pytest.mark.integration
