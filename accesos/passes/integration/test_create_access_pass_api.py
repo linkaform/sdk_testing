@@ -139,12 +139,9 @@ def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
     ("perfil_pase", "Tipo de Visita"),
     ("visita_a", "Responsable (Visita A)"),
 ])
-@pytest.mark.xfail(reason="Bug confirmado: backend no valida estos campos como requeridos en create_access_pass.", strict=True)
 def test_create_access_pass_campo_requerido_falla(accesos_api, campo, label_esperado):
     """
-    Un pase sin '{campo}' NO deberia poder crearse (campo obligatorio
-    confirmado con el equipo). Al dia de hoy la API lo permite y
-    responde 201 en vez de rechazarlo.
+    Un pase sin '{campo}' NO deberia poder crearse (campo obligatorio).
     """
     accesos_api.use_api = False
     pase = _build_pase()
