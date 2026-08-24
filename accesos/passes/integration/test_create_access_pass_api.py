@@ -135,7 +135,7 @@ def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
 @pytest.mark.parametrize("campo, label_esperado", [
     ("email", "Email"),
     ("telefono", "Telefono"),
-    ("ubicacion", "Ubicacion"),
+    ("ubicaciones", "Ubicacion"),
     ("perfil_pase", "Tipo de Visita"),
     ("visita_a", "Responsable (Visita A)"),
 ])
@@ -146,12 +146,19 @@ def test_create_access_pass_campo_requerido_falla(accesos_api, campo, label_espe
     accesos_api.use_api = False
     pase = _build_pase()
     pase.pop(campo, None)
-    res = accesos_api.create_access_pass(pase)
-
-    assert res['status_code'] in (400, 422), (
-        f"Se esperaba rechazo por falta de '{campo}', pero la API "
-        f"respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
-    )
+    
+    try:
+        res = accesos_api.create_access_pass(pase)
+        assert res['status_code'] in (400, 422), (
+            f"Se esperaba rechazo por falta de '{campo}', pero la API "
+            f"respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+        )
+    except Exception as exc_info:
+        error = simplejson.loads(str(exc_info)).get("exception", {})
+        assert error.get("status") == 400, (
+            f"Se esperaba rechazo con status 400 por falta de '{campo}', "
+            f"se obtuvo: {error}"
+        )
 
 @pytest.mark.integration
 def test_create_access_pass_empresa_opcional_no_bloquea(accesos_api):
@@ -224,22 +231,27 @@ def test_create_access_pass_email_invalido_falla(accesos_api, email_invalido):
     "555-444-333!",    # contiene simbolos
     "",                # vacio
 ])
-@pytest.mark.xfail(reason="Bug confirmado: backend no valida formato/longitud de 'telefono' en create_access_pass, a pesar de que se esperaban 10 digitos.", strict=True)
 def test_create_access_pass_telefono_invalido_falla(accesos_api, telefono_invalido):
     """
-    Un pase con 'telefono' que no cumple el formato esperado (10 digitos
-    numericos) NO deberia poder crearse. Al dia de hoy la API lo permite
-    y responde 201 en vez de rechazarlo, incluso con telefono vacio.
+    Un pase con telefono que no tenga exactamente 10 digitos numericos
+    NO deberia poder crearse.
     """
     accesos_api.use_api = False
     pase = _build_pase()
     pase['telefono'] = telefono_invalido
-    res = accesos_api.create_access_pass(pase)
 
-    assert res['status_code'] in (400, 422), (
-        f"Se esperaba rechazo por telefono invalido '{telefono_invalido}', pero "
-        f"la API respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
-    )
+    try:
+        res = accesos_api.create_access_pass(pase)
+        assert res['status_code'] in (400, 422), (
+            f"Se esperaba rechazo por telefono invalido '{telefono_invalido}', "
+            f"pero la API respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+        )
+    except Exception as exc_info:
+        error = simplejson.loads(str(exc_info)).get("exception", {})
+        assert error.get("status") == 400, (
+            f"Se esperaba rechazo con status 400 por telefono invalido '{telefono_invalido}', "
+            f"se obtuvo: {error}"
+        )
 
 @pytest.mark.integration
 @pytest.mark.parametrize("nombre_especial", [
@@ -451,3 +463,27 @@ def test_update_full_pass_link_vacio_causa_unbound_local_error(accesos_api):
         f"Se esperaba que update_full_pass actualizara el pase {folio} "
         f"con 'link' vacio sin problema, pero respondio {res['status_code']}: {res.get('json')}"
     )
+
+@pytest.mark.integration
+def test_create_access_pass_acompanantes_excede_limite_falla(accesos_api):
+    """
+    Si 'acompanantes_grupo' trae mas nombres que el numero declarado en
+    'acompanantes', NO deberia poder crearse el pase.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['acompanantes'] = 1
+    pase['acompanantes_grupo'] = ['Acompanante Uno', 'Acompanante Dos', 'Acompanante Tres']
+
+    try:
+        res = accesos_api.create_access_pass(pase)
+        assert res['status_code'] in (400, 422), (
+            f"Se esperaba rechazo por exceso de acompanantes, pero la API "
+            f"respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+        )
+    except Exception as exc_info:
+        error = simplejson.loads(str(exc_info)).get("exception", {})
+        assert error.get("status") == 400, (
+            f"Se esperaba rechazo con status 400 por exceso de acompanantes, "
+            f"se obtuvo: {error}"
+        )
