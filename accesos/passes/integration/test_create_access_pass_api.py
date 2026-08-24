@@ -4,6 +4,7 @@ import simplejson
 from datetime import datetime, timedelta
 
 import pytest
+import simplejson
 from pytz import timezone
 
 from passes.data.pase_entrada_data import PASE_ENTRADA
@@ -20,6 +21,24 @@ def _build_pase():
     pase['fecha_desde_hasta'] = hoy
     return pase
 
+@pytest.mark.integration
+def test_create_access_pass_fecha_hoy_permite_crear(accesos_api):
+    """
+    Un pase con fecha de visita igual al dia actual (caso borde frente
+    a T-C10-006, que prueba fecha en el pasado) SI deberia poder crearse.
+    """
+    accesos_api.use_api = False
+    hoy = f"{_hoy()} 00:00:00"
+    pase = copy.deepcopy(PASE_ENTRADA)
+    pase['fecha_desde_visita'] = hoy
+    pase['fecha_desde_hasta'] = hoy
+
+    res = accesos_api.create_access_pass(pase)
+
+    assert res['status_code'] == 201, (
+        f"Se esperaba que un pase con fecha de visita igual a hoy ({hoy}) "
+        f"se creara sin problema, pero la API respondio {res['status_code']}: {res.get('json')}"
+    )
 
 @pytest.mark.integration
 def test_create_access_pass_status_code_201(accesos_api):
@@ -101,9 +120,9 @@ def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
     """
     accesos_api.use_api = False
     pase = copy.deepcopy(PASE_ENTRADA)
-    ayer = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d 00:00:00')
-    pase['fecha_desde_visita'] = ayer
-    pase['fecha_desde_hasta'] = ayer
+    hace_2_dias = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d 00:00:00')
+    pase['fecha_desde_visita'] = hace_2_dias
+    pase['fecha_desde_hasta'] = hace_2_dias
 
     with pytest.raises(Exception) as exc_info:
         accesos_api.create_access_pass(pase)
@@ -115,28 +134,47 @@ def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
 
 @pytest.mark.integration
 @pytest.mark.parametrize("campo, label_esperado", [
-    ("empresa", "Empresa"),
     ("email", "Email"),
     ("telefono", "Telefono"),
-    ("ubicacion", "Ubicacion"),
+    ("ubicaciones", "Ubicacion"),
     ("perfil_pase", "Tipo de Visita"),
     ("visita_a", "Responsable (Visita A)"),
 ])
-@pytest.mark.xfail(reason="Bug confirmado: backend no valida estos campos como requeridos en create_access_pass.", strict=True)
 def test_create_access_pass_campo_requerido_falla(accesos_api, campo, label_esperado):
     """
-    Un pase sin '{campo}' NO deberia poder crearse (campo obligatorio
-    confirmado con el equipo). Al dia de hoy la API lo permite y
-    responde 201 en vez de rechazarlo.
+    Un pase sin '{campo}' NO deberia poder crearse (campo obligatorio).
     """
     accesos_api.use_api = False
     pase = _build_pase()
     pase.pop(campo, None)
+    
+    try:
+        res = accesos_api.create_access_pass(pase)
+        assert res['status_code'] in (400, 422), (
+            f"Se esperaba rechazo por falta de '{campo}', pero la API "
+            f"respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+        )
+    except Exception as exc_info:
+        error = simplejson.loads(str(exc_info)).get("exception", {})
+        assert error.get("status") == 400, (
+            f"Se esperaba rechazo con status 400 por falta de '{campo}', "
+            f"se obtuvo: {error}"
+        )
+
+@pytest.mark.integration
+def test_create_access_pass_empresa_opcional_no_bloquea(accesos_api):
+    """
+    'empresa' es un campo opcional: un visitante no siempre pertenece a
+    una empresa. Un pase sin 'empresa' SI deberia poder crearse.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase.pop('empresa', None)
     res = accesos_api.create_access_pass(pase)
 
-    assert res['status_code'] in (400, 422), (
-        f"Se esperaba rechazo por falta de '{campo}', pero la API "
-        f"respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+    assert res['status_code'] == 201, (
+        f"Se esperaba que un pase sin 'empresa' se creara sin problema "
+        f"(campo opcional), pero la API respondio {res['status_code']}: {res.get('json')}"
     )
 
 @pytest.mark.integration
@@ -161,3 +199,292 @@ def test_create_access_pass_valor_catalogo_invalido_falla(accesos_api, campo, va
         f"catalogo, pero la API respondio {res['status_code']} y creo "
         f"el pase igual: {res.get('json')}"
     )
+
+@pytest.mark.integration
+@pytest.mark.parametrize("email_invalido", [
+    "sin-arroba.com",
+    "usuario@",
+    "usuario@dominio",
+    "usuario@@dominio.com",
+    "usuario dominio.com",
+    "usuario@dominio,com",
+])
+def test_create_access_pass_email_invalido_falla(accesos_api, email_invalido):
+    """
+    Un pase con 'email' en formato invalido (sin @, sin dominio, con
+    espacios, doble @, etc.) NO deberia poder crearse.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['email'] = email_invalido
+    res = accesos_api.create_access_pass(pase)
+
+    assert res['status_code'] in (400, 422), (
+        f"Se esperaba rechazo por email invalido '{email_invalido}', pero "
+        f"la API respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+    )
+
+@pytest.mark.integration
+@pytest.mark.parametrize("telefono_invalido", [
+    "12345",           # menos de 10 digitos
+    "123456789012",    # mas de 10 digitos
+    "555abc4321",      # contiene letras
+    "555-444-333!",    # contiene simbolos
+    "",                # vacio
+])
+def test_create_access_pass_telefono_invalido_falla(accesos_api, telefono_invalido):
+    """
+    Un pase con telefono que no tenga exactamente 10 digitos numericos
+    NO deberia poder crearse.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['telefono'] = telefono_invalido
+
+    try:
+        res = accesos_api.create_access_pass(pase)
+        assert res['status_code'] in (400, 422), (
+            f"Se esperaba rechazo por telefono invalido '{telefono_invalido}', "
+            f"pero la API respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+        )
+    except Exception as exc_info:
+        error = simplejson.loads(str(exc_info)).get("exception", {})
+        assert error.get("status") == 400, (
+            f"Se esperaba rechazo con status 400 por telefono invalido '{telefono_invalido}', "
+            f"se obtuvo: {error}"
+        )
+
+@pytest.mark.integration
+@pytest.mark.parametrize("nombre_especial", [
+    "<script>alert(1)</script>",           # XSS
+    "'; DROP TABLE users; --",             # SQL injection
+    '{"$ne": null}',                       # NoSQL injection
+    "Ñoño & Cía. <O'Brien> \"Test\"",      # acentos, ampersand, comillas
+    "😀🎉👍 Test Emoji",                   # emojis
+    "A" * 1000,                            # string muy largo
+])
+def test_create_access_pass_nombre_caracteres_especiales(accesos_api, nombre_especial):
+    """
+    El backend NO debe romperse (error 500) ni comportarse de forma
+    insegura al recibir caracteres especiales, payloads de inyeccion
+    (XSS, SQL, NoSQL) o strings muy largos en el campo 'nombre'.
+    Se acepta que el pase se cree (200/201) o se rechace por validacion
+    (400/422), pero nunca debe producir un error no controlado.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['nombre'] = nombre_especial
+    res = accesos_api.create_access_pass(pase)
+
+    assert res['status_code'] != 500, (
+        f"El backend fallo con error de servidor al recibir nombre "
+        f"'{nombre_especial[:50]}...': {res.get('json') or res.get('data')}"
+    )
+    assert res['status_code'] in (200, 201, 400, 422), (
+        f"Codigo de respuesta inesperado ({res['status_code']}) para "
+        f"nombre '{nombre_especial[:50]}...': {res.get('json') or res.get('data')}"
+    )
+
+@pytest.mark.integration
+@pytest.mark.xfail(reason="Bug confirmado: backend no previene pases duplicados para el mismo visitante en la misma fecha en create_access_pass.", strict=True)
+def test_create_access_pass_duplicado_misma_persona_fecha_falla(accesos_api):
+    """
+    No deberia poder crearse un segundo pase activo para el mismo
+    visitante (mismo email) en la misma fecha de visita. Al dia de hoy
+    la API lo permite y crea ambos pases con 201.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+
+    primer_res = accesos_api.create_access_pass(pase)
+    assert primer_res['status_code'] == 201, (
+        f"El primer pase deberia crearse sin problema: {primer_res.get('json')}"
+    )
+
+    segundo_res = accesos_api.create_access_pass(pase)
+    assert segundo_res['status_code'] in (400, 409, 422), (
+        f"Se esperaba rechazo por pase duplicado (mismo visitante, misma "
+        f"fecha), pero la API respondio {segundo_res['status_code']} y "
+        f"creo el pase igual: {segundo_res.get('json')}"
+    )
+
+@pytest.mark.integration
+@pytest.mark.parametrize("visita_a_invalido", [
+    "000000000000000000000000",   # ObjectId con formato valido pero inexistente
+    "usuario_que_no_existe",      # valor claramente invalido
+])
+@pytest.mark.xfail(reason="Bug confirmado: backend no valida que 'visita_a' referencie un usuario existente en create_access_pass.", strict=True)
+def test_create_access_pass_visita_a_usuario_inexistente_falla(accesos_api, visita_a_invalido):
+    """
+    Un pase con 'visita_a' (Responsable) que referencia un usuario
+    inexistente NO deberia poder crearse. Al dia de hoy la API lo
+    permite y responde 201 en vez de rechazarlo.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['visita_a'] = visita_a_invalido
+    res = accesos_api.create_access_pass(pase)
+
+    assert res['status_code'] in (400, 404, 422), (
+        f"Se esperaba rechazo por 'visita_a' inexistente '{visita_a_invalido}', "
+        f"pero la API respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+    )
+
+@pytest.mark.integration
+@pytest.mark.xfail(reason="Bug confirmado: update_full_pass falla con 400 porque el script create_qr.py no encuentra el modulo 'base_utils' (ModuleNotFoundError). Problema de despliegue/infraestructura, no de datos de prueba.", strict=True)
+def test_update_full_pass_regresion_actualiza_correctamente(accesos_api):
+    """
+    Prueba de regresion: confirma que update_full_pass existe y permite
+    actualizar un pase existente.
+
+    Reutiliza los mismos valores de '_build_pase()', en vez de datos nuevos
+    inventados, para no depender de catalogos/empleados especificos
+    que solo existan en un ambiente en particular.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    creado = accesos_api.create_access_pass(pase)
+    assert creado['status_code'] == 201, f"No se pudo crear el pase base: {creado}"
+
+    folio = creado['json']['folio']
+    qr_code = creado['json']['id']
+    hoy = _hoy()
+
+    ubicacion = pase.get('ubicacion')
+    visita_a = pase.get('visita_a')
+
+    access_pass_update = {
+        "created_from": "web",
+        "nombre_pase": pase.get('nombre'),
+        "email_pase": pase.get('email'),
+        "empresa_pase": pase.get('empresa'),
+        "telefono_pase": pase.get('telefono'),
+        "ubicacion": ubicacion if isinstance(ubicacion, list) else [ubicacion],
+        "tema_cita": "Test de regresion update_full_pass",
+        "descripcion": "Descripcion actualizada por test de regresion",
+        "perfil_pase": pase.get('perfil_pase'),
+        "status_pase": "activo",
+        "visita_a": visita_a if isinstance(visita_a, list) else [visita_a],
+        "link": {
+            "link": "https://web.clave10.com/dashboard/pase-update",
+            "docs": [],
+            "qr_code": qr_code,
+            "creado_por_id": 10,
+            "creado_por_email": pase.get('email')
+        },
+        "tipo_visita": "alta_de_nuevo_visitante",
+        "enviar_correo_pre_registro": [],
+        "tipo_visita_pase": "rango_de_fechas",
+        "fecha_desde_visita": f"{hoy} 00:00:00",
+        "fecha_desde_hasta": f"{hoy} 23:59:59",
+        "config_dia_de_acceso": "cualquier_día",
+        "config_dias_acceso": [],
+        "config_limitar_acceso": 1,
+        "grupo_areas_acceso": [],
+        "grupo_instrucciones_pase": [{"tipo_comentario": "pase", "comentario_pase": ""}],
+        "grupo_vehiculos": [],
+        "grupo_equipos": [],
+        "autorizado_por": pase.get('email'),
+        "enviar_correo": [],
+        "habilitar_vehiculo": "no",
+        "acompanantes": 0,
+        "acompanantes_grupo": [],
+    }
+
+    res = accesos_api.update_full_pass(
+        access_pass_update, folio=folio, qr_code=qr_code,
+        location=ubicacion if isinstance(ubicacion, list) else [ubicacion]
+    )
+
+    assert res['status_code'] in (200, 201, 202, 204), (
+        f"Se esperaba que update_full_pass actualizara el pase {folio} "
+        f"sin problema, pero respondio {res['status_code']}: {res.get('json')}"
+    )
+
+@pytest.mark.integration
+@pytest.mark.xfail(reason="Bug confirmado: si 'link' llega vacio/None, la variable 'link_pass' nunca se asigna dentro del bloque 'if link_info:' de update_full_pass, pero se usa fuera de ese bloque, causando UnboundLocalError.", strict=True)
+def test_update_full_pass_link_vacio_causa_unbound_local_error(accesos_api):
+    """
+    Prueba de regresion: confirma que update_full_pass no truena cuando
+    el campo 'link' llega vacio o None.
+    Reutiliza los mismos valores de '_build_pase()' para no depender de
+    catalogos/empleados especificos que solo existan en un ambiente en particular.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    creado = accesos_api.create_access_pass(pase)
+    assert creado['status_code'] == 201, f"No se pudo crear el pase base: {creado}"
+
+    folio = creado['json']['folio']
+    qr_code = creado['json']['id']
+    hoy = _hoy()
+
+    ubicacion = pase.get('ubicacion')
+    visita_a = pase.get('visita_a')
+
+    access_pass_update = {
+        "created_from": "web",
+        "nombre_pase": pase.get('nombre'),
+        "email_pase": pase.get('email'),
+        "empresa_pase": pase.get('empresa'),
+        "telefono_pase": pase.get('telefono'),
+        "ubicacion": ubicacion if isinstance(ubicacion, list) else [ubicacion],
+        "tema_cita": "Test de regresion link vacio",
+        "descripcion": "Descripcion actualizada por test de regresion",
+        "perfil_pase": pase.get('perfil_pase'),
+        "status_pase": "activo",
+        "visita_a": visita_a if isinstance(visita_a, list) else [visita_a],
+        # Caso de prueba: 'link' vacio, dispara el bug de link_pass no inicializado
+        "link": {},
+        "tipo_visita": "alta_de_nuevo_visitante",
+        "enviar_correo_pre_registro": [],
+        "tipo_visita_pase": "rango_de_fechas",
+        "fecha_desde_visita": f"{hoy} 00:00:00",
+        "fecha_desde_hasta": f"{hoy} 23:59:59",
+        "config_dia_de_acceso": "cualquier_día",
+        "config_dias_acceso": [],
+        "config_limitar_acceso": 1,
+        "grupo_areas_acceso": [],
+        "grupo_instrucciones_pase": [{"tipo_comentario": "pase", "comentario_pase": ""}],
+        "grupo_vehiculos": [],
+        "grupo_equipos": [],
+        "autorizado_por": pase.get('email'),
+        "enviar_correo": [],
+        "habilitar_vehiculo": "no",
+        "acompanantes": 0,
+        "acompanantes_grupo": [],
+    }
+
+    res = accesos_api.update_full_pass(
+        access_pass_update, folio=folio, qr_code=qr_code,
+        location=ubicacion if isinstance(ubicacion, list) else [ubicacion]
+    )
+
+    assert res['status_code'] in (200, 201, 202, 204), (
+        f"Se esperaba que update_full_pass actualizara el pase {folio} "
+        f"con 'link' vacio sin problema, pero respondio {res['status_code']}: {res.get('json')}"
+    )
+
+@pytest.mark.integration
+def test_create_access_pass_acompanantes_excede_limite_falla(accesos_api):
+    """
+    Si 'acompanantes_grupo' trae mas nombres que el numero declarado en
+    'acompanantes', NO deberia poder crearse el pase.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['acompanantes'] = 1
+    pase['acompanantes_grupo'] = ['Acompanante Uno', 'Acompanante Dos', 'Acompanante Tres']
+
+    try:
+        res = accesos_api.create_access_pass(pase)
+        assert res['status_code'] in (400, 422), (
+            f"Se esperaba rechazo por exceso de acompanantes, pero la API "
+            f"respondio {res['status_code']} y creo el pase igual: {res.get('json')}"
+        )
+    except Exception as exc_info:
+        error = simplejson.loads(str(exc_info)).get("exception", {})
+        assert error.get("status") == 400, (
+            f"Se esperaba rechazo con status 400 por exceso de acompanantes, "
+            f"se obtuvo: {error}"
+        )
