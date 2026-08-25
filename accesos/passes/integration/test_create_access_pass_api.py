@@ -1,10 +1,5 @@
-import copy
-import re
-import simplejson
+import copy, re, pytest, logging, simplejson
 from datetime import datetime, timedelta
-
-import pytest
-import simplejson
 from pytz import timezone
 
 from passes.data.pase_entrada_data import PASE_ENTRADA
@@ -331,7 +326,6 @@ def test_create_access_pass_visita_a_usuario_inexistente_falla(accesos_api, visi
     )
 
 @pytest.mark.integration
-@pytest.mark.xfail(reason="Bug confirmado: update_full_pass falla con 400 porque el script create_qr.py no encuentra el modulo 'base_utils' (ModuleNotFoundError). Problema de despliegue/infraestructura, no de datos de prueba.", strict=True)
 def test_update_full_pass_regresion_actualiza_correctamente(accesos_api):
     """
     Prueba de regresion: confirma que update_full_pass existe y permite
@@ -395,6 +389,7 @@ def test_update_full_pass_regresion_actualiza_correctamente(accesos_api):
         access_pass_update, folio=folio, qr_code=qr_code,
         location=ubicacion if isinstance(ubicacion, list) else [ubicacion]
     )
+    # logging.info(f"LOG: {res}")
 
     assert res['status_code'] in (200, 201, 202, 204), (
         f"Se esperaba que update_full_pass actualizara el pase {folio} "
