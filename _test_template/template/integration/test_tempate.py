@@ -10,4 +10,4 @@ from lkf_modules.accesos.items.scripts.Module.module_testing import *
 
 
 def test_template(acceso_obj):
-    assert 1 = 1
+    assert 1 == 1

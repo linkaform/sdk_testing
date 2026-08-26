@@ -36,7 +36,7 @@ LOCATION_AREAS = {
 
 
 LOCATION_AREAS = {
-    'Corporativo Tiendas 3B':['Entrada caseta principal', 'Estacionamiento', 'Lobby', 'Oficinas Administrativas', 'Recepción', 'Sala de juntas planta baja'], 'Visita_a': ['Administración Tiendas 3B', 'Andrea Bustos Carranza', 'Enrique Iván Delgado Ayala', 'Giselle Jocelyn Mayorga Ruiz', 'Janeth Itzel Carbajal Estrella', 'Jessica Marsha Meza Vargas', 'Martín de Jesús Romero Chávez', 'Rolando Muñiz Campos', 'Zurisadai Camacho Contreras'],
+    'Planta Monterrey':['Entrada caseta principal', 'Estacionamiento', 'Lobby', 'Oficinas Administrativas', 'Recepción', 'Sala de juntas planta baja'], 'Visita_a': ['Administración Tiendas 3B', 'Andrea Bustos Carranza', 'Enrique Iván Delgado Ayala', 'Giselle Jocelyn Mayorga Ruiz', 'Janeth Itzel Carbajal Estrella', 'Jessica Marsha Meza Vargas', 'Martín de Jesús Romero Chávez', 'Rolando Muñiz Campos', 'Zurisadai Camacho Contreras'],
 }
 
 
@@ -79,11 +79,6 @@ PASE = {
     "config_limitar_acceso": 3,
     "areas": [],
     "comentarios": [],
-    "enviar_pre_sms": {
-      "from": "enviar_pre_sms",
-      "mensaje": "SOY UN MENSAJE",
-      "numero": "+521234567890"
-    },
     "todas_las_areas": False,
     "created_from": "web"
   }
@@ -126,11 +121,6 @@ PASE_FECHA_FIJA_OLD = {
     "config_limitar_acceso": 3,
     "areas": [],
     "comentarios": [],
-    "enviar_pre_sms": {
-      "from": "enviar_pre_sms",
-      "mensaje": "SOY UN MENSAJE",
-      "numero": "+521234567890"
-    },
     "todas_las_areas": False,
     "created_from": "web"
   }
@@ -143,8 +133,8 @@ PASE_FECHA_FIJA = {"access_pass":
     "empresa":"Clave10",
     "email":"pruebas@clave10.com",
     "telefono":"+52811500000",
-    # "ubicacion":"Corporativo Tiendas 3B",
-    "ubicaciones":["Corporativo Tiendas 3B"],
+    # "ubicacion":"Planta Monterrey",
+    "ubicaciones":["Planta Monterrey"],
     "tema_cita":"Pruebas",
     "descripcion":"Descripcion Pruebas",
     "perfil_pase":"Visita General",
@@ -165,10 +155,8 @@ PASE_FECHA_FIJA = {"access_pass":
     "config_limitar_acceso":1,
     "areas":[],
     "comentarios":[],
-    "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
     "todas_las_areas":False},
-    # "location":"Corporativo Tiendas 3B",
-    "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
+    # "location":"Planta Monterrey",
     "option":"create_access_pass",
     "script_name":"pase_de_acceso.py"}
 
@@ -219,11 +207,6 @@ PASE_APP = {
     "config_limitar_acceso": 3,
     "areas": [],
     "comentarios": [],
-    "enviar_pre_sms": {
-      "from": "enviar_pre_sms",
-      "mensaje": "SOY UN MENSAJE",
-      "numero": "+521234567890"
-    },
     "todas_las_areas": False,
     "created_from": "app"
   }
@@ -312,14 +295,14 @@ UPDATE_PASS_APP = {
       "walkin_fotografia": [
         {
           "file_name": "imageUser.png",
-          "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/698f418a55839de9834650ea.png"
+          "file_url": "https://b2.linkaform.com/file/app-linkaform/public-client-126/71202/60b81349bde5588acca320e1/6a600482f4b892d898c9d603.png"
         }
       ],
       "grupo_equipos": [],
       "email": "josepato@hotmail.com",
       "status_pase": "activo",
       "ubicacion": [
-        "Corporativo Tiendas 3B"
+        "Planta Monterrey"
       ],
       "nombre": "Jose Pruebas",
       "visita_a": [
@@ -329,7 +312,7 @@ UPDATE_PASS_APP = {
       "walkin_identificacion": [
         {
           "file_name": "imageCard.png",
-          "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/698f418f496537548215bf96.png"
+          "file_url": "https://b2.linkaform.com/file/app-linkaform/public-client-126/71202/60b81349bde5588acca320e1/6a600480f4b892d898c9d602.png"
         }
       ],
       "telefono": "8115778605",
@@ -344,7 +327,7 @@ UPDATE_PASS_APP = {
 }
 
 PASE_AUTO_REGISTRO_SIN_VISTA_A ={"script_name":"pase_de_acceso_use_api.py","option":"create_access_pass",
-        "access_pass":{"ubicaciones":["Corporativo Tiendas 3B"],
+        "access_pass":{"ubicaciones":["Planta Monterrey"],
         "nombre":f"Prueba {current_time}",
         "perfil_pase":"Walkin",
         "telefono":"811-500-0000",
@@ -373,8 +356,8 @@ COMPLETAR_PASE_USAURIO_ACTUAL = {"script_name":"pase_de_acceso_use_api.py","opti
 # pase de entrada web
 # {"access_pass":
 # {"created_from":"web","selected_visita_a":"","nombre":"Purebas Pase d eEntrada","empresa":"Clave10",
-# "email":"josepato@linkaform.com","telefono":"+528115778605","ubicacion":"Corporativo Tiendas 3B",
-# "ubicaciones":["Corporativo Tiendas 3B"],"tema_cita":"Prueba","descripcion":"Demo","perfil_pase":"Visita General",
+# "email":"josepato@linkaform.com","telefono":"+528115778605","ubicacion":"Planta Monterrey",
+# "ubicaciones":["Planta Monterrey"],"tema_cita":"Prueba","descripcion":"Demo","perfil_pase":"Visita General",
 # "status_pase":"Proceso","visita_a":["Usuario Actual"],"custom":true,
 # "link":{"link":"https://web.clave10.com/dashboard/pase-update","docs":["agregarFoto","agregarIdentificacion"],
 # "creado_por_id":29909,"creado_por_email":"jme@tiendas3b.com"},
@@ -382,10 +365,8 @@ COMPLETAR_PASE_USAURIO_ACTUAL = {"script_name":"pase_de_acceso_use_api.py","opti
 # "tipo_visita_pase":"rango_de_fechas","fechaFija":"","fecha_desde_visita":"2026-02-16 00:00:00",
 # "fecha_desde_hasta":"2026-02-16 23:59:59","config_dia_de_acceso":"cualquier_día","config_dias_acceso":[],
 # "config_limitar_acceso":1,"areas":[],"comentarios":[],
-# "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
 # "todas_las_areas":false},
-# "location":"Corporativo Tiendas 3B",
-# "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
+# "location":"Planta Monterrey",
 # "option":"create_access_pass","script_name":"pase_de_acceso.py"}
 
 
@@ -393,7 +374,7 @@ COMPLETAR_PASE_USAURIO_ACTUAL = {"script_name":"pase_de_acceso_use_api.py","opti
 # COMPLETAR_PASE_USAURIO_ACTUAL = {"script_name":"pase_de_acceso_use_api.py","option":"update_pass",
 # "access_pass":{"grupo_vehiculos":[],"grupo_equipos":[],"status_pase":"activo","walkin_fotografia":[],
 # "walkin_identificacion":[],"account_id":10,"nombre":"Jose Pruebas",
-# "ubicacion":["Corporativo Tiendas 3B"],"email":"josepato@hotmail.com","telefono":"8115778605","visita_a":["Usuario Actual"]},
+# "ubicacion":["Planta Monterrey"],"email":"josepato@hotmail.com","telefono":"8115778605","visita_a":["Usuario Actual"]},
 # "folio":"698f41bc5a5cf33dcae8bce8","account_id":10}
 
 # COMPLETAR_PASE_USAURIO_ACTUAL = {"script_name":"pase_de_acceso_use_api.py","option":"update_pass",
@@ -403,5 +384,5 @@ COMPLETAR_PASE_USAURIO_ACTUAL = {"script_name":"pase_de_acceso_use_api.py","opti
 # COMPLETAR_PASE = {"script_name":"pase_de_acceso_use_api.py","option":"update_pass",
 # "access_pass":{"grupo_vehiculos":[],"grupo_equipos":[],"status_pase":"activo","walkin_fotografia":[],
 # "walkin_identificacion":[],"account_id":10,"nombre":"Jose Pruebas",
-# "ubicacion":["Corporativo Tiendas 3B"],"email":"josepato@hotmail.com","telefono":"8115778605",
+# "ubicacion":["Planta Monterrey"],"email":"josepato@hotmail.com","telefono":"8115778605",
 # "visita_a":["Jessica Marsha Meza Vargas"]},"folio":"698f41bc5a5cf33dcae8bce8","account_id":10}
