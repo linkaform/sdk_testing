@@ -73,11 +73,6 @@ PASE = {
     "config_limitar_acceso": 3,
     "areas": [],
     "comentarios": [],
-    "enviar_pre_sms": {
-      "from": "enviar_pre_sms",
-      "mensaje": "SOY UN MENSAJE",
-      "numero": "+521234567890"
-    },
     "todas_las_areas": False,
     "created_from": "web"
   }
@@ -120,11 +115,6 @@ PASE_FECHA_FIJA_OLD = {
     "config_limitar_acceso": 3,
     "areas": [],
     "comentarios": [],
-    "enviar_pre_sms": {
-      "from": "enviar_pre_sms",
-      "mensaje": "SOY UN MENSAJE",
-      "numero": "+521234567890"
-    },
     "todas_las_areas": False,
     "created_from": "web"
   }
@@ -158,10 +148,8 @@ PASE_FECHA_FIJA = {"access_pass":
     "config_limitar_acceso":1,
     "areas":[],
     "comentarios":[],
-    "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
     "todas_las_areas":False},
     # "location":"Corporativo Tiendas 3B",
-    "enviar_pre_sms":{"from":"enviar_pre_sms","mensaje":"SOY UN MENSAJE","numero":"+528115778605"},
     "option":"create_access_pass",
     "script_name":"pase_de_acceso.py"}
 
@@ -204,11 +192,6 @@ PASE_APP = {
     "config_limitar_acceso": 3,
     "areas": [],
     "comentarios": [],
-    "enviar_pre_sms": {
-      "from": "enviar_pre_sms",
-      "mensaje": "SOY UN MENSAJE",
-      "numero": "+521234567890"
-    },
     "todas_las_areas": False,
     "created_from": "app"
   }
@@ -271,7 +254,7 @@ UPDATE_PASS_APP = {
       "walkin_fotografia": [
         {
           "file_name": "imageUser.png",
-          "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/698f418a55839de9834650ea.png"
+          "file_url": "https://b2.linkaform.com/file/app-linkaform/public-client-126/71202/60b81349bde5588acca320e1/6a600482f4b892d898c9d603.png"
         }
       ],
       "grupo_equipos": [],
@@ -288,7 +271,7 @@ UPDATE_PASS_APP = {
       "walkin_identificacion": [
         {
           "file_name": "imageCard.png",
-          "file_url": "https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/698f418f496537548215bf96.png"
+          "file_url": "https://b2.linkaform.com/file/app-linkaform/public-client-126/71202/60b81349bde5588acca320e1/6a600480f4b892d898c9d602.png"
         }
       ],
       "telefono": "8115778605",
