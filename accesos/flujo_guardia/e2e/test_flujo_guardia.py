@@ -58,7 +58,7 @@ def test_flujo_guardia_turno_areas_y_rondin(acceso_obj, area_obj, rondines_obj):
          bitacora_rondines quede con estatus_del_recorrido='realizado'.
 
     Este test NO ejecuta el DAG (run_rondin/run_cron): eso pega directo al
-    servicio interno airflow_bob (192.168.0.25:5000 en este ambiente), que
+    servicio interno airflow_bob (192.168.1.25:5000 en este ambiente), que
     no es alcanzable desde el contenedor de test. Alcanzar `dag_id`
     asignado ya es suficiente para confirmar que el rondín quedó bien
     configurado y suscrito. Ver `ejecutar_rondin`/`esperar_bitacora_rondin`
