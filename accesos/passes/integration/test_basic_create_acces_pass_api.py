@@ -4,6 +4,15 @@ from pytz import timezone
 
 from passes.data.pase_entrada_data import PASE_ENTRADA
 
+FOTO_VALIDA = [{
+    'file_name': 'fotografia.jpeg',
+    'file_url': 'https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/6a99bdcfd3c33eb08528d9a6.jpeg',
+}]
+IDENTIFICACION_VALIDA = [{
+    'file_name': 'identificacion.png',
+    'file_url': 'https://f001.backblazeb2.com/file/app-linkaform/public-client-126/116852/660459dde2b2d414bce9cf8f/6a99bde95b642b0dc79057b6.png',
+}]
+
 
 def _hoy(tz_name='America/Monterrey'):
     return datetime.now().astimezone(timezone(tz_name)).strftime('%Y-%m-%d')
@@ -405,3 +414,172 @@ def test_create_access_pass_acompanantes_excede_limite_falla(accesos_api):
             f"Se esperaba rechazo con status 400 por exceso de acompanantes, "
             f"se obtuvo: {error}"
         )
+ 
+@pytest.mark.integration
+def test_create_access_pass_nueva_visita_falta_foto_no_activa(accesos_api):
+    """
+    created_from='nueva_visita' siempre evalua los requerimientos de la
+    ubicacion. 'Planta Monterrey' pide foto e identificacion via config.
+    Un pase sin 'foto' NO deberia quedar 'activo' (se queda 'proceso').
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['ubicaciones'] = ['Planta Monterrey']
+    pase['created_from'] = 'nueva_visita'
+    pase.pop('foto', None)
+    pase['identificacion'] = IDENTIFICACION_VALIDA
+ 
+    res = accesos_api.create_access_pass(pase)
+    assert res['status_code'] == 201, (
+        f"Se esperaba que el pase se creara (201) aunque falte la foto, "
+        f"pero la API respondio {res['status_code']}: {res.get('json')}"
+    )
+ 
+    folio = res['json']['folio']
+    consulta = accesos_api.get_my_pases(
+        tab_status="en_proceso",
+        search_name=pase.get('nombre'),
+        limit=10,
+    )
+    registros = consulta.get('records', [])
+    pase_encontrado = next((r for r in registros if r.get('folio') == folio), None)
+ 
+    assert pase_encontrado is not None, (
+        f"No se encontro el pase con folio {folio} en get_my_pases "
+        f"(tab_status='en_proceso'). Registros obtenidos: {registros}"
+    )
+    assert pase_encontrado.get('status_pase') == 'proceso', (
+        f"Se esperaba status_pase='proceso' por falta de foto obligatoria "
+        f"(created_from='nueva_visita'), se obtuvo: "
+        f"{pase_encontrado.get('status_pase')!r} (registro completo: {pase_encontrado})"
+    )
+ 
+ 
+@pytest.mark.integration
+def test_create_access_pass_auto_registro_falta_identificacion_no_activa(accesos_api):
+    """
+    created_from='auto_registro' siempre evalua los requerimientos de la
+    ubicacion. 'Planta Monterrey' pide foto e identificacion via config.
+    Un pase sin 'identificacion' NO deberia quedar 'activo' (se queda
+    'proceso').
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['ubicaciones'] = ['Planta Monterrey']
+    pase['created_from'] = 'auto_registro'
+    pase['foto'] = FOTO_VALIDA
+    pase.pop('identificacion', None)
+ 
+    res = accesos_api.create_access_pass(pase)
+    assert res['status_code'] == 201, (
+        f"Se esperaba que el pase se creara (201) aunque falte la "
+        f"identificacion, pero la API respondio {res['status_code']}: "
+        f"{res.get('json')}"
+    )
+ 
+    folio = res['json']['folio']
+    consulta = accesos_api.get_my_pases(
+        tab_status="en_proceso",
+        search_name=pase.get('nombre'),
+        limit=10,
+    )
+    registros = consulta.get('records', [])
+    pase_encontrado = next((r for r in registros if r.get('folio') == folio), None)
+ 
+    assert pase_encontrado is not None, (
+        f"No se encontro el pase con folio {folio} en get_my_pases "
+        f"(tab_status='en_proceso'). Registros obtenidos: {registros}"
+    )
+    assert pase_encontrado.get('status_pase') == 'proceso', (
+        f"Se esperaba status_pase='proceso' por falta de identificacion "
+        f"obligatoria (created_from='auto_registro'), se obtuvo: "
+        f"{pase_encontrado.get('status_pase')!r} (registro completo: {pase_encontrado})"
+    )
+ 
+ 
+@pytest.mark.integration
+def test_create_access_pass_app_created_from_siempre_proceso(accesos_api):
+    """
+    created_from='pase_de_entrada_app' SOLO evalua los requerimientos de
+    obligatoriedad si el pase manda explicito 'habilitar_identificacion'/
+    'habilitar_fotografia' (admin_override_habilitar). Sin ese override,
+    NUNCA se evalua: el pase queda en 'proceso' sin importar si faltan
+    foto/identificacion (a diferencia de nueva_visita/auto_registro, que
+    siempre evaluan). Se omiten ambos campos para dejar esto claro.
+ 
+    NOTA: se descarto forzar el override via 'habilitar_identificacion'/
+    'habilitar_fotografia' porque ese campo es un catalogo con opciones
+    que no logramos determinar (la API responde 400 "Respuesta
+    incorrecta" con 'si'/'Si'/True); pendiente investigar el catalogo
+    real si se quiere cubrir ese escenario en el futuro.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['created_from'] = 'pase_de_entrada_app'
+    pase.pop('foto', None)
+    pase.pop('identificacion', None)
+ 
+    res = accesos_api.create_access_pass(pase)
+    assert res['status_code'] == 201, (
+        f"Se esperaba que el pase se creara (201) aunque falten foto e "
+        f"identificacion, pero la API respondio {res['status_code']}: "
+        f"{res.get('json')}"
+    )
+ 
+    folio = res['json']['folio']
+    consulta = accesos_api.get_my_pases(
+        tab_status="en_proceso",
+        search_name=pase.get('nombre'),
+        limit=10,
+    )
+    registros = consulta.get('records', [])
+    pase_encontrado = next((r for r in registros if r.get('folio') == folio), None)
+ 
+    assert pase_encontrado is not None, (
+        f"No se encontro el pase con folio {folio} en get_my_pases "
+        f"(tab_status='en_proceso'). Registros obtenidos: {registros}"
+    )
+    assert pase_encontrado.get('status_pase') == 'proceso', (
+        f"Se esperaba status_pase='proceso' (created_from='pase_de_entrada_app' "
+        f"sin override nunca evalua obligatoriedad), se obtuvo: "
+        f"{pase_encontrado.get('status_pase')!r} (registro completo: {pase_encontrado})"
+    )
+ 
+ 
+@pytest.mark.integration
+def test_create_access_pass_web_created_from_siempre_proceso(accesos_api):
+    """
+    Mismo caso que test_create_access_pass_app_created_from_siempre_proceso
+    pero con created_from='pase_de_entrada_web'.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['created_from'] = 'pase_de_entrada_web'
+    pase.pop('foto', None)
+    pase.pop('identificacion', None)
+ 
+    res = accesos_api.create_access_pass(pase)
+    assert res['status_code'] == 201, (
+        f"Se esperaba que el pase se creara (201) aunque falten foto e "
+        f"identificacion, pero la API respondio {res['status_code']}: "
+        f"{res.get('json')}"
+    )
+ 
+    folio = res['json']['folio']
+    consulta = accesos_api.get_my_pases(
+        tab_status="en_proceso",
+        search_name=pase.get('nombre'),
+        limit=10,
+    )
+    registros = consulta.get('records', [])
+    pase_encontrado = next((r for r in registros if r.get('folio') == folio), None)
+ 
+    assert pase_encontrado is not None, (
+        f"No se encontro el pase con folio {folio} en get_my_pases "
+        f"(tab_status='en_proceso'). Registros obtenidos: {registros}"
+    )
+    assert pase_encontrado.get('status_pase') == 'proceso', (
+        f"Se esperaba status_pase='proceso' (created_from='pase_de_entrada_web' "
+        f"sin override nunca evalua obligatoriedad), se obtuvo: "
+        f"{pase_encontrado.get('status_pase')!r} (registro completo: {pase_encontrado})"
+    )
