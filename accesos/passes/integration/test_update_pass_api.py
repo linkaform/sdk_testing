@@ -5,6 +5,7 @@ from .helpers import crear_pase, completar_pase_activo
  
  
 @pytest.mark.integration
+@pytest.mark.prod_test
 def test_update_pass_completar_con_foto_e_identificacion(acceso_obj, mock_pase_do_access):
     """
     T-C10-034: Completar un pase con identificacion y fotografia.

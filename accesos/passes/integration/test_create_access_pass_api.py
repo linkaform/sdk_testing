@@ -15,6 +15,7 @@ def _build_pase():
     return pase
 
 @pytest.mark.integration
+@pytest.mark.prod_test
 def test_create_access_pass_status_code_201(accesos_api):
     """
     T-C10-001: create_access_pass() debe responder 201 al crear un pase
@@ -28,6 +29,7 @@ def test_create_access_pass_status_code_201(accesos_api):
 
 
 @pytest.mark.integration
+@pytest.mark.prod_test
 def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
     """
     T-C10-006: Un pase con fecha de visita en el pasado NO deberia poder
@@ -49,6 +51,7 @@ def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
 
 
 @pytest.mark.integration
+@pytest.mark.prod_test
 def test_create_access_pass_link_docs_completos_permite_crear(accesos_api):
     """
     T-C10-026 (caso valido): un pase con 'link.docs' incluyendo tanto
@@ -69,6 +72,7 @@ def test_create_access_pass_link_docs_completos_permite_crear(accesos_api):
     )
 
 @pytest.mark.integration
+@pytest.mark.prod_test
 def test_create_access_pass_created_from_web_status_en_proceso(accesos_api):
     """
     Un pase creado con created_from = 'web' debe quedar con estatus 'en_proceso' (no
