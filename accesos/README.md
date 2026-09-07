@@ -106,6 +106,38 @@ Todos los tests deben tener el marker de su capa. Están registrados en `pytest.
 
 Sin el marker, pytest lanza un warning y no puedes filtrar por capa al correr las pruebas.
 
+### Múltiples markers en un mismo test
+
+Un test puede tener más de un marker apilando los decoradores. Además del marker de capa (`unit`/`integration`/`e2e`), se puede agregar un marker de funcionalidad para filtrar un subconjunto específico dentro de esa capa:
+
+    @pytest.mark.integration
+    @pytest.mark.do_access
+    def test_do_access_pase_activo_permite_acceso(acceso_obj, mock_pase_do_access):
+        ...
+
+Para correr solo los tests que cumplan **todas** las condiciones (AND):
+
+    pytest -m "integration and do_access"
+
+También se puede filtrar con `or` (cualquiera de los dos) o `not` (excluir):
+
+    pytest -m "integration or e2e"
+    pytest -m "integration and not do_access"
+
+### Registrar un marker nuevo
+
+Antes de usar un marker de funcionalidad (como `do_access`) hay que declararlo en `pytest.ini`, en la sección `markers`, con una descripción corta de qué agrupa:
+
+    markers =
+        unit: Pruebas unitarias (sin red, sin BD, todo mockeado)
+        integration: Pruebas de integración (requieren API de Linkaform activa)
+        e2e: Pruebas end-to-end (requieren API de Linkaform activa y entorno de pruebas configurado)
+        do_access: Pruebas de acceso (requieren API de Linkaform activa y entorno de pruebas configurado)
+
+Si se usa un marker sin registrarlo, pytest lanza `PytestUnknownMarkWarning` (o falla si el proyecto corre con `--strict-markers`).
+
+**Cuidado con nombres de test duplicados:** si dos funciones en el mismo archivo tienen el mismo nombre, Python sobreescribe la primera al importar el módulo — pytest solo colecciona la segunda, y los markers de la primera (incluyendo markers de funcionalidad como `do_access`) desaparecen silenciosamente sin ningún warning. Si vas a copiar un test para adaptarlo a otra capa (por ejemplo de `integration` a `e2e`), cambia el nombre de la función.
+
 ---
 
 ## Docstrings
