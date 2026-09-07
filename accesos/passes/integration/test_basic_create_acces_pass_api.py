@@ -122,9 +122,8 @@ def test_create_access_pass_campo_requerido_falla(accesos_api, campo, label_espe
     """
     Un pase sin '{campo}' NO deberia poder crearse (campo obligatorio).
 
-    NOTA: se corrigio en app.py que SOLO 'ubicaciones' es obligatorio;
-    los demas campos de este parametrize ya no deben fallar. Pendiente
-    actualizar este test para reflejarlo.
+    NOTA: se corrigio en app.py que SOLO 'ubicaciones, 'ubicaciones', 'perfil_pase' 
+    y 'visita_a' es obligatorio; los demas campos de este parametrize ya no deben fallar. 
     """
     accesos_api.use_api = False
     pase = _build_pase()
@@ -583,3 +582,41 @@ def test_create_access_pass_web_created_from_siempre_proceso(accesos_api):
         f"sin override nunca evalua obligatoriedad), se obtuvo: "
         f"{pase_encontrado.get('status_pase')!r} (registro completo: {pase_encontrado})"
     )
+
+@pytest.mark.integration
+@pytest.mark.xfail(
+    reason=(
+        "auto_registro valida el telefono contra r'\\d{10}' (sin '+' ni "
+        "codigo de pais), pero el front siempre manda el telefono CON "
+        "prefijo (igual que los demas flujos)."
+        ),
+    strict=False,
+)
+def test_create_access_pass_status_code_201_auto_registro(accesos_api):
+    """
+    create_access_pass() debe responder 201 al crear un pase con
+    created_from='auto_registro' y datos validos (flujo de autoregistro).
+ 
+    Usa el telefono en el formato real que manda el front (con prefijo,
+    igual que PASE_ENTRADA por default), no el formato de 10 digitos
+    pelones que exige la validacion actual de auto_registro. Ver xfail.
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['created_from'] = 'auto_registro'
+    res = accesos_api.create_access_pass(pase)
+ 
+    assert res['status_code'] == 201
+ 
+@pytest.mark.integration
+def test_create_access_pass_status_code_201_nueva_visita(accesos_api):
+    """
+    create_access_pass() debe responder 201 al crear un pase con
+    created_from='nueva_visita' y datos validos (flujo de nueva visita).
+    """
+    accesos_api.use_api = False
+    pase = _build_pase()
+    pase['created_from'] = 'nueva_visita'
+    res = accesos_api.create_access_pass(pase)
+ 
+    assert res['status_code'] == 201
