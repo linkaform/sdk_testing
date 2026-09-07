@@ -194,3 +194,15 @@ def test_do_access_grupo_acompanante_con_limite_excedido_se_omite(acceso_obj, mo
 
     hacer_salida(acceso_obj, folio_padre, DO_ACCESS_LOCATION, DO_ACCESS_AREA)
     hacer_salida(acceso_obj, qr_disponible, DO_ACCESS_LOCATION, DO_ACCESS_AREA)
+
+@pytest.mark.e2e
+def test_do_access_pase_activo_permite_acceso(acceso_obj, mock_pase_do_access):
+    """
+    Un pase completado (foto + identificación + visita_a) llega a 'activo'
+    y do_access debe crear el registro de entrada en BITACORA_ACCESOS.
+    """
+    folio = crear_pase(acceso_obj, mock_pase_do_access)
+    completar_pase_activo(acceso_obj, folio)
+    res = acceso_obj.do_access(folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA, {})
+    assert res.get('status_code') in (200, 201, 202)
+    hacer_salida(acceso_obj, folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA)
