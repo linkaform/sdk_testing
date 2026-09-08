@@ -1,19 +1,19 @@
 import pytest
  
 from .fixtures import *
-from .helpers import crear_pase, completar_pase_activo
+from .helpers import crear_pase
+from .data.do_access_data import FOTO_VALIDA, IDENTIFICACION_VALIDA
  
  
 @pytest.mark.integration
-@pytest.mark.prod_test
 def test_update_pass_completar_con_foto_e_identificacion(acceso_obj, mock_pase_do_access):
     """
     T-C10-034: Completar un pase con identificacion y fotografia.
  
-    Un pase recien creado (sin foto/identificacion) queda en 'proceso'.
-    Al completarlo via update_pass con walkin_fotografia +
-    walkin_identificacion + visita_a, access_pass_set_status debe
-    evaluar los requisitos como cumplidos y el pase debe quedar 'activo'.
+    'visita_a' ya viene incluido desde la creacion del pase (mock_pase_do_access
+    / PASE_ACCESO_BASE trae visita_a=['Usuario Actual']), asi que el update_pass
+    para completar el pase solo debe mandar walkin_fotografia +
+    walkin_identificacion 
     """
     folio = crear_pase(acceso_obj, mock_pase_do_access)
  
@@ -22,11 +22,26 @@ def test_update_pass_completar_con_foto_e_identificacion(acceso_obj, mock_pase_d
         f"Se esperaba que el pase recien creado quedara en 'proceso' antes "
         f"de completarlo, se obtuvo: {detalle_inicial.get('estatus')!r}"
     )
+    assert detalle_inicial.get('visita_a'), (
+        f"Se esperaba que 'visita_a' ya viniera poblado desde la creacion del "
+        f"pase (aunque venga hidratado a los datos del contacto real, no al "
+        f"valor crudo enviado), se obtuvo: {detalle_inicial.get('visita_a')!r}"
+    )
  
-    detalle = completar_pase_activo(acceso_obj, folio)
+    response = acceso_obj.update_pass(
+        {
+            "walkin_fotografia": FOTO_VALIDA,
+            "walkin_identificacion": IDENTIFICACION_VALIDA,
+        },
+        folio,
+    )
+    assert response.get('status_code') == 202, (
+        f"No se pudo completar el pase {folio}: {response}"
+    )
  
+    detalle = acceso_obj.get_detail_access_pass(folio)
     assert detalle.get('estatus') == 'activo', (
         f"Se esperaba que el pase quedara 'activo' tras completar foto e "
-        f"identificacion, se obtuvo: {detalle.get('estatus')!r} "
-        f"(detalle completo: {detalle})"
+        f"identificacion (usando el visita_a heredado de la creacion), se "
+        f"obtuvo: {detalle.get('estatus')!r} (detalle completo: {detalle})"
     )
