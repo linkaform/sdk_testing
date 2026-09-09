@@ -31,6 +31,7 @@ def test_do_access_pase_en_proceso_no_permite_acceso(acceso_obj, mock_pase_do_ac
 
 
 @pytest.mark.integration
+@pytest.mark.prod_test
 def test_do_access_pase_activo_permite_acceso(acceso_obj, mock_pase_do_access):
     """
     Un pase completado (foto + identificación + visita_a) llega a 'activo'
