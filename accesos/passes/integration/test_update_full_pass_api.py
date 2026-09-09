@@ -27,6 +27,7 @@ def _build_pase():
     return pase
 
 @pytest.mark.integration
+@pytest.mark.prod_test
 @pytest.mark.xfail(
     _es_preprod,
     reason="Bug confirmado (T-C10-023 / T-C10-027): en preprod, create_qr.py usa "

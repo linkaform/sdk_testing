@@ -23,10 +23,9 @@ EQUIPO_VALIDO = {
 }
 
 @pytest.mark.integration
+@pytest.mark.prod_test
 def test_update_pass_completar_con_foto_e_identificacion(acceso_obj, mock_pase_do_access):
-    """
-    T-C10-034: Completar un pase con identificacion y fotografia.
- 
+    """ 
     'visita_a' ya viene incluido desde la creacion del pase (mock_pase_do_access
     / PASE_ACCESO_BASE trae visita_a=['Usuario Actual']), asi que el update_pass
     para completar el pase solo debe mandar walkin_fotografia +
