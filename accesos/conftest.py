@@ -49,7 +49,7 @@ def _requiere_entorno_preprod(request):
         host = settings.config.get('HOST')
         assert host == PREPROD_HOST, (
             f"Entorno activo apunta a '{host}', se esperaba '{PREPROD_HOST}'. "
-            "Verifica ENV en config/enviorment.py antes de correr integration/e2e, "
+            "Corre './lkf workon preprod' (o LKF_ENV=preprod) antes de integration/e2e, "
             "o pasa --allow-prod-integration para correr a propósito contra el entorno activo."
         )
 
