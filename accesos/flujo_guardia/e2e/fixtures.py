@@ -21,7 +21,7 @@ from account_settings import settings
 # está": hay que forzar la posición 0 durante el import puntual y restaurar
 # el sys.path original después, para no contaminar la resolución de otros
 # archivos de test en la misma sesión de pytest.
-_ACCESOS_SCRIPTS_DIR = "/usr/local/lib/python3.10/site-packages/lkf_modules/accesos/items/scripts/Accesos"
+_ACCESOS_SCRIPTS_DIR = "/usr/local/lib/python3.12/site-packages/lkf_modules/accesos/items/scripts/Accesos"
 
 
 def _import_script_accesos_class(module_name):
