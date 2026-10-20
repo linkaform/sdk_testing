@@ -26,6 +26,7 @@ _PROVEEDORES = [
     "Suministros del Norte S.A.",
     "Polímeros del Bajío S.A.",
     "Industrias Químicas del Pacífico S.A.",
+    "Materiales Plásticos del Sur S.A.",
 ]
 
 _MATERIALES = [
