@@ -30,7 +30,7 @@ def _build_pase():
 def test_create_access_pass_fecha_hoy_permite_crear(accesos_api):
     """
     Un pase con fecha de visita igual al dia actual (caso borde frente
-    a T-C10-006, que prueba fecha en el pasado) SI deberia poder crearse.
+    a TB-006, que prueba fecha en el pasado) SI deberia poder crearse.
     """
     accesos_api.use_api = False
     hoy = f"{_hoy()} 00:00:00"
