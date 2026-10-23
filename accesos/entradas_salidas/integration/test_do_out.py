@@ -2,7 +2,7 @@
 
 """
 Salidas (do_out) de la bitácora de Entradas & Salidas.
-Notion: T-C10-055 a T-C10-062.
+Notion: TB-055 a TB-062.
 
 do_out no crea un registro nuevo: cambia el MISMO registro de la entrada a
 tipo_registro='salida' y le llena fecha_salida, duracion y caseta de salida.
@@ -37,7 +37,7 @@ from .helpers import (
 @pytest.mark.integration
 def test_do_out_registra_salida_en_el_mismo_registro(acceso_obj, pase_dentro):
     """
-    T-C10-055: tras la entrada, do_out debe cambiar ese mismo registro a
+    TB-055: tras la entrada, do_out debe cambiar ese mismo registro a
     'salida' con fecha_salida, duracion y caseta de salida. Si falla, la
     bitácora deja a la persona "dentro" o pierde cuánto tiempo estuvo.
     """
@@ -57,7 +57,7 @@ def test_do_out_registra_salida_en_el_mismo_registro(acceso_obj, pase_dentro):
 @pytest.mark.integration
 def test_do_out_doble_salida_es_rechazada(acceso_obj, pase_dentro):
     """
-    T-C10-056: una segunda salida sobre la misma visita debe rechazarse; si
+    TB-056: una segunda salida sobre la misma visita debe rechazarse; si
     no, se sobreescribiría fecha_salida/duración de una visita ya cerrada.
     """
     folio, _ = pase_dentro
@@ -81,7 +81,7 @@ def test_do_out_doble_salida_es_rechazada(acceso_obj, pase_dentro):
 )
 def test_do_out_sin_entrada_previa_mensaje_claro(acceso_obj, pase_activo):
     """
-    T-C10-057: un pase activo que nunca entró no puede salir. El rechazo debe
+    TB-057: un pase activo que nunca entró no puede salir. El rechazo debe
     explicar que no hay entrada; hoy se sospecha que responde
     'Este usuario ingreso en None y no puede salir en ...'.
     """
@@ -94,7 +94,7 @@ def test_do_out_sin_entrada_previa_mensaje_claro(acceso_obj, pase_activo):
 @pytest.mark.integration
 def test_do_out_en_otra_ubicacion_es_rechazada(acceso_obj, pase_dentro):
     """
-    T-C10-058: quien entró por LOCATION no puede salir por otra ubicación
+    TB-058: quien entró por LOCATION no puede salir por otra ubicación
     (caseta no multi-ubicación). El registro debe seguir en 'entrada'.
     """
     folio, _ = pase_dentro
@@ -113,7 +113,7 @@ def test_do_out_en_otra_ubicacion_es_rechazada(acceso_obj, pase_dentro):
 ])
 def test_do_out_sin_ubicacion_o_area_es_rechazada(acceso_obj, pase_dentro, location, area, mensaje):
     """
-    T-C10-059: do_out sin ubicación o sin área debe responder error y no
+    TB-059: do_out sin ubicación o sin área debe responder error y no
     tocar el registro; sin esos datos no se sabe por qué caseta salió.
     """
     folio, _ = pase_dentro
@@ -128,7 +128,7 @@ def test_do_out_sin_ubicacion_o_area_es_rechazada(acceso_obj, pase_dentro, locat
 @pytest.mark.integration
 def test_do_out_con_gafete_sin_devolver_es_rechazada(acceso_obj, pase_dentro):
     """
-    T-C10-060: con un gafete asignado (flujo real del front: assing_gafete
+    TB-060: con un gafete asignado (flujo real del front: assing_gafete
     con status 'asignado'), do_out debe exigir que se devuelva antes de
     registrar la salida; si no, el gafete se queda 'En Uso' para siempre.
     """
@@ -164,7 +164,7 @@ def test_do_out_con_gafete_sin_devolver_es_rechazada(acceso_obj, pase_dentro):
 @pytest.mark.integration
 def test_do_out_con_record_id_de_otro_pase_es_rechazada(acceso_obj, pase_dentro, mock_pase_bitacora):
     """
-    T-C10-061 (caso 1): do_out del pase A con el record_id de la visita del
+    TB-061 (caso 1): do_out del pase A con el record_id de la visita del
     pase B no debe cerrar ninguna de las dos.
     """
     folio_a, _ = pase_dentro
@@ -189,7 +189,7 @@ def test_do_out_con_record_id_de_otro_pase_es_rechazada(acceso_obj, pase_dentro,
 )
 def test_do_out_con_record_id_invalido_error_controlado(acceso_obj, pase_dentro):
     """
-    T-C10-061 (caso 2): un record_id mal formado debe dar un error de
+    TB-061 (caso 2): un record_id mal formado debe dar un error de
     validación, no una excepción interna de Mongo (bson InvalidId).
     """
     folio, _ = pase_dentro
@@ -208,7 +208,7 @@ def test_do_out_con_record_id_invalido_error_controlado(acceso_obj, pase_dentro)
 )
 def test_do_out_tras_editar_visita_anterior_cierra_la_entrada_abierta(acceso_obj, mock_pase_bitacora):
     """
-    T-C10-062: get_last_user_move ordena por updated_at. Si se edita una
+    TB-062: get_last_user_move ordena por updated_at. Si se edita una
     visita ya cerrada (p. ej. agregarle un equipo), esa pasa a ser el
     "último movimiento" y do_out podría fallar aunque hay una entrada abierta.
     """
