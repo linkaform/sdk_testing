@@ -10,11 +10,21 @@ Para crear y activar pases se reutilizan los helpers de passes/integration.
 from passes.integration.helpers import crear_pase, completar_pase_activo  # noqa: F401
 
 
+def ultima_visita(acceso_obj, qr_code):
+    """
+    Última visita del pase según get_list_last_user_move. Falla con un mensaje
+    claro si el pase no tiene visitas, en vez de un IndexError al hacer [0].
+    """
+    visitas = acceso_obj.get_list_last_user_move(qr_code, limit=1)
+    assert visitas, f"El pase {qr_code} no tiene visitas en la bitácora"
+    return visitas[0]
+
+
 def dar_entrada(acceso_obj, qr_code, location, area):
     """Registra la entrada (do_access) y regresa el registro de bitácora creado."""
     res = acceso_obj.do_access(qr_code, location, area, {})
     assert res.get("status_code") in (200, 201, 202), f"No se pudo dar entrada a {qr_code}: {res}"
-    registro = acceso_obj.get_list_last_user_move(qr_code, limit=1)[0]
+    registro = ultima_visita(acceso_obj, qr_code)
     assert registro["status_visita"] == "entrada", f"La entrada no quedó registrada: {registro}"
     return registro
 
