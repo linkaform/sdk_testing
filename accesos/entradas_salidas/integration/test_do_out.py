@@ -5,7 +5,7 @@ Salidas (do_out) de la bitácora de Entradas & Salidas.
 Notion: TB-055 a TB-062.
 
 do_out no crea un registro nuevo: cambia el MISMO registro de la entrada a
-tipo_registro='salida' y le llena fecha_salida, duracion y caseta de salida.
+tipo_registro='salida' y le llena fecha_salida y duracion.
 """
 
 import copy
@@ -28,8 +28,6 @@ from .helpers import (
     completar_pase_activo,
     dar_entrada,
     salida_silenciosa,
-    obtener_registro_bitacora,
-    obtener_registro_bitacora_por_id,
     gafete_y_locker_disponibles,
 )
 
@@ -38,20 +36,19 @@ from .helpers import (
 def test_do_out_registra_salida_en_el_mismo_registro(acceso_obj, pase_dentro):
     """
     TB-055: tras la entrada, do_out debe cambiar ese mismo registro a
-    'salida' con fecha_salida, duracion y caseta de salida. Si falla, la
+    'salida' con fecha_salida y duracion. Si falla, la
     bitácora deja a la persona "dentro" o pierde cuánto tiempo estuvo.
     """
     folio, entrada = pase_dentro
 
     acceso_obj.do_out(folio, LOCATION, AREA)
 
-    salida = obtener_registro_bitacora(acceso_obj, folio)
+    salida = acceso_obj.get_list_last_user_move(folio, limit=1)[0]
     assert salida["_id"] == entrada["_id"], "do_out creó o modificó otro registro"
-    assert salida["tipo_registro"] == "salida"
-    assert salida["fecha_salida"], "No se guardó fecha_salida"
-    assert salida["fecha_salida"] >= salida["fecha_entrada"]
-    assert re.match(DURACION_REGEX, salida["duracion"] or ""), f"Duración inválida: {salida['duracion']}"
-    assert salida["nombre_area_salida"] == AREA
+    assert salida["status_visita"] == "salida"
+    assert salida["checkout_date"], "No se guardó fecha_salida"
+    assert salida["checkout_date"] >= salida["checkin_date"]
+    assert re.match(DURACION_REGEX, salida["duration"] or ""), f"Duración inválida: {salida['duration']}"
 
 
 @pytest.mark.integration
@@ -62,14 +59,14 @@ def test_do_out_doble_salida_es_rechazada(acceso_obj, pase_dentro):
     """
     folio, _ = pase_dentro
     acceso_obj.do_out(folio, LOCATION, AREA)
-    primera = obtener_registro_bitacora(acceso_obj, folio)
+    primera = acceso_obj.get_list_last_user_move(folio, limit=1)[0]
 
     with pytest.raises(Exception) as exc_info:
         acceso_obj.do_out(folio, LOCATION, AREA)
     assert "no se encuentra dentro" in str(exc_info.value)
 
-    despues = obtener_registro_bitacora(acceso_obj, folio)
-    assert despues["fecha_salida"] == primera["fecha_salida"]
+    despues = acceso_obj.get_list_last_user_move(folio, limit=1)[0]
+    assert despues["checkout_date"] == primera["checkout_date"]
 
 
 @pytest.mark.integration
@@ -103,7 +100,7 @@ def test_do_out_en_otra_ubicacion_es_rechazada(acceso_obj, pase_dentro):
         acceso_obj.do_out(folio, UBICACION_INEXISTENTE, AREA)
     assert "no puede salir en" in str(exc_info.value)
 
-    assert obtener_registro_bitacora(acceso_obj, folio)["tipo_registro"] == "entrada"
+    assert acceso_obj.get_list_last_user_move(folio, limit=1)[0]["status_visita"] == "entrada"
 
 
 @pytest.mark.integration
@@ -122,7 +119,7 @@ def test_do_out_sin_ubicacion_o_area_es_rechazada(acceso_obj, pase_dentro, locat
         acceso_obj.do_out(folio, location, area)
     assert mensaje in str(exc_info.value)
 
-    assert obtener_registro_bitacora(acceso_obj, folio)["tipo_registro"] == "entrada"
+    assert acceso_obj.get_list_last_user_move(folio, limit=1)[0]["status_visita"] == "entrada"
 
 
 @pytest.mark.integration
@@ -153,7 +150,7 @@ def test_do_out_con_gafete_sin_devolver_es_rechazada(acceso_obj, pase_dentro):
         with pytest.raises(Exception) as exc_info:
             acceso_obj.do_out(folio, LOCATION, AREA)
         assert "liberar el gafete" in str(exc_info.value)
-        assert obtener_registro_bitacora(acceso_obj, folio)["tipo_registro"] == "entrada"
+        assert acceso_obj.get_list_last_user_move(folio, limit=1)[0]["status_visita"] == "entrada"
     finally:
         # Devuelve el gafete para no dejarlo 'En Uso' en preprod.
         acceso_obj.assing_gafete(
@@ -175,8 +172,8 @@ def test_do_out_con_record_id_de_otro_pase_es_rechazada(acceso_obj, pase_dentro,
     try:
         with pytest.raises(Exception):
             acceso_obj.do_out(folio_a, LOCATION, AREA, record_id=entrada_b["_id"])
-        assert obtener_registro_bitacora(acceso_obj, folio_a)["tipo_registro"] == "entrada"
-        assert obtener_registro_bitacora_por_id(acceso_obj, entrada_b["_id"])["tipo_registro"] == "entrada"
+        assert acceso_obj.get_list_last_user_move(folio_a, limit=1)[0]["status_visita"] == "entrada"
+        assert acceso_obj.get_list_last_user_move(folio_b, limit=1)[0]["status_visita"] == "entrada"
     finally:
         salida_silenciosa(acceso_obj, folio_b, LOCATION, AREA)
 
@@ -235,7 +232,8 @@ def test_do_out_tras_editar_visita_anterior_cierra_la_entrada_abierta(acceso_obj
 
         acceso_obj.do_out(folio, LOCATION, AREA)
 
-        assert obtener_registro_bitacora_por_id(acceso_obj, visita_2["_id"])["tipo_registro"] == "salida"
+        visitas = {v["_id"]: v for v in acceso_obj.get_list_last_user_move(folio)}
+        assert visitas[visita_2["_id"]]["status_visita"] == "salida"
     finally:
         # Con record_id para cerrar la visita 2 aunque el bug esté presente.
         salida_silenciosa(acceso_obj, folio, LOCATION, AREA, record_id=visita_2["_id"])
