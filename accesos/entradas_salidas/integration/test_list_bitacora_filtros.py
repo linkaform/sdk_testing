@@ -7,6 +7,8 @@ Notion: TB-044 a TB-047.
 """
 
 import pytest
+from datetime import datetime
+from pytz import timezone
 
 from .fixtures import *
 from ..data.bitacora_data import LOCATION, AREA, LIMITE_LISTA
@@ -65,3 +67,29 @@ def test_list_bitacora_filtro_salidas_solo_regresa_salidas(acceso_obj, pase_dent
         f"La lista trae otras ubicaciones: {sorted({r['ubicacion'] for r in registros})}"
     )
     assert entrada["_id"] in {r["_id"] for r in registros}, "La salida recién registrada no aparece en la lista"
+
+
+@pytest.mark.integration
+def test_list_bitacora_accesos_de_hoy_solo_regresa_entradas_de_hoy(acceso_obj, pase_dentro):
+    """
+    TB-046: la opción "Accesos de hoy" filtra con filterDate='today' en la
+    zona horaria del usuario. Debe regresar solo visitas cuya fecha de entrada
+    es de hoy e incluir la entrada recién registrada.
+    """
+    _, entrada = pase_dentro
+    hoy = datetime.now(timezone(acceso_obj.user["timezone"])).strftime("%Y-%m-%d")
+
+    res = acceso_obj.get_list_bitacora(
+        location=LOCATION,
+        area=AREA,
+        filterDate="today",
+        limit=LIMITE_LISTA,
+    )
+    registros = res["records"]
+
+    assert registros, "La lista de Accesos de hoy viene vacía"
+    assert all((r.get("fecha_entrada") or "").startswith(hoy) for r in registros), (
+        f"La lista de hoy ({hoy}) trae entradas de otros días: "
+        f"{sorted({(r.get('fecha_entrada') or '')[:10] for r in registros})}"
+    )
+    assert entrada["_id"] in {r["_id"] for r in registros}, "La entrada recién registrada no aparece en Accesos de hoy"
