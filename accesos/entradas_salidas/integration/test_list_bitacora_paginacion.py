@@ -47,3 +47,24 @@ def test_list_bitacora_paginacion_coherente(acceso_obj, pase_dentro):
     assert fuera["records"] == [], "Una página fuera de rango debería venir vacía"
     assert fuera["records_on_page"] == 0
     assert fuera["total_records"] == total, "El total cambió en la página fuera de rango"
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("limit, offset", [
+    (0, 0),
+    (POR_PAGINA, -1),
+    ("5", "0"),
+], ids=["limit_cero", "offset_negativo", "valores_texto"])
+def test_list_bitacora_paginacion_invalida_responde_error_controlado(acceso_obj, limit, offset):
+    """
+    TB-052: limit/offset inválidos deben responder un error de validación del
+    sistema (status_code 400), no una excepción interna de Mongo o de Python.
+    El front siempre manda valores válidos; esto protege llamadas directas.
+    """
+    with pytest.raises(Exception) as exc_info:
+        acceso_obj.get_list_bitacora(location=LOCATION, area=AREA, limit=limit, offset=offset)
+
+    error = exc_info.value
+    assert type(error) is Exception and '"status_code": 400' in str(error), (
+        f"Error no controlado ({type(error).__name__}): {error}"
+    )
