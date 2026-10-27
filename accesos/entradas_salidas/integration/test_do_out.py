@@ -71,12 +71,6 @@ def test_do_out_doble_salida_es_rechazada(acceso_obj, pase_dentro):
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason="Bug confirmado: do_out sin entrada previa responde 'Este usuario ingreso en None "
-           "y no puede salir en ...' (get_last_user_move regresa {} y se valida la ubicación antes "
-           "de revisar que exista la entrada).",
-    strict=True,
-)
 def test_do_out_sin_entrada_previa_mensaje_claro(acceso_obj, pase_activo):
     """
     TB-057: un pase activo que nunca entró no puede salir. El rechazo debe
@@ -180,11 +174,6 @@ def test_do_out_con_record_id_de_otro_pase_es_rechazada(acceso_obj, pase_dentro,
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason="Bug confirmado: get_last_user_move hace ObjectId(record_id) sin validar, un "
-           "record_id mal formado truena con bson InvalidId en vez de un error de validación.",
-    strict=True,
-)
 def test_do_out_con_record_id_invalido_error_controlado(acceso_obj, pase_dentro):
     """
     TB-061 (caso 2): un record_id mal formado debe dar un error de
@@ -198,12 +187,6 @@ def test_do_out_con_record_id_invalido_error_controlado(acceso_obj, pase_dentro)
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason="Bug confirmado: get_last_user_move ordena por updated_at; tras editar una visita "
-           "cerrada, do_out la toma como último movimiento y responde 'El usuario no se encuentra "
-           "dentro' aunque hay una entrada abierta.",
-    strict=True,
-)
 def test_do_out_tras_editar_visita_anterior_cierra_la_entrada_abierta(acceso_obj, mock_pase_bitacora):
     """
     TB-062: get_last_user_move ordena por updated_at. Si se edita una
