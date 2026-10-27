@@ -10,7 +10,8 @@ import pytest
 from math import ceil
 
 from .fixtures import *
-from ..data.bitacora_data import LOCATION, AREA
+from ..data.bitacora_data import LOCATION, AREA, LIMITE_LISTA
+from .helpers import ultima_visita
 
 # Página chica para que la lista de preprod tenga varias páginas.
 POR_PAGINA = 5
@@ -68,3 +69,43 @@ def test_list_bitacora_paginacion_invalida_responde_error_controlado(acceso_obj,
     assert type(error) is Exception and '"status_code": 400' in str(error), (
         f"Error no controlado ({type(error).__name__}): {error}"
     )
+
+
+@pytest.mark.integration
+def test_list_bitacora_busqueda_por_facets(acceso_obj, pase_dentro):
+    """
+    TB-053: el buscador de la bitácora usa facets {key, values, exact}. Sin
+    exact busca "contiene" ignorando mayúsculas y acentos; con exact, el valor
+    completo; varios facets se combinan con AND. get_search_fields regresa
+    los 7 campos del buscador.
+    """
+    folio_pase, _ = pase_dentro
+    visita = ultima_visita(acceso_obj, folio_pase)
+
+    def buscar(facets):
+        res = acceso_obj.get_list_bitacora(location=LOCATION, area=AREA, facets=facets, limit=LIMITE_LISTA)
+        return res["records"]
+
+    # "Contiene", con otra combinación de mayúsculas y acentos que el nombre guardado.
+    por_nombre = buscar([{"key": "nombre_visitante", "values": ["PRUEBA BITÁCORA ENTRADAS"], "exact": False}])
+    assert visita["_id"] in {r["_id"] for r in por_nombre}, "La búsqueda por nombre no encontró la visita"
+
+    # Valor completo del folio.
+    por_folio = buscar([{"key": "folio", "values": [visita["folio"]], "exact": True}])
+    assert visita["_id"] in {r["_id"] for r in por_folio}, "La búsqueda exacta por folio no encontró la visita"
+    assert all(r["folio"] == visita["folio"] for r in por_folio), "La búsqueda exacta por folio trajo otros folios"
+
+    # AND: el nombre coincide pero el estatus no (la visita sigue en entrada).
+    combinados = buscar([
+        {"key": "nombre_visitante", "values": ["prueba bitacora entradas"], "exact": False},
+        {"key": "status", "values": ["salida"], "exact": True},
+    ])
+    assert visita["_id"] not in {r["_id"] for r in combinados}, "Los facets no se combinaron con AND"
+    assert all(r["status_visita"] == "Salida" for r in combinados)
+
+    campos = {c["key"]: c for c in acceso_obj.get_search_fields_bitacora()}
+    assert set(campos) == {
+        "folio", "nombre_visitante", "contratista", "status", "perfil_visita", "visita_a", "caseta",
+    }, f"Campos del buscador inesperados: {sorted(campos)}"
+    assert campos["status"]["type"] == "enum"
+    assert {"entrada", "salida"} <= {o["value"] for o in campos["status"]["options"]}
