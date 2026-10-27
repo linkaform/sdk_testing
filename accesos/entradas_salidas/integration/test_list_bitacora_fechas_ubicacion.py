@@ -56,3 +56,26 @@ def test_list_bitacora_filtra_por_ubicacion_texto_y_lista(acceso_obj):
     assert varias.get(campo_ubicacion) == {"$in": ubicaciones}, (
         f"Filtro de varias ubicaciones inesperado: {varias.get(campo_ubicacion)}"
     )
+
+
+@pytest.mark.integration
+def test_list_bitacora_filtro_dinamico_ubicacion_reemplaza_la_ubicacion_base(acceso_obj):
+    """
+    TB-050: el panel de filtros del front ofrece las ubicaciones del propio
+    usuario; al elegir una o varias, el filtro dinámico 'ubicacion' reemplaza
+    la ubicación base de la barra superior en lugar de sumarse a ella.
+    """
+    campo_ubicacion = (
+        f"answers.{acceso_obj.AREAS_DE_LAS_UBICACIONES_CAT_OBJ_ID}.{acceso_obj.mf['ubicacion']}"
+    )
+    elegidas = [UBICACION_INEXISTENTE]
+
+    filtro = acceso_obj.bitacora_base_match(
+        location=LOCATION,
+        area=AREA,
+        dynamic_filters=[{"key": "ubicacion", "value": elegidas}],
+    )
+
+    assert filtro.get(campo_ubicacion) == {"$in": elegidas}, (
+        f"El filtro dinámico no reemplazó la ubicación base: {filtro.get(campo_ubicacion)}"
+    )
