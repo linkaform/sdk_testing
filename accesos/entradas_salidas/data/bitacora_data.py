@@ -65,3 +65,7 @@ VEHICULO_PRUEBA = {
     "placas": "QA-BITACORA-064",
     "color": "Blanco",
 }
+
+# Mismo equipo con otros datos, para editarlo (update_bitacora_entrada, action
+# 'edit'). Serie distinta para comprobar que se reemplazó y no se duplicó.
+EQUIPO_EDITADO = dict(EQUIPO_PRUEBA, nombre="Laptop prueba bitacora editada", serie="QA-BITACORA-066")
