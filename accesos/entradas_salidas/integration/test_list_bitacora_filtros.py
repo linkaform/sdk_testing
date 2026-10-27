@@ -96,11 +96,6 @@ def test_list_bitacora_accesos_de_hoy_solo_regresa_entradas_de_hoy(acceso_obj, p
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason="Bug confirmado: bitacora_base_match aplica filterDate siempre sobre fecha_entrada; "
-           "en Salidas + hoy no aparece quien entró ayer y salió hoy.",
-    strict=True,
-)
 def test_list_bitacora_salidas_de_hoy_filtra_por_fecha_de_salida(acceso_obj):
     """
     TB-047: al combinar la opción "Salidas" con el filtro "hoy", la fecha debe
