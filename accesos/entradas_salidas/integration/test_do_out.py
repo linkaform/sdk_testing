@@ -174,11 +174,6 @@ def test_do_out_con_record_id_de_otro_pase_es_rechazada(acceso_obj, pase_dentro,
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason="Bug confirmado: get_last_user_move hace ObjectId(record_id) sin validar, un "
-           "record_id mal formado truena con bson InvalidId en vez de un error de validación.",
-    strict=True,
-)
 def test_do_out_con_record_id_invalido_error_controlado(acceso_obj, pase_dentro):
     """
     TB-061 (caso 2): un record_id mal formado debe dar un error de
