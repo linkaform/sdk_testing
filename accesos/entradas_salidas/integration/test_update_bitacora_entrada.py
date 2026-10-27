@@ -9,8 +9,8 @@ Notion: TB-064 a TB-067.
 import pytest
 
 from .fixtures import *
-from ..data.bitacora_data import VEHICULO_PRUEBA, EQUIPO_PRUEBA
-from .helpers import ultima_visita
+from ..data.bitacora_data import LOCATION, AREA, VEHICULO_PRUEBA, EQUIPO_PRUEBA, EQUIPO_EDITADO
+from .helpers import ultima_visita, salida_silenciosa
 
 
 @pytest.mark.integration
@@ -57,3 +57,31 @@ def test_update_bitacora_entrada_agrega_equipo(acceso_obj, pase_dentro):
     with pytest.raises(Exception) as exc_info:
         acceso_obj.update_bitacora_entrada({"action": "create", "equipo": EQUIPO_PRUEBA})
     assert "Se requiere el folio o el id del registro" in str(exc_info.value)
+
+
+@pytest.mark.integration
+def test_update_bitacora_entrada_edita_equipo_existente(acceso_obj, pase_activo):
+    """
+    TB-066: con action='edit' y set_number, update_bitacora_entrada reemplaza
+    esa fila de equipos sin duplicarla. Hoy ningún cliente manda 'edit' (el
+    front y la app solo agregan); se prueba la capacidad del backend.
+    """
+    res = acceso_obj.do_access(pase_activo, LOCATION, AREA, {"equipo": [EQUIPO_PRUEBA]})
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo dar entrada con equipo: {res}"
+
+    try:
+        visita = ultima_visita(acceso_obj, pase_activo)
+        antes = visita.get("equipos") or []
+        assert len(antes) == 1, f"La entrada debía tener 1 equipo: {antes}"
+
+        acceso_obj.update_bitacora_entrada(
+            {"action": "edit", "set_number": 0, "equipo": EQUIPO_EDITADO}, record_id=visita["_id"]
+        )
+
+        despues = ultima_visita(acceso_obj, pase_activo).get("equipos") or []
+        series = {e.get("numero_serie") for e in despues}
+        assert len(despues) == 1, f"Editar duplicó el equipo: {despues}"
+        assert EQUIPO_EDITADO["serie"] in series, f"El equipo no quedó editado: {despues}"
+        assert EQUIPO_PRUEBA["serie"] not in series, "Sigue el equipo original"
+    finally:
+        salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)
