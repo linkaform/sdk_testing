@@ -54,3 +54,12 @@ DURACION_REGEX = r"^\d{2}:\d{2}:\d{2}$"
 # por created_at descendente, así que la visita recién creada sale en la
 # primera página.
 LIMITE_LISTA = 50
+
+# Dos vehículos para registrar una entrada con varios vehículos (desglose de la
+# lista). Placas únicas de esta suite.
+VEHICULOS_DESGLOSE = [
+    {"tipo": "Automóvil", "marca": "Nissan", "modelo": "Versa", "estado": "Nuevo León",
+     "placas": "QA-DESGLOSE-01", "color": "Blanco"},
+    {"tipo": "Camioneta", "marca": "Ford", "modelo": "Ranger", "estado": "Nuevo León",
+     "placas": "QA-DESGLOSE-02", "color": "Gris"},
+]
