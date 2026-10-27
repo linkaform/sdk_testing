@@ -19,7 +19,7 @@ def _build_pase():
 @pytest.mark.create_passes
 def test_create_access_pass_status_code_201(accesos_api):
     """
-    T-C10-001: create_access_pass() debe responder 201 al crear un pase
+    TB-001: create_access_pass() debe responder 201 al crear un pase
     de entrada con datos validos. Si falla, ningun visitante puede
     pre-registrarse.
     """
@@ -34,7 +34,7 @@ def test_create_access_pass_status_code_201(accesos_api):
 @pytest.mark.create_passes
 def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
     """
-    T-C10-006: Un pase con fecha de visita en el pasado NO deberia poder
+    TB-006: Un pase con fecha de visita en el pasado NO deberia poder
     crearse.
     """
     accesos_api.use_api = False
@@ -57,7 +57,7 @@ def test_create_access_pass_fecha_pasado_deberia_fallar(accesos_api):
 @pytest.mark.create_passes
 def test_create_access_pass_link_docs_completos_permite_crear(accesos_api):
     """
-    T-C10-026 (caso valido): un pase con 'link.docs' incluyendo tanto
+    TB-026 (caso valido): un pase con 'link.docs' incluyendo tanto
     'agregarIdentificacion' como 'agregarFoto' SI deberia poder crearse.
     """
     accesos_api.use_api = False

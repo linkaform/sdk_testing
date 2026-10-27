@@ -5,7 +5,7 @@ from pytz import timezone
 from passes.data.pase_entrada_data import PASE_ENTRADA
 from account_settings import settings
 
-# T-C10-027: el bug de 'generar_qr' no definido en create_qr.py (ver Notion)
+# TB-027: el bug de 'generar_qr' no definido en create_qr.py (ver Notion)
 # solo existe en preprod; en produccion create_qr.py funciona correctamente.
 # Usamos esto para que el xfail de ese bug aplique unicamente cuando se
 # corre contra preprod, y no marque un falso "failed" al correr en prod.
@@ -30,7 +30,7 @@ def _build_pase():
 @pytest.mark.prod_test
 @pytest.mark.xfail(
     _es_preprod,
-    reason="Bug confirmado (T-C10-023 / T-C10-027): en preprod, create_qr.py usa "
+    reason="Bug confirmado (TB-023 / TB-027): en preprod, create_qr.py usa "
            "'generar_qr' sin importarlo (NameError), lo que hace que 'link_pass' nunca "
            "se asigne dentro del bloque 'if link_info:' de update_full_pass, causando "
            "UnboundLocalError. Confirmado que este bug NO reproduce en produccion "
@@ -39,7 +39,7 @@ def _build_pase():
 )
 def test_update_full_pass_link_vacio_causa_unbound_local_error(accesos_api):
     """
-    T-C10-023: confirma que update_full_pass no truena cuando el campo
+    TB-023: confirma que update_full_pass no truena cuando el campo
     'link' llega vacio o None.
     Reutiliza los mismos valores de '_build_pase()' para no depender de
     catalogos/empleados especificos que solo existan en un ambiente en particular.
