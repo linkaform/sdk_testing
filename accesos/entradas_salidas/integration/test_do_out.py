@@ -74,8 +74,8 @@ def test_do_out_doble_salida_es_rechazada(acceso_obj, pase_dentro):
 def test_do_out_sin_entrada_previa_mensaje_claro(acceso_obj, pase_activo):
     """
     TB-057: un pase activo que nunca entró no puede salir. El rechazo debe
-    explicar que no hay entrada; hoy se sospecha que responde
-    'Este usuario ingreso en None y no puede salir en ...'.
+    explicar que no hay entrada y no traer 'None' (antes respondía
+    'Este usuario ingreso en None y no puede salir en ...'; corregido en 2610-1442).
     """
     with pytest.raises(Exception) as exc_info:
         acceso_obj.do_out(pase_activo, LOCATION, AREA)
