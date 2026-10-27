@@ -71,12 +71,6 @@ def test_do_out_doble_salida_es_rechazada(acceso_obj, pase_dentro):
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason="Bug confirmado: do_out sin entrada previa responde 'Este usuario ingreso en None "
-           "y no puede salir en ...' (get_last_user_move regresa {} y se valida la ubicación antes "
-           "de revisar que exista la entrada).",
-    strict=True,
-)
 def test_do_out_sin_entrada_previa_mensaje_claro(acceso_obj, pase_activo):
     """
     TB-057: un pase activo que nunca entró no puede salir. El rechazo debe
