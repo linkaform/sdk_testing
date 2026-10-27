@@ -187,12 +187,6 @@ def test_do_out_con_record_id_invalido_error_controlado(acceso_obj, pase_dentro)
 
 
 @pytest.mark.integration
-@pytest.mark.xfail(
-    reason="Bug confirmado: get_last_user_move ordena por updated_at; tras editar una visita "
-           "cerrada, do_out la toma como último movimiento y responde 'El usuario no se encuentra "
-           "dentro' aunque hay una entrada abierta.",
-    strict=True,
-)
 def test_do_out_tras_editar_visita_anterior_cierra_la_entrada_abierta(acceso_obj, mock_pase_bitacora):
     """
     TB-062: get_last_user_move ordena por updated_at. Si se edita una
