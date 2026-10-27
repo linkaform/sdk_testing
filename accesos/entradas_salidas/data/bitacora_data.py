@@ -49,3 +49,8 @@ DOCUMENTO_GAFETE = "ine"
 
 # Formato de la duración que guarda do_out.
 DURACION_REGEX = r"^\d{2}:\d{2}:\d{2}$"
+
+# Registros por página al consultar la lista de bitácora. La lista se ordena
+# por created_at descendente, así que la visita recién creada sale en la
+# primera página.
+LIMITE_LISTA = 50
