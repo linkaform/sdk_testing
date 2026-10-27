@@ -54,3 +54,14 @@ DURACION_REGEX = r"^\d{2}:\d{2}:\d{2}$"
 # por created_at descendente, así que la visita recién creada sale en la
 # primera página.
 LIMITE_LISTA = 50
+
+# Vehículo para agregar a una entrada (update_bitacora_entrada). Las placas
+# son únicas de esta suite para encontrarlo sin ambigüedad en la visita.
+VEHICULO_PRUEBA = {
+    "tipo": "Automóvil",
+    "marca": "Nissan",
+    "modelo": "Versa",
+    "estado": "Nuevo León",
+    "placas": "QA-BITACORA-064",
+    "color": "Blanco",
+}
