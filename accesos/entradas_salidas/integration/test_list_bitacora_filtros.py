@@ -93,3 +93,29 @@ def test_list_bitacora_accesos_de_hoy_solo_regresa_entradas_de_hoy(acceso_obj, p
         f"{sorted({(r.get('fecha_entrada') or '')[:10] for r in registros})}"
     )
     assert entrada["_id"] in {r["_id"] for r in registros}, "La entrada recién registrada no aparece en Accesos de hoy"
+
+
+@pytest.mark.integration
+@pytest.mark.xfail(
+    reason="Bug confirmado: bitacora_base_match aplica filterDate siempre sobre fecha_entrada; "
+           "en Salidas + hoy no aparece quien entró ayer y salió hoy.",
+    strict=True,
+)
+def test_list_bitacora_salidas_de_hoy_filtra_por_fecha_de_salida(acceso_obj):
+    """
+    TB-047: al combinar la opción "Salidas" con el filtro "hoy", la fecha debe
+    aplicarse sobre la fecha de salida. Si se aplica sobre la de entrada, quien
+    entró ayer y salió hoy no aparece en las salidas del día.
+    """
+    campo_entrada = f"answers.{acceso_obj.mf['fecha_entrada']}"
+    campo_salida = f"answers.{acceso_obj.mf['fecha_salida']}"
+
+    filtro = acceso_obj.bitacora_base_match(
+        location=LOCATION,
+        area=AREA,
+        filterDate="today",
+        dynamic_filters=[{"key": "status", "value": ["salida"]}],
+    )
+
+    assert campo_salida in filtro, f"El filtro de hoy no se aplica sobre fecha_salida: {filtro}"
+    assert campo_entrada not in filtro, f"El filtro de hoy se aplica sobre fecha_entrada: {filtro}"
