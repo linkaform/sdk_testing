@@ -3,7 +3,7 @@
 """
 Editar una entrada de la bitácora (update_bitacora_entrada): agregar o editar
 vehículos y equipos de una visita.
-Notion: TB-064 a TB-067.
+Notion: TB-064 a TB-066.
 """
 
 import pytest
