@@ -4,13 +4,13 @@
 Salida masiva por ubicación (force_quit_all_persons) en la bitácora de
 Entradas & Salidas. Cierra TODAS las visitas abiertas de LOCATION en
 preprod, no solo las del test (autorizado para Planta Monterrey).
-Notion: TB-070.
+Notion: TB-070 a TB-071.
 """
 
 import pytest
 
 from .fixtures import *
-from ..data.bitacora_data import LOCATION
+from ..data.bitacora_data import LOCATION, MSG_SIN_PERSONAS_DENTRO
 from .helpers import ultima_visita
 
 
@@ -34,3 +34,16 @@ def test_force_quit_por_ubicacion_cierra_solo_esa_ubicacion(acceso_obj, pase_den
         f"La salida masiva de {LOCATION} cerró una visita de {visita_otra.get('ubicacion_entrada')}"
     )
 
+
+@pytest.mark.integration
+def test_force_quit_sin_personas_dentro(acceso_obj):
+    """
+    TB-071: si no hay nadie dentro de LOCATION, la salida masiva responde
+    200 con el aviso de que no hay personas por registrar salida. La primera
+    llamada vacía la ubicación; la segunda es la que se revisa.
+    """
+    acceso_obj.force_quit_all_persons(location=LOCATION)
+
+    res = acceso_obj.force_quit_all_persons(location=LOCATION)
+    assert res.get("status_code") == 200, f"Respuesta inesperada sin personas dentro: {res}"
+    assert res.get("json", {}).get("msg") == MSG_SIN_PERSONAS_DENTRO, f"Mensaje inesperado: {res.get('json')}"

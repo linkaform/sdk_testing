@@ -111,3 +111,6 @@ VISITAS_ABIERTAS_OTRAS_UBICACIONES = [
     {"_id": "6ae000000000000000000001"},
     {"_id": "6ae000000000000000000002"},
 ]
+
+# Mensaje de force_quit_all_persons cuando no hay nadie dentro (TB-071).
+MSG_SIN_PERSONAS_DENTRO = "No hay personas dentro por registrar salida."
