@@ -91,20 +91,44 @@ def test_do_access_pase_sin_limite_queda_con_una_entrada(acceso_obj, mock_pase_d
     assert "limite de entradas" in str(exc_info.value)
 
 @pytest.mark.integration
-@pytest.mark.parametrize("dia_de_acceso", ["", None], ids=["dia_vacio", "sin_dia"])
-def test_create_access_pass_respeta_limite_sin_dia_de_acceso(acceso_obj, mock_pase_do_access, dia_de_acceso):
+def test_create_access_pass_respeta_limite_con_dia_de_acceso_vacio(acceso_obj, mock_pase_do_access):
     """
     TB-075: el límite de entradas mandado al crear el pase se guarda aunque
-    config_dia_de_acceso venga vacío o no se mande (llamada directa; el front
-    y la app siempre mandan un valor). Puede rechazarlo con un 400, pero no
-    cambiar el límite ni tronar con una excepción interna.
+    config_dia_de_acceso venga vacío (llamada directa; el front y la app
+    siempre mandan un valor). Puede rechazarlo con un 400, pero no cambiar
+    el límite.
     """
     pase = copy.deepcopy(mock_pase_do_access)
     pase["config_limitar_acceso"] = LIMITE_ACCESO_EXPLICITO
-    if dia_de_acceso is None:
-        pase.pop("config_dia_de_acceso", None)
-    else:
-        pase["config_dia_de_acceso"] = dia_de_acceso
+    pase["config_dia_de_acceso"] = ""
+
+    try:
+        res = acceso_obj.create_access_pass(pase)
+    except Exception as error:
+        assert type(error) is Exception and '"status_code": 400' in str(error), (
+            f"Error no controlado ({type(error).__name__}): {error}"
+        )
+        return
+    if res.get('status_code') == 400:
+        return
+    assert res.get('status_code') == 201, f"No se pudo crear el pase: {res}"
+
+    detalle = acceso_obj.get_detail_access_pass(res['json']['id'])
+    assert detalle.get("limite_de_acceso") == LIMITE_ACCESO_EXPLICITO, (
+        f"Se mandó límite {LIMITE_ACCESO_EXPLICITO} y el pase quedó con {detalle.get('limite_de_acceso')}"
+    )
+
+
+@pytest.mark.integration
+def test_create_access_pass_respeta_limite_sin_dia_de_acceso(acceso_obj, mock_pase_do_access):
+    """
+    TB-075: el límite de entradas mandado al crear el pase se guarda aunque
+    no se mande config_dia_de_acceso (llamada directa). Puede rechazarlo con
+    un 400, pero no tronar con una excepción interna ni cambiar el límite.
+    """
+    pase = copy.deepcopy(mock_pase_do_access)
+    pase["config_limitar_acceso"] = LIMITE_ACCESO_EXPLICITO
+    pase.pop("config_dia_de_acceso", None)
 
     try:
         res = acceso_obj.create_access_pass(pase)
