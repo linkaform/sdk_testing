@@ -119,6 +119,9 @@ def test_list_bitacora_desglose_de_vehiculos_y_equipos(acceso_obj, pase_activo):
     TB-054: con desglose='vehiculos' o 'equipos' la lista regresa una fila por
     cada vehículo/equipo de la visita (pestañas de Bitácoras) y la paginación
     cuenta esas filas; sin desglose, la visita es una sola fila.
+    El folio no es único en preprod (el consecutivo se ha repetido), así que
+    la búsqueda por folio puede traer otras visitas: se revisan solo las filas
+    de esta visita y que el total cuadre con las filas regresadas.
     """
     res = acceso_obj.do_access(
         pase_activo, LOCATION, AREA, {"vehiculo": VEHICULOS_DESGLOSE, "equipo": [EQUIPO_PRUEBA]}
@@ -127,27 +130,30 @@ def test_list_bitacora_desglose_de_vehiculos_y_equipos(acceso_obj, pase_activo):
 
     try:
         visita = ultima_visita(acceso_obj, pase_activo)
-        solo_esta_visita = [{"key": "folio", "values": [visita["folio"]], "exact": True}]
+        por_folio = [{"key": "folio", "values": [visita["folio"]], "exact": True}]
 
         vehiculos = acceso_obj.get_list_bitacora(
-            location=LOCATION, area=AREA, facets=solo_esta_visita, desglose="vehiculos", limit=LIMITE_LISTA,
+            location=LOCATION, area=AREA, facets=por_folio, desglose="vehiculos", limit=LIMITE_LISTA,
         )
-        assert vehiculos["total_records"] == len(VEHICULOS_DESGLOSE), "El total no cuenta una fila por vehículo"
-        assert len(vehiculos["records"]) == len(VEHICULOS_DESGLOSE)
-        assert all(r["_id"] == visita["_id"] for r in vehiculos["records"])
-        placas = {v.get("placas") for r in vehiculos["records"] for v in r["vehiculos"]}
+        filas_vehiculos = [r for r in vehiculos["records"] if r["_id"] == visita["_id"]]
+        assert vehiculos["total_records"] == len(vehiculos["records"]), "El total no cuenta una fila por vehículo"
+        assert len(filas_vehiculos) == len(VEHICULOS_DESGLOSE), f"Filas de la visita: {len(filas_vehiculos)}"
+        placas = {v.get("placas") for r in filas_vehiculos for v in r["vehiculos"]}
         assert placas == {v["placas"] for v in VEHICULOS_DESGLOSE}, f"Placas inesperadas en el desglose: {placas}"
 
         equipos = acceso_obj.get_list_bitacora(
-            location=LOCATION, area=AREA, facets=solo_esta_visita, desglose="equipos", limit=LIMITE_LISTA,
+            location=LOCATION, area=AREA, facets=por_folio, desglose="equipos", limit=LIMITE_LISTA,
         )
-        assert equipos["total_records"] == 1, "El total no cuenta una fila por equipo"
-        assert len(equipos["records"]) == 1
+        filas_equipos = [r for r in equipos["records"] if r["_id"] == visita["_id"]]
+        assert equipos["total_records"] == len(equipos["records"]), "El total no cuenta una fila por equipo"
+        assert len(filas_equipos) == 1, f"Filas de la visita: {len(filas_equipos)}"
 
         sin_desglose = acceso_obj.get_list_bitacora(
-            location=LOCATION, area=AREA, facets=solo_esta_visita, desglose="", limit=LIMITE_LISTA,
+            location=LOCATION, area=AREA, facets=por_folio, desglose="", limit=LIMITE_LISTA,
         )
-        assert sin_desglose["total_records"] == 1, "Sin desglose la visita debe ser una sola fila"
-        assert len(sin_desglose["records"][0]["vehiculos"]) == len(VEHICULOS_DESGLOSE)
+        filas_visita = [r for r in sin_desglose["records"] if r["_id"] == visita["_id"]]
+        assert sin_desglose["total_records"] == len(sin_desglose["records"])
+        assert len(filas_visita) == 1, f"Sin desglose la visita debe ser una sola fila: {len(filas_visita)}"
+        assert len(filas_visita[0]["vehiculos"]) == len(VEHICULOS_DESGLOSE)
     finally:
         salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)
