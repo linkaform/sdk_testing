@@ -77,3 +77,18 @@ FACETS_BUSQUEDA = {
         {"key": "status", "values": ["salida"], "exact": True},
     ],
 }
+
+# Vehículo para agregar a una entrada (update_bitacora_entrada). Las placas
+# son únicas de esta suite para encontrarlo sin ambigüedad en la visita.
+VEHICULO_PRUEBA = {
+    "tipo": "Automóvil",
+    "marca": "Nissan",
+    "modelo": "Versa",
+    "estado": "Nuevo León",
+    "placas": "QA-BITACORA-064",
+    "color": "Blanco",
+}
+
+# Mismo equipo con otros datos, para editarlo (update_bitacora_entrada, action
+# 'edit'). Serie distinta para comprobar que se reemplazó y no se duplicó.
+EQUIPO_EDITADO = dict(EQUIPO_PRUEBA, nombre="Laptop prueba bitacora editada", serie="QA-BITACORA-066")
