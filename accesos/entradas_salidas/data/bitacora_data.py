@@ -92,3 +92,11 @@ VEHICULO_PRUEBA = {
 # Mismo equipo con otros datos, para editarlo (update_bitacora_entrada, action
 # 'edit'). Serie distinta para comprobar que se reemplazó y no se duplicó.
 EQUIPO_EDITADO = dict(EQUIPO_PRUEBA, nombre="Laptop prueba bitacora editada", serie="QA-BITACORA-066")
+
+# Visitas abiertas que regresa la consulta de la salida masiva en el test
+# unitario (TB-072). Son de ubicaciones distintas: sin ubicación, la salida
+# masiva no debería cerrarlas.
+VISITAS_ABIERTAS_OTRAS_UBICACIONES = [
+    {"_id": "6ae000000000000000000001"},
+    {"_id": "6ae000000000000000000002"},
+]
