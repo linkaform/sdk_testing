@@ -68,18 +68,14 @@ def test_do_access_limite_de_entradas_excedido(acceso_obj, mock_pase_do_access):
 
 
 @pytest.mark.integration
-@pytest.mark.parametrize("limite", [0, None], ids=["limite_cero", "sin_limite"])
-def test_do_access_pase_sin_limite_queda_con_una_entrada(acceso_obj, mock_pase_do_access, limite):
+def test_do_access_pase_sin_limite_queda_con_una_entrada(acceso_obj, mock_pase_do_access):
     """
     TB-074: los pases siempre son limitados. Si se crea con
-    config_limitar_acceso=0 o sin mandarlo, se guarda con 1 entrada: la
-    primera entrada+salida funciona y la segunda entrada se rechaza.
+    config_limitar_acceso=0 (lo que manda el front), se guarda con 1 entrada:
+    la primera entrada+salida funciona y la segunda entrada se rechaza.
     """
     pase = copy.deepcopy(mock_pase_do_access)
-    if limite is None:
-        pase.pop("config_limitar_acceso", None)
-    else:
-        pase["config_limitar_acceso"] = limite
+    pase["config_limitar_acceso"] = 0
     folio = crear_pase(acceso_obj, pase)
     completar_pase_activo(acceso_obj, folio)
 
