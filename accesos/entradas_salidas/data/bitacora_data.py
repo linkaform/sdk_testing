@@ -26,6 +26,17 @@ PASE_BITACORA.update({
     ],
 })
 
+# Otra ubicación real de la cuenta, con una caseta suya. Sirve para tener
+# una visita abierta fuera de LOCATION (salida masiva por ubicación, TB-070).
+OTRA_LOCATION = "Planta Durango"
+OTRA_AREA = "Caseta Principal -Dro"
+
+PASE_BITACORA_OTRA_UBICACION = copy.deepcopy(PASE_BITACORA)
+PASE_BITACORA_OTRA_UBICACION.update({
+    "nombre": "Prueba bitacora otra ubicacion",
+    "ubicaciones": [OTRA_LOCATION],
+})
+
 # Ubicación que no existe en el pase ni en la cuenta: sirve para probar la
 # salida por una caseta distinta a la de entrada.
 UBICACION_INEXISTENTE = "Ubicacion Que No Existe En El Pase"
