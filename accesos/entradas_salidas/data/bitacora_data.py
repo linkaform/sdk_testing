@@ -55,6 +55,29 @@ DURACION_REGEX = r"^\d{2}:\d{2}:\d{2}$"
 # primera página.
 LIMITE_LISTA = 50
 
+# Dos vehículos para registrar una entrada con varios vehículos (desglose de la
+# lista). Placas únicas de esta suite.
+VEHICULOS_DESGLOSE = [
+    {"tipo": "Automóvil", "marca": "Nissan", "modelo": "Versa", "estado": "Nuevo León",
+     "placas": "QA-DESGLOSE-01", "color": "Blanco"},
+    {"tipo": "Camioneta", "marca": "Ford", "modelo": "Ranger", "estado": "Nuevo León",
+     "placas": "QA-DESGLOSE-02", "color": "Gris"},
+]
+
+# Facets del buscador de la bitácora (TB-053). El nombre va con otra
+# combinación de mayúsculas y acentos que PASE_BITACORA["nombre"] para probar
+# la búsqueda "contiene"; nombre_y_salida combina dos facets (AND) que la
+# visita abierta no cumple porque sigue en entrada.
+FACETS_BUSQUEDA = {
+    "por_nombre": [
+        {"key": "nombre_visitante", "values": ["PRUEBA BITÁCORA ENTRADAS"], "exact": False},
+    ],
+    "nombre_y_salida": [
+        {"key": "nombre_visitante", "values": ["prueba bitacora entradas"], "exact": False},
+        {"key": "status", "values": ["salida"], "exact": True},
+    ],
+}
+
 # Vehículo para agregar a una entrada (update_bitacora_entrada). Las placas
 # son únicas de esta suite para encontrarlo sin ambigüedad en la visita.
 VEHICULO_PRUEBA = {
