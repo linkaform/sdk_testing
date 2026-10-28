@@ -10,7 +10,9 @@ import pytest
 from math import ceil
 
 from .fixtures import *
-from ..data.bitacora_data import LOCATION, AREA, LIMITE_LISTA, VEHICULOS_DESGLOSE, EQUIPO_PRUEBA
+from ..data.bitacora_data import (
+    LOCATION, AREA, LIMITE_LISTA, VEHICULOS_DESGLOSE, EQUIPO_PRUEBA, FACETS_BUSQUEDA,
+)
 from .helpers import ultima_visita, salida_silenciosa
 
 # Página chica para que la lista de preprod tenga varias páginas.
@@ -82,24 +84,24 @@ def test_list_bitacora_busqueda_por_facets(acceso_obj, pase_dentro):
     folio_pase, _ = pase_dentro
     visita = ultima_visita(acceso_obj, folio_pase)
 
-    def buscar(facets):
-        res = acceso_obj.get_list_bitacora(location=LOCATION, area=AREA, facets=facets, limit=LIMITE_LISTA)
-        return res["records"]
-
     # "Contiene", con otra combinación de mayúsculas y acentos que el nombre guardado.
-    por_nombre = buscar([{"key": "nombre_visitante", "values": ["PRUEBA BITÁCORA ENTRADAS"], "exact": False}])
+    por_nombre = acceso_obj.get_list_bitacora(
+        location=LOCATION, area=AREA, facets=FACETS_BUSQUEDA["por_nombre"], limit=LIMITE_LISTA,
+    )["records"]
     assert visita["_id"] in {r["_id"] for r in por_nombre}, "La búsqueda por nombre no encontró la visita"
 
     # Valor completo del folio.
-    por_folio = buscar([{"key": "folio", "values": [visita["folio"]], "exact": True}])
+    por_folio = acceso_obj.get_list_bitacora(
+        location=LOCATION, area=AREA, facets=[{"key": "folio", "values": [visita["folio"]], "exact": True}],
+        limit=LIMITE_LISTA,
+    )["records"]
     assert visita["_id"] in {r["_id"] for r in por_folio}, "La búsqueda exacta por folio no encontró la visita"
     assert all(r["folio"] == visita["folio"] for r in por_folio), "La búsqueda exacta por folio trajo otros folios"
 
     # AND: el nombre coincide pero el estatus no (la visita sigue en entrada).
-    combinados = buscar([
-        {"key": "nombre_visitante", "values": ["prueba bitacora entradas"], "exact": False},
-        {"key": "status", "values": ["salida"], "exact": True},
-    ])
+    combinados = acceso_obj.get_list_bitacora(
+        location=LOCATION, area=AREA, facets=FACETS_BUSQUEDA["nombre_y_salida"], limit=LIMITE_LISTA,
+    )["records"]
     assert visita["_id"] not in {r["_id"] for r in combinados}, "Los facets no se combinaron con AND"
     assert all(r["status_visita"] == "Salida" for r in combinados)
 
@@ -127,23 +129,24 @@ def test_list_bitacora_desglose_de_vehiculos_y_equipos(acceso_obj, pase_activo):
         visita = ultima_visita(acceso_obj, pase_activo)
         solo_esta_visita = [{"key": "folio", "values": [visita["folio"]], "exact": True}]
 
-        def listar(desglose):
-            return acceso_obj.get_list_bitacora(
-                location=LOCATION, area=AREA, facets=solo_esta_visita, desglose=desglose, limit=LIMITE_LISTA,
-            )
-
-        vehiculos = listar("vehiculos")
+        vehiculos = acceso_obj.get_list_bitacora(
+            location=LOCATION, area=AREA, facets=solo_esta_visita, desglose="vehiculos", limit=LIMITE_LISTA,
+        )
         assert vehiculos["total_records"] == len(VEHICULOS_DESGLOSE), "El total no cuenta una fila por vehículo"
         assert len(vehiculos["records"]) == len(VEHICULOS_DESGLOSE)
         assert all(r["_id"] == visita["_id"] for r in vehiculos["records"])
         placas = {v.get("placas") for r in vehiculos["records"] for v in r["vehiculos"]}
         assert placas == {v["placas"] for v in VEHICULOS_DESGLOSE}, f"Placas inesperadas en el desglose: {placas}"
 
-        equipos = listar("equipos")
+        equipos = acceso_obj.get_list_bitacora(
+            location=LOCATION, area=AREA, facets=solo_esta_visita, desglose="equipos", limit=LIMITE_LISTA,
+        )
         assert equipos["total_records"] == 1, "El total no cuenta una fila por equipo"
         assert len(equipos["records"]) == 1
 
-        sin_desglose = listar("")
+        sin_desglose = acceso_obj.get_list_bitacora(
+            location=LOCATION, area=AREA, facets=solo_esta_visita, desglose="", limit=LIMITE_LISTA,
+        )
         assert sin_desglose["total_records"] == 1, "Sin desglose la visita debe ser una sola fila"
         assert len(sin_desglose["records"][0]["vehiculos"]) == len(VEHICULOS_DESGLOSE)
     finally:
