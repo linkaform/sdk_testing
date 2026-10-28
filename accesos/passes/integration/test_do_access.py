@@ -68,6 +68,33 @@ def test_do_access_limite_de_entradas_excedido(acceso_obj, mock_pase_do_access):
 
 
 @pytest.mark.integration
+@pytest.mark.parametrize("limite", [0, None], ids=["limite_cero", "sin_limite"])
+def test_do_access_pase_sin_limite_queda_con_una_entrada(acceso_obj, mock_pase_do_access, limite):
+    """
+    TB-074: los pases siempre son limitados. Si se crea con
+    config_limitar_acceso=0 o sin mandarlo, se guarda con 1 entrada: la
+    primera entrada+salida funciona y la segunda entrada se rechaza.
+    """
+    pase = copy.deepcopy(mock_pase_do_access)
+    if limite is None:
+        pase.pop("config_limitar_acceso", None)
+    else:
+        pase["config_limitar_acceso"] = limite
+    folio = crear_pase(acceso_obj, pase)
+    completar_pase_activo(acceso_obj, folio)
+
+    detalle = acceso_obj.get_detail_access_pass(folio)
+    assert detalle.get("limite_de_acceso") == 1, f"El pase quedó con límite {detalle.get('limite_de_acceso')}"
+
+    res_1 = acceso_obj.do_access(folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA, {})
+    assert res_1.get('status_code') in (200, 201, 202)
+    hacer_salida(acceso_obj, folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA)
+
+    with pytest.raises(Exception) as exc_info:
+        acceso_obj.do_access(folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA, {})
+    assert "limite de entradas" in str(exc_info.value)
+
+@pytest.mark.integration
 def test_do_access_dia_no_permitido(acceso_obj, mock_pase_do_access):
     """
     Si el pase solo permite acceso en un día distinto al actual, do_access
