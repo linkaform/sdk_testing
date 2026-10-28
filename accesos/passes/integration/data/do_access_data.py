@@ -74,3 +74,7 @@ ACOMPANANTE_DOS = {
 }
 
 DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+
+# Límite de entradas explícito, mayor a 1, para comprobar que se respeta al
+# crear el pase aunque config_dia_de_acceso venga vacío o no se mande.
+LIMITE_ACCESO_EXPLICITO = 10
