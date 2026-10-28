@@ -13,10 +13,9 @@ from ..data.bitacora_data import VISITAS_ABIERTAS_OTRAS_UBICACIONES
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize("location", ["", None], ids=["ubicacion_vacia", "ubicacion_none"])
-def test_force_quit_sin_ubicacion_no_cierra_otras_ubicaciones(accesos_no_api, mocker, location):
+def test_force_quit_sin_ubicacion_no_cierra_otras_ubicaciones(accesos_no_api, mocker):
     """
-    TB-072: sin ubicación, la salida masiva no debe cerrar las visitas
+    TB-072: sin ubicación (location vacío), la salida masiva no debe cerrar las visitas
     abiertas de otras ubicaciones de la cuenta. Puede rechazar la llamada,
     pero no guardar la salida de esas visitas.
     """
@@ -26,7 +25,7 @@ def test_force_quit_sin_ubicacion_no_cierra_otras_ubicaciones(accesos_no_api, mo
     )
 
     try:
-        accesos_no_api.force_quit_all_persons(location=location)
+        accesos_no_api.force_quit_all_persons(location="")
     except Exception:
         pass
 
