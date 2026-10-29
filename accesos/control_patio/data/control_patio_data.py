@@ -84,3 +84,9 @@ PASE_TRANSPORTISTA = {
 }
 ESTATUS_PROGRAMADO = "programado"
 PASE_COMPLETADO = "completado"
+
+# Etapas del patio después de 'arribo', en el orden del botón "avanzar etapa"
+# del detalle (ORDEN_ESTATUS en accesos/transportista/[id]/page.tsx).
+ESTATUS_CARGA_DESCARGA = "carga_/_descarga"
+ESTATUS_TERMINADO = "terminado"
+ETAPAS_HASTA_TERMINADO = ["inspeccion_entrada", ESTATUS_CARGA_DESCARGA, "inspeccion_salida", ESTATUS_TERMINADO]
