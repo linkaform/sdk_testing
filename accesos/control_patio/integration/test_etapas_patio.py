@@ -3,7 +3,7 @@
 """
 Etapas de un camión en el patio (save_bitac_transportista_record): lo que
 hace el botón de avanzar etapa en el detalle del transportista.
-Notion: TB-089 y TB-090.
+Notion: TB-089 a TB-091.
 """
 
 from datetime import datetime
@@ -68,3 +68,22 @@ def test_descartar_camion_lo_saca_del_patio(patio_obj, camion_en_arribo):
 
     patio = patio_obj.get_bitac_transportista_records(date_from=hoy, date_to=hoy, estatus=ESTATUS_COLUMNAS_KANBAN)
     assert record_id not in {r.get("_id") for r in patio}, "El camión descartado sigue en las columnas del patio"
+
+
+@pytest.mark.integration
+def test_asignar_y_quitar_anden(patio_obj, camion_en_arribo):
+    """
+    TB-091: el lápiz del Kanban asigna un andén y, para quitarlo, el front y
+    la app mandan anden "" (bitacoras_transportistas/page.tsx:149). Tras
+    quitarlo el camión debe quedar sin andén; si no, el andén se ve ocupado.
+    """
+    record_id = camion_en_arribo
+    anden = patio_obj.get_andenes()[0]
+
+    patio_obj.save_bitac_transportista_record(record_id, {"anden": anden})
+    asignado = patio_obj.get_bitac_transportista_record(record_id).get("anden_asignado")
+    assert asignado == anden, f"No se asignó el andén: {asignado!r}"
+
+    patio_obj.save_bitac_transportista_record(record_id, {"anden": ""})
+    despues = patio_obj.get_bitac_transportista_record(record_id).get("anden_asignado")
+    assert not despues, f"El camión sigue con el andén {despues!r} después de quitarlo"
