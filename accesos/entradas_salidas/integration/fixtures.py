@@ -4,7 +4,9 @@ import copy
 import pytest
 
 from passes.integration.helpers import fecha_str
-from ..data.bitacora_data import PASE_BITACORA, LOCATION, AREA
+from ..data.bitacora_data import (
+    PASE_BITACORA, LOCATION, AREA, PASE_BITACORA_OTRA_UBICACION, OTRA_LOCATION, OTRA_AREA,
+)
 from .helpers import crear_pase, completar_pase_activo, dar_entrada, salida_silenciosa
 
 
@@ -41,3 +43,19 @@ def pase_dentro(acceso_obj, pase_activo):
     registro = dar_entrada(acceso_obj, pase_activo, LOCATION, AREA)
     yield pase_activo, registro
     salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)
+
+
+@pytest.fixture
+def pase_dentro_otra_ubicacion(acceso_obj):
+    """
+    Pase activo con la entrada registrada en OTRA_LOCATION/OTRA_AREA.
+    Regresa (folio, registro_entrada) y al terminar intenta dar la salida.
+    """
+    pase = copy.deepcopy(PASE_BITACORA_OTRA_UBICACION)
+    pase["fecha_desde_visita"] = fecha_str(0)
+    pase["fecha_desde_hasta"] = fecha_str(7)
+    folio = crear_pase(acceso_obj, pase)
+    completar_pase_activo(acceso_obj, folio)
+    registro = dar_entrada(acceso_obj, folio, OTRA_LOCATION, OTRA_AREA)
+    yield folio, registro
+    salida_silenciosa(acceso_obj, folio, OTRA_LOCATION, OTRA_AREA)

@@ -26,6 +26,17 @@ PASE_BITACORA.update({
     ],
 })
 
+# Otra ubicación real de la cuenta, con una caseta suya. Sirve para tener
+# una visita abierta fuera de LOCATION (salida masiva por ubicación, TB-070).
+OTRA_LOCATION = "Planta Durango"
+OTRA_AREA = "Caseta Principal -Dro"
+
+PASE_BITACORA_OTRA_UBICACION = copy.deepcopy(PASE_BITACORA)
+PASE_BITACORA_OTRA_UBICACION.update({
+    "nombre": "Prueba bitacora otra ubicacion",
+    "ubicaciones": [OTRA_LOCATION],
+})
+
 # Ubicación que no existe en el pase ni en la cuenta: sirve para probar la
 # salida por una caseta distinta a la de entrada.
 UBICACION_INEXISTENTE = "Ubicacion Que No Existe En El Pase"
@@ -92,3 +103,14 @@ VEHICULO_PRUEBA = {
 # Mismo equipo con otros datos, para editarlo (update_bitacora_entrada, action
 # 'edit'). Serie distinta para comprobar que se reemplazó y no se duplicó.
 EQUIPO_EDITADO = dict(EQUIPO_PRUEBA, nombre="Laptop prueba bitacora editada", serie="QA-BITACORA-066")
+
+# Visitas abiertas que regresa la consulta de la salida masiva en el test
+# unitario (TB-072). Son de ubicaciones distintas: sin ubicación, la salida
+# masiva no debería cerrarlas.
+VISITAS_ABIERTAS_OTRAS_UBICACIONES = [
+    {"_id": "6ae000000000000000000001"},
+    {"_id": "6ae000000000000000000002"},
+]
+
+# Mensaje de force_quit_all_persons cuando no hay nadie dentro (TB-071).
+MSG_SIN_PERSONAS_DENTRO = "No hay personas dentro por registrar salida."
