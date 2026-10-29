@@ -3,8 +3,10 @@
 """
 Registrar Ingreso desde + Nuevo Acceso (do_access) con el payload que manda
 el front: vehículo, equipo y comentario agregados por el guardia.
-Notion: TB-084.
+Notion: TB-084 y TB-085.
 """
+
+import copy
 
 import pytest
 
@@ -15,9 +17,10 @@ from ..data.nuevo_acceso_data import (
     VEHICULO_NUEVA_VISITA,
     EQUIPO_NUEVA_VISITA,
     COMENTARIO_PASE_NUEVA_VISITA,
+    LIMITE_VARIAS_ENTRADAS,
 )
 from passes.integration.helpers import crear_pase
-from entradas_salidas.integration.helpers import ultima_visita, salida_silenciosa
+from entradas_salidas.integration.helpers import ultima_visita, salida_silenciosa, dar_entrada
 
 
 @pytest.mark.integration
@@ -58,5 +61,28 @@ def test_do_access_guarda_vehiculo_equipo_y_comentario(acceso_obj, mock_pase_nue
         assert COMENTARIO_PASE_NUEVA_VISITA["comentario_pase"] in comentarios, (
             f"La visita no guardó el comentario: {visita.get('comentarios')}"
         )
+    finally:
+        salida_silenciosa(acceso_obj, pase_id, LOCATION, AREA)
+
+
+@pytest.mark.integration
+def test_do_access_segundo_ingreso_sin_salida_es_rechazado(acceso_obj, mock_pase_nueva_visita):
+    """
+    TB-085: con la persona dentro, un segundo Registrar Ingreso del mismo pase
+    debe rechazarse ('ya se encuentra dentro') y no crear otra visita. Si no,
+    la bitácora queda con dos entradas abiertas y la salida cierra solo una.
+    """
+    pase = copy.deepcopy(mock_pase_nueva_visita)
+    pase["config_limitar_acceso"] = LIMITE_VARIAS_ENTRADAS
+    pase_id = crear_pase(acceso_obj, pase)
+    entrada = dar_entrada(acceso_obj, pase_id, LOCATION, AREA)
+
+    try:
+        with pytest.raises(Exception) as exc_info:
+            acceso_obj.do_access(pase_id, LOCATION, AREA, {})
+        assert "ya se encuentra dentro" in str(exc_info.value), f"Rechazo inesperado: {exc_info.value}"
+
+        visitas = acceso_obj.get_list_last_user_move(pase_id)
+        assert [v["_id"] for v in visitas] == [entrada["_id"]], f"Se creó otra visita: {visitas}"
     finally:
         salida_silenciosa(acceso_obj, pase_id, LOCATION, AREA)

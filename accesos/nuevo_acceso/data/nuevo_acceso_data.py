@@ -72,3 +72,8 @@ COMENTARIO_PASE_NUEVA_VISITA = {
     "comentario_pase": "Comentario de prueba nuevo acceso",
     "tipo_de_comentario": "pase",
 }
+
+# Límite de entradas para probar un segundo ingreso (TB-085): do_access revisa
+# el límite antes que si la persona ya está dentro, y sin límite explícito el
+# pase queda con 1 entrada (app.py:3181).
+LIMITE_VARIAS_ENTRADAS = 5
