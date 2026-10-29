@@ -9,6 +9,7 @@ distingan en la bitácora de preprod.
 """
 
 import copy
+from datetime import timedelta
 
 from passes.integration.data.do_access_data import (
     PASE_ACCESO_BASE,
@@ -116,3 +117,19 @@ VISITAS_ABIERTAS_OTRAS_UBICACIONES = [
 
 # Mensaje de force_quit_all_persons cuando no hay nadie dentro (TB-071).
 MSG_SIN_PERSONAS_DENTRO = "No hay personas dentro por registrar salida."
+
+# Duración de la salida (do_out) en los tests unitarios (TB-063).
+# Visita abierta simulada; checkin_date se arma en el test con la hora actual.
+VISITA_ABIERTA_DURACION = {
+    "folio": "QA-DURACION-10",
+    "status_visita": "entrada",
+    "ubicacion_entrada": LOCATION,
+}
+# Margen entre la hora guardada en la salida y la hora del empleado.
+MARGEN_HORA_SALIDA = timedelta(minutes=2)
+
+# Empleado en una zona con otra hora que CDMX (Cancún va 1 h adelante).
+ZONA_EMPLEADO_OTRA = "America/Cancun"
+ENTRADA_HACE_10_MIN = timedelta(minutes=10, seconds=30)
+DURACION_10_MIN = "10 min"
+
