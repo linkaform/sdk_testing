@@ -9,6 +9,7 @@ distingan en la bitácora de preprod.
 """
 
 import copy
+from datetime import timedelta
 
 from passes.integration.data.do_access_data import (
     PASE_ACCESO_BASE,
@@ -58,8 +59,10 @@ EQUIPO_PRUEBA = {
 # radio "INE" del modal de gafete en el front).
 DOCUMENTO_GAFETE = "ine"
 
-# Formato de la duración que guarda do_out.
-DURACION_REGEX = r"^\d{2}:\d{2}:\d{2}$"
+# Formato legible de la duración que guarda do_out: sin segundos y solo las
+# partes que no son cero ("Menos de 1 min", "25 min", "3 h 25 min",
+# "1 día 1 h 5 min", "2 días 2 h").
+DURACION_REGEX = r"^(?:Menos de 1 min|(?:\d+ días? )?(?:\d+ h )?\d+ min|\d+ días?(?: \d+ h)?|\d+ h)$"
 
 # Registros por página al consultar la lista de bitácora. La lista se ordena
 # por created_at descendente, así que la visita recién creada sale en la
@@ -114,3 +117,32 @@ VISITAS_ABIERTAS_OTRAS_UBICACIONES = [
 
 # Mensaje de force_quit_all_persons cuando no hay nadie dentro (TB-071).
 MSG_SIN_PERSONAS_DENTRO = "No hay personas dentro por registrar salida."
+
+# Duración de la salida (do_out) en los tests unitarios (TB-063, TB-076).
+# Visita abierta simulada; checkin_date se arma en el test con la hora actual.
+VISITA_ABIERTA_DURACION = {
+    "folio": "QA-DURACION-10",
+    "status_visita": "entrada",
+    "ubicacion_entrada": LOCATION,
+}
+# Margen entre la hora guardada en la salida y la hora del empleado.
+MARGEN_HORA_SALIDA = timedelta(minutes=2)
+
+# Empleado en una zona con otra hora que CDMX (Cancún va 1 h adelante).
+ZONA_EMPLEADO_OTRA = "America/Cancun"
+ENTRADA_HACE_10_MIN = timedelta(minutes=10, seconds=30)
+DURACION_10_MIN = "10 min"
+
+# Visita de más de 24 h, con empleado en CDMX para no mezclar zonas.
+ZONA_EMPLEADO_CDMX = "America/Mexico_City"
+ENTRADA_HACE_MAS_DE_UN_DIA = timedelta(days=1, hours=1, minutes=5, seconds=30)
+DURACION_MAS_DE_UN_DIA = "1 día 1 h 5 min"
+
+# Cierre general (salida masiva, force_quit_all_persons) en el test unitario
+# TB-077: visitas abiertas de LOCATION y el texto que va en la duración,
+# porque no se sabe la hora real en que salió cada persona.
+VISITAS_ABIERTAS_UBICACION = [
+    {"_id": "6ae000000000000000000011"},
+    {"_id": "6ae000000000000000000012"},
+]
+DURACION_CIERRE_GENERAL = "Cierre general"
