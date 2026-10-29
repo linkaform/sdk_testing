@@ -1,9 +1,12 @@
 # coding: utf-8
 
+import copy
 import sys
 import pytest
 
 from account_settings import settings
+from passes.integration.helpers import fecha_str
+from ..data.control_patio_data import PASE_TRANSPORTISTA
 
 # Los métodos de Control de patio (get_bitac_transportista_record,
 # save_bitac_transportista_record, ...) viven en el script transportistas.py,
@@ -37,3 +40,15 @@ def patio_obj(accesos_api):
     acc = TransportistasAccesos(settings, use_api=True)
     acc.user = accesos_api.user
     return acc
+
+
+@pytest.fixture
+def mock_pase_transportista(patio_obj):
+    """Pase de transportista para hoy, en el primer andén de la cuenta (get_andenes)."""
+    andenes = patio_obj.get_andenes()
+    assert andenes, "La cuenta no tiene andenes para programar el pase"
+
+    pase = copy.deepcopy(PASE_TRANSPORTISTA)
+    pase["lugar_entrega_recepcion"]["fecha_pase_transportista_desde"] = fecha_str(0)[:10]
+    pase["lugar_entrega_recepcion"]["anden"] = andenes[0]
+    return pase

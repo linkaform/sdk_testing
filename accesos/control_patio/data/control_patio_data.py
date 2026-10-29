@@ -50,3 +50,37 @@ LLEGADA_SIN_PASE = {
 # Estatus en que queda el camión al registrar su llegada y al descartarlo.
 ESTATUS_ARRIBO = "arribo"
 ESTATUS_DESCARTADO = "descartado"
+
+# Pase de transportista con el payload que arma el front en "+ Nuevo Pase
+# Transportistas" (pase-entrada-transportista/page.tsx::buildPayload). Al
+# crearse deja un registro 'programado' en el patio. Fecha y andén se llenan
+# en el fixture (hoy y el primer andén de la cuenta).
+PASE_TRANSPORTISTA = {
+    "tipo_de_operacion": "entrega_de_materia_prima",
+    "creado_desde": "pase_de_entrada_web",
+    "dominio": "",
+    "crea_el_pase": {
+        "nombre": "Prueba control de patio",
+        "email": "pruebas.control_patio@clave10.com",
+        "telefono": None,
+        "es_nuevo": False,
+    },
+    "empresa_transportista": "Transportes prueba QA",
+    "recibe_el_pase": {"nombre": None, "email": None, "telefono": None},
+    "material": {
+        "proveedor_cliente": None,
+        "orden_compra": None,
+        "items": [],
+        "documentos": [],
+    },
+    "lugar_entrega_recepcion": {
+        "ubicacion": LOCATION,
+        "direccion": None,
+        "fecha_pase_transportista_desde": "",
+        "horario_disponible": None,
+        "anden": "",
+        "area": AREA,
+    },
+}
+ESTATUS_PROGRAMADO = "programado"
+PASE_COMPLETADO = "completado"
