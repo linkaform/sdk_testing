@@ -90,3 +90,7 @@ PASE_COMPLETADO = "completado"
 ESTATUS_CARGA_DESCARGA = "carga_/_descarga"
 ESTATUS_TERMINADO = "terminado"
 ETAPAS_HASTA_TERMINADO = ["inspeccion_entrada", ESTATUS_CARGA_DESCARGA, "inspeccion_salida", ESTATUS_TERMINADO]
+
+# Columnas de etapas del Kanban del patio (COLUMNAS en
+# bitacoras_transportistas/page.tsx). Un camión descartado ya no sale en ellas.
+ESTATUS_COLUMNAS_KANBAN = ["arribo", "inspeccion_entrada", ESTATUS_CARGA_DESCARGA, "inspeccion_salida", ESTATUS_TERMINADO]

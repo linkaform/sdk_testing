@@ -3,7 +3,7 @@
 """
 Etapas de un camión en el patio (save_bitac_transportista_record): lo que
 hace el botón de avanzar etapa en el detalle del transportista.
-Notion: TB-089.
+Notion: TB-089 y TB-090.
 """
 
 from datetime import datetime
@@ -16,6 +16,8 @@ from ..data.control_patio_data import (
     ETAPAS_HASTA_TERMINADO,
     ESTATUS_CARGA_DESCARGA,
     ESTATUS_TERMINADO,
+    ESTATUS_DESCARTADO,
+    ESTATUS_COLUMNAS_KANBAN,
 )
 
 
@@ -47,3 +49,22 @@ def test_avanzar_etapas_hasta_terminado_llena_fechas(patio_obj, camion_en_arribo
     assert (registro.get("fecha_hora_terminado") or "").startswith(hoy), (
         f"No se guardó la fecha de terminado: {registro.get('fecha_hora_terminado')!r}"
     )
+
+
+@pytest.mark.integration
+def test_descartar_camion_lo_saca_del_patio(patio_obj, camion_en_arribo):
+    """
+    TB-090: el botón X del Kanban descarta el camión. Debe quedar en
+    'descartado' y ya no salir en las columnas del patio de hoy; si sigue
+    saliendo, el guardia ve camiones que ya no están.
+    """
+    record_id = camion_en_arribo
+    hoy = datetime.now(pytz.timezone(patio_obj.user["timezone"])).strftime("%Y-%m-%d")
+
+    patio_obj.save_bitac_transportista_record(record_id, {"estatus": ESTATUS_DESCARTADO})
+
+    registro = patio_obj.get_bitac_transportista_record(record_id)
+    assert registro.get("estatus") == ESTATUS_DESCARTADO, f"El camión quedó en '{registro.get('estatus')}'"
+
+    patio = patio_obj.get_bitac_transportista_records(date_from=hoy, date_to=hoy, estatus=ESTATUS_COLUMNAS_KANBAN)
+    assert record_id not in {r.get("_id") for r in patio}, "El camión descartado sigue en las columnas del patio"
