@@ -118,7 +118,7 @@ VISITAS_ABIERTAS_OTRAS_UBICACIONES = [
 # Mensaje de force_quit_all_persons cuando no hay nadie dentro (TB-071).
 MSG_SIN_PERSONAS_DENTRO = "No hay personas dentro por registrar salida."
 
-# Duración de la salida (do_out) en los tests unitarios (TB-063).
+# Duración de la salida (do_out) en los tests unitarios (TB-063, TB-076).
 # Visita abierta simulada; checkin_date se arma en el test con la hora actual.
 VISITA_ABIERTA_DURACION = {
     "folio": "QA-DURACION-10",
@@ -133,3 +133,7 @@ ZONA_EMPLEADO_OTRA = "America/Cancun"
 ENTRADA_HACE_10_MIN = timedelta(minutes=10, seconds=30)
 DURACION_10_MIN = "10 min"
 
+# Visita de más de 24 h, con empleado en CDMX para no mezclar zonas.
+ZONA_EMPLEADO_CDMX = "America/Mexico_City"
+ENTRADA_HACE_MAS_DE_UN_DIA = timedelta(days=1, hours=1, minutes=5, seconds=30)
+DURACION_MAS_DE_UN_DIA = "1 día 1 h 5 min"
