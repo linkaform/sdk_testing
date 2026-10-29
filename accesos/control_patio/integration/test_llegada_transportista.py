@@ -72,7 +72,8 @@ def test_llegada_con_pase_reutiliza_el_registro_programado(patio_obj, mock_pase_
     llegada = copy.deepcopy(LLEGADA_SIN_PASE)
     llegada["num_de_pase"] = pase_id
     res = patio_obj.create_visit_transportista(llegada)
-    record_id = (res.get("json") or {}).get("id") or res.get("id")
+    # Al reutilizar el programado, create_visit_transportista regresa su id en res["id"].
+    record_id = res.get("id") or (res.get("json") or {}).get("id")
 
     try:
         assert record_id == programado_id, f"La llegada creó otro registro ({record_id}) en vez de usar {programado_id}"
