@@ -6,7 +6,7 @@ from datetime import datetime
 from pytz import timezone
 
 from .fixtures import *
-from .data.do_access_data import DIAS_SEMANA
+from .data.do_access_data import DIAS_SEMANA, LIMITE_ACCESO_EXPLICITO
 from .helpers import (
     fecha_str,
     crear_pase,
@@ -66,6 +66,85 @@ def test_do_access_limite_de_entradas_excedido(acceso_obj, mock_pase_do_access):
         acceso_obj.do_access(folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA, {})
     assert "limite de entradas" in str(exc_info.value)
 
+
+@pytest.mark.integration
+def test_do_access_pase_sin_limite_queda_con_una_entrada(acceso_obj, mock_pase_do_access):
+    """
+    TB-074: los pases siempre son limitados. Si se crea con
+    config_limitar_acceso=0 (lo que manda el front), se guarda con 1 entrada:
+    la primera entrada+salida funciona y la segunda entrada se rechaza.
+    """
+    pase = copy.deepcopy(mock_pase_do_access)
+    pase["config_limitar_acceso"] = 0
+    folio = crear_pase(acceso_obj, pase)
+    completar_pase_activo(acceso_obj, folio)
+
+    detalle = acceso_obj.get_detail_access_pass(folio)
+    assert detalle.get("limite_de_acceso") == 1, f"El pase quedó con límite {detalle.get('limite_de_acceso')}"
+
+    res_1 = acceso_obj.do_access(folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA, {})
+    assert res_1.get('status_code') in (200, 201, 202)
+    hacer_salida(acceso_obj, folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA)
+
+    with pytest.raises(Exception) as exc_info:
+        acceso_obj.do_access(folio, DO_ACCESS_LOCATION, DO_ACCESS_AREA, {})
+    assert "limite de entradas" in str(exc_info.value)
+
+@pytest.mark.integration
+def test_create_access_pass_respeta_limite_con_dia_de_acceso_vacio(acceso_obj, mock_pase_do_access):
+    """
+    TB-075: el límite de entradas mandado al crear el pase se guarda aunque
+    config_dia_de_acceso venga vacío (llamada directa; el front y la app
+    siempre mandan un valor). Puede rechazarlo con un 400, pero no cambiar
+    el límite.
+    """
+    pase = copy.deepcopy(mock_pase_do_access)
+    pase["config_limitar_acceso"] = LIMITE_ACCESO_EXPLICITO
+    pase["config_dia_de_acceso"] = ""
+
+    try:
+        res = acceso_obj.create_access_pass(pase)
+    except Exception as error:
+        assert type(error) is Exception and '"status_code": 400' in str(error), (
+            f"Error no controlado ({type(error).__name__}): {error}"
+        )
+        return
+    if res.get('status_code') == 400:
+        return
+    assert res.get('status_code') == 201, f"No se pudo crear el pase: {res}"
+
+    detalle = acceso_obj.get_detail_access_pass(res['json']['id'])
+    assert detalle.get("limite_de_acceso") == LIMITE_ACCESO_EXPLICITO, (
+        f"Se mandó límite {LIMITE_ACCESO_EXPLICITO} y el pase quedó con {detalle.get('limite_de_acceso')}"
+    )
+
+
+@pytest.mark.integration
+def test_create_access_pass_respeta_limite_sin_dia_de_acceso(acceso_obj, mock_pase_do_access):
+    """
+    TB-075: el límite de entradas mandado al crear el pase se guarda aunque
+    no se mande config_dia_de_acceso (llamada directa). Puede rechazarlo con
+    un 400, pero no tronar con una excepción interna ni cambiar el límite.
+    """
+    pase = copy.deepcopy(mock_pase_do_access)
+    pase["config_limitar_acceso"] = LIMITE_ACCESO_EXPLICITO
+    pase.pop("config_dia_de_acceso", None)
+
+    try:
+        res = acceso_obj.create_access_pass(pase)
+    except Exception as error:
+        assert type(error) is Exception and '"status_code": 400' in str(error), (
+            f"Error no controlado ({type(error).__name__}): {error}"
+        )
+        return
+    if res.get('status_code') == 400:
+        return
+    assert res.get('status_code') == 201, f"No se pudo crear el pase: {res}"
+
+    detalle = acceso_obj.get_detail_access_pass(res['json']['id'])
+    assert detalle.get("limite_de_acceso") == LIMITE_ACCESO_EXPLICITO, (
+        f"Se mandó límite {LIMITE_ACCESO_EXPLICITO} y el pase quedó con {detalle.get('limite_de_acceso')}"
+    )
 
 @pytest.mark.integration
 def test_do_access_dia_no_permitido(acceso_obj, mock_pase_do_access):
