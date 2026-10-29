@@ -137,3 +137,12 @@ DURACION_10_MIN = "10 min"
 ZONA_EMPLEADO_CDMX = "America/Mexico_City"
 ENTRADA_HACE_MAS_DE_UN_DIA = timedelta(days=1, hours=1, minutes=5, seconds=30)
 DURACION_MAS_DE_UN_DIA = "1 día 1 h 5 min"
+
+# Cierre general (salida masiva, force_quit_all_persons) en el test unitario
+# TB-077: visitas abiertas de LOCATION y el texto que va en la duración,
+# porque no se sabe la hora real en que salió cada persona.
+VISITAS_ABIERTAS_UBICACION = [
+    {"_id": "6ae000000000000000000011"},
+    {"_id": "6ae000000000000000000012"},
+]
+DURACION_CIERRE_GENERAL = "Cierre general"
