@@ -58,8 +58,10 @@ EQUIPO_PRUEBA = {
 # radio "INE" del modal de gafete en el front).
 DOCUMENTO_GAFETE = "ine"
 
-# Formato de la duración que guarda do_out.
-DURACION_REGEX = r"^\d{2}:\d{2}:\d{2}$"
+# Formato legible de la duración que guarda do_out: sin segundos y solo las
+# partes que no son cero ("Menos de 1 min", "25 min", "3 h 25 min",
+# "1 día 1 h 5 min", "2 días 2 h").
+DURACION_REGEX = r"^(?:Menos de 1 min|(?:\d+ días? )?(?:\d+ h )?\d+ min|\d+ días?(?: \d+ h)?|\d+ h)$"
 
 # Registros por página al consultar la lista de bitácora. La lista se ordena
 # por created_at descendente, así que la visita recién creada sale en la
