@@ -3,8 +3,9 @@
 import copy
 import pytest
 
-from passes.integration.helpers import fecha_str
-from ..data.nuevo_acceso_data import PASE_NUEVA_VISITA, LOCATION
+from passes.integration.helpers import fecha_str, crear_pase
+from entradas_salidas.integration.helpers import dar_entrada, salida_silenciosa
+from ..data.nuevo_acceso_data import PASE_NUEVA_VISITA, LOCATION, AREA
 
 
 @pytest.fixture
@@ -28,3 +29,16 @@ def mock_pase_nueva_visita(acceso_obj):
     pase["fecha_desde_visita"] = f"{hoy} 00:00:00"
     pase["fecha_desde_hasta"] = f"{hoy} 23:59:00"
     return pase
+
+
+@pytest.fixture
+def pase_nueva_visita_dentro(acceso_obj, mock_pase_nueva_visita):
+    """
+    Pase de Nueva Visita con la entrada ya registrada en LOCATION/AREA.
+    Regresa (pase_id, registro_entrada). Al terminar intenta dar la salida
+    para no dejar a la persona "dentro" en preprod.
+    """
+    pase_id = crear_pase(acceso_obj, mock_pase_nueva_visita)
+    registro = dar_entrada(acceso_obj, pase_id, LOCATION, AREA)
+    yield pase_id, registro
+    salida_silenciosa(acceso_obj, pase_id, LOCATION, AREA)
