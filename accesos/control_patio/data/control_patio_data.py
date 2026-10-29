@@ -94,3 +94,11 @@ ETAPAS_HASTA_TERMINADO = ["inspeccion_entrada", ESTATUS_CARGA_DESCARGA, "inspecc
 # Columnas de etapas del Kanban del patio (COLUMNAS en
 # bitacoras_transportistas/page.tsx). Un camión descartado ya no sale en ellas.
 ESTATUS_COLUMNAS_KANBAN = ["arribo", "inspeccion_entrada", ESTATUS_CARGA_DESCARGA, "inspeccion_salida", ESTATUS_TERMINADO]
+
+# Edición de la sección Embarque del detalle (saveMaterial en
+# accesos/transportista/[id]/page.tsx): proveedor, orden de compra y procedencia.
+EMBARQUE_EDITADO = {
+    "proveedor_cliente": "Proveedor prueba QA",
+    "no_orden_compra": "OC-QA-092",
+    "procedencia": "Saltillo",
+}

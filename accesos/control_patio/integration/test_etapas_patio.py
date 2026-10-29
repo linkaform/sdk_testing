@@ -3,7 +3,7 @@
 """
 Etapas de un camión en el patio (save_bitac_transportista_record): lo que
 hace el botón de avanzar etapa en el detalle del transportista.
-Notion: TB-089 a TB-091.
+Notion: TB-089 a TB-092.
 """
 
 from datetime import datetime
@@ -18,6 +18,8 @@ from ..data.control_patio_data import (
     ESTATUS_TERMINADO,
     ESTATUS_DESCARTADO,
     ESTATUS_COLUMNAS_KANBAN,
+    LLEGADA_SIN_PASE,
+    EMBARQUE_EDITADO,
 )
 
 
@@ -87,3 +89,25 @@ def test_asignar_y_quitar_anden(patio_obj, camion_en_arribo):
     patio_obj.save_bitac_transportista_record(record_id, {"anden": ""})
     despues = patio_obj.get_bitac_transportista_record(record_id).get("anden_asignado")
     assert not despues, f"El camión sigue con el andén {despues!r} después de quitarlo"
+
+
+@pytest.mark.integration
+def test_editar_embarque_no_pisa_la_empresa_transportista(patio_obj, camion_en_arribo):
+    """
+    TB-092: al editar la sección Embarque del detalle, la procedencia debe
+    guardarse en su campo y la empresa transportista quedar igual. Si la
+    procedencia se escribe sobre la empresa, el camión cambia de transportista.
+    """
+    record_id = camion_en_arribo
+
+    patio_obj.save_bitac_transportista_record(record_id, {"embarque": EMBARQUE_EDITADO})
+
+    registro = patio_obj.get_bitac_transportista_record(record_id)
+    assert registro.get("proveedor_cliente") == EMBARQUE_EDITADO["proveedor_cliente"]
+    assert registro.get("orden_de_compra") == EMBARQUE_EDITADO["no_orden_compra"]
+    assert registro.get("procedencia") == EMBARQUE_EDITADO["procedencia"], (
+        f"La procedencia no se guardó en su campo: {registro.get('procedencia')!r}"
+    )
+    assert registro.get("empresa_transportista") == LLEGADA_SIN_PASE["vehiculo"]["transportista"], (
+        f"Se pisó la empresa transportista: {registro.get('empresa_transportista')!r}"
+    )
