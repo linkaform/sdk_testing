@@ -45,3 +45,6 @@ PASE_NUEVA_VISITA = {
     "config_dias_acceso": [],
     "config_limitar_acceso": 0,
 }
+
+# QR que no es un ObjectId (lo que pasa si se escribe texto en el buscador).
+QR_INVALIDO = "no-es-un-qr"
