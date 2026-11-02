@@ -27,6 +27,7 @@ from ..data.bitacora_data import (
 
 
 @pytest.mark.unit
+@pytest.mark.bug_1477
 def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
     """
     TB-063: la entrada se guarda con la zona del empleado; la salida también
@@ -60,6 +61,7 @@ def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
 
 
 @pytest.mark.unit
+@pytest.mark.bug_1477
 def test_do_out_duracion_de_mas_de_un_dia_es_legible(accesos_no_api, mocker):
     """
     TB-076: una visita de más de 24 h debe mostrar los días ("1 día 1 h
