@@ -34,3 +34,15 @@ VEHICULOS_VISITA_DOS = [
     dict(VEHICULO_VISITA, marca="Toyota", modelo="Hilux", placas="QA-VEHICULOS-097-B"),
 ]
 FILAS_POR_PAGINA = 1
+
+# Vehículo que el guardia agrega a una visita abierta desde el modal
+# "Nuevo Vehículo" (add-local-vehicule.tsx): un objeto, sin 'action' (TB-098).
+VEHICULO_AGREGADO = {
+    "color": "Rojo",
+    "marca": "Ford",
+    "modelo": "Ranger",
+    "estado": "Nuevo León",
+    "placas": "QA-VEHICULOS-098",
+    "tipo": "Automóvil",
+    "foto_vehiculo": [],
+}

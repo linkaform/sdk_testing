@@ -3,7 +3,7 @@
 """
 Lista de la pestaña Vehículos de Bitácoras: get_list_bitacora con
 desglose='vehiculos' (una fila por vehículo), opciones Dentro y Todos.
-Notion: TB-095 a TB-097.
+Notion: TB-095 a TB-098.
 """
 
 from math import ceil
@@ -20,8 +20,9 @@ from ..data.vehiculos_data import (
     VEHICULO_VISITA,
     VEHICULOS_VISITA_DOS,
     FILAS_POR_PAGINA,
+    VEHICULO_AGREGADO,
 )
-from entradas_salidas.integration.helpers import ultima_visita, salida_silenciosa
+from entradas_salidas.integration.helpers import ultima_visita, salida_silenciosa, dar_entrada
 
 
 @pytest.mark.integration
@@ -128,5 +129,29 @@ def test_paginacion_de_vehiculos_no_repite_ni_pierde(acceso_obj, pase_activo):
         assert sorted(placas_visita) == sorted(v["placas"] for v in VEHICULOS_VISITA_DOS), (
             f"Vehículos de la visita al recorrer las páginas: {placas_visita}"
         )
+    finally:
+        salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)
+
+
+@pytest.mark.integration
+def test_agregar_vehiculo_a_visita_abierta_aparece_en_dentro(acceso_obj, pase_activo):
+    """
+    TB-098: a una visita abierta sin vehículo, el guardia le agrega uno desde
+    el modal "Nuevo Vehículo" (update_bitacora_entrada sin action). Debe
+    aparecer como fila en Vehículos → Dentro con su placa; si no, el vehículo
+    queda dentro sin que nadie lo vea en la lista.
+    """
+    visita = dar_entrada(acceso_obj, pase_activo, LOCATION, AREA)
+
+    try:
+        acceso_obj.update_bitacora_entrada({"vehiculo": VEHICULO_AGREGADO}, record_id=visita["_id"])
+
+        dentro = acceso_obj.get_list_bitacora(
+            location=LOCATION, area=AREA, dynamic_filters=FILTRO_DENTRO,
+            desglose=DESGLOSE_VEHICULOS, limit=LIMITE_LISTA,
+        )
+        filas_visita = [r for r in dentro["records"] if r["_id"] == visita["_id"]]
+        assert len(filas_visita) == 1, f"El vehículo agregado no aparece en Dentro: {len(filas_visita)} filas"
+        assert filas_visita[0]["vehiculos"][0]["placas"] == VEHICULO_AGREGADO["placas"]
     finally:
         salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)
