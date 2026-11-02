@@ -138,6 +138,29 @@ Si se usa un marker sin registrarlo, pytest lanza `PytestUnknownMarkWarning` (o 
 
 **Cuidado con nombres de test duplicados:** si dos funciones en el mismo archivo tienen el mismo nombre, Python sobreescribe la primera al importar el módulo — pytest solo colecciona la segunda, y los markers de la primera (incluyendo markers de funcionalidad como `do_access`) desaparecen silenciosamente sin ningún warning. Si vas a copiar un test para adaptarlo a otra capa (por ejemplo de `integration` a `e2e`), cambia el nombre de la función.
 
+
+### Markers temporales de bugs
+
+Cuando un bug afecta a **más de un test**, a esos tests se les agrega un marker temporal con el folio del ticket, `bug_<folio>`, para correrlos todos juntos sin escribir cada test:
+
+    @pytest.mark.integration
+    @pytest.mark.bug_1477
+    def test_do_out_registra_salida_en_el_mismo_registro(acceso_obj, pase_dentro):
+        ...
+
+Se registra en `pytest.ini` con el ticket y los tests que agrupa:
+
+    bug_1477: Temporal, ticket 2610-1477 (salida con zona del empleado y duración legible): TB-055, TB-063, TB-076, TB-077
+
+Así, quien corrige el ticket (y QA al verificarlo) corre solo esos tests:
+
+    pytest -s -m bug_1477
+
+El mismo comando va en "Cómo reproducir" del ticket.
+
+- Va con el folio del ticket y no un `bug` genérico: `-m bug` correría los tests de todos los bugs abiertos, no solo los del ticket que se está corrigiendo.
+- Si el bug afecta a un solo test, no lleva marker: basta con correr ese test.
+- Es **temporal**: cuando el ticket queda corregido se quita el marker de los tests y de `pytest.ini`.
 ---
 
 ## Docstrings
