@@ -26,3 +26,11 @@ VEHICULO_VISITA = {
     "placas": "QA-VEHICULOS-095",
     "color": "Blanco",
 }
+
+# Visita con 2 vehículos para recorrer Vehículos de 1 fila por página (TB-097):
+# los dos quedan en páginas distintas.
+VEHICULOS_VISITA_DOS = [
+    dict(VEHICULO_VISITA, placas="QA-VEHICULOS-097-A"),
+    dict(VEHICULO_VISITA, marca="Toyota", modelo="Hilux", placas="QA-VEHICULOS-097-B"),
+]
+FILAS_POR_PAGINA = 1
