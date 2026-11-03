@@ -45,6 +45,7 @@ def test_force_quit_sin_ubicacion_no_cierra_otras_ubicaciones(accesos_no_api, mo
 
 
 @pytest.mark.unit
+@pytest.mark.bug_1477
 def test_force_quit_guarda_cierre_general_y_hora_del_empleado(accesos_no_api, mocker):
     """
     TB-077: el cierre general de una ubicación guarda la salida en la hora
