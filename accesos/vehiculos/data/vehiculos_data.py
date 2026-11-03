@@ -54,3 +54,8 @@ VEHICULOS_CON_Y_SIN_TIPO = [
     dict(VEHICULO_VISITA, placas="QA-VEHICULOS-099"),
     dict(VEHICULO_VISITA, tipo="", placas="QA-VEHICULOS-099-SIN-TIPO"),
 ]
+
+# La app pide Vehículos Dentro con list_bitacora2 sin desglose y con la
+# prioridad 'entrada'; desglosa los vehículos en el celular (TB-100).
+PRIORIDADES_APP_DENTRO = ["entrada"]
+VEHICULO_APP = dict(VEHICULO_VISITA, placas="QA-VEHICULOS-100")
