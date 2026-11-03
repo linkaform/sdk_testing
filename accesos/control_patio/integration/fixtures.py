@@ -6,7 +6,12 @@ import pytest
 
 from account_settings import settings
 from passes.integration.helpers import fecha_str
-from ..data.control_patio_data import PASE_TRANSPORTISTA
+from ..data.control_patio_data import (
+    PASE_TRANSPORTISTA,
+    LLEGADA_SIN_PASE,
+    ESTATUS_DESCARTADO,
+    ESTATUS_TERMINADO,
+)
 
 # Los métodos de Control de patio (get_bitac_transportista_record,
 # save_bitac_transportista_record, ...) viven en el script transportistas.py,
@@ -52,3 +57,18 @@ def mock_pase_transportista(patio_obj):
     pase["lugar_entrega_recepcion"]["fecha_pase_transportista_desde"] = fecha_str(0)[:10]
     pase["lugar_entrega_recepcion"]["anden"] = andenes[0]
     return pase
+
+
+@pytest.fixture
+def camion_en_arribo(patio_obj):
+    """
+    Camión recién llegado sin pase (estatus 'arribo'). Regresa su record_id.
+    Al terminar lo descarta para sacarlo del patio de preprod, salvo que el
+    test lo haya dejado en 'terminado'.
+    """
+    res = patio_obj.create_visit_transportista(LLEGADA_SIN_PASE)
+    record_id = (res.get("json") or {}).get("id")
+    assert record_id, f"No se creó el registro del camión: {res}"
+    yield record_id
+    if patio_obj.get_bitac_transportista_record(record_id).get("estatus") != ESTATUS_TERMINADO:
+        patio_obj.save_bitac_transportista_record(record_id, {"estatus": ESTATUS_DESCARTADO})
