@@ -124,3 +124,19 @@ INFORMACION_TRANSPORTISTA = {
 # (handlePlacaDocFileChange en accesos/transportista/[id]/page.tsx): un
 # objeto con el tipo como slug de TIPOS_DOCUMENTO_TRANSPORTISTA (TB-109).
 DOCUMENTO_ADICIONAL = dict(IMAGEN_PREPROD, tipo="carta_porte", index=None)
+
+# Material con evidencia, como lo manda la inspección de material del detalle
+# (handleGuardar en accesos/transportista/[id]/page.tsx). Sin index para que
+# se agregue como fila nueva en un camión sin materiales (TB-110).
+MATERIAL_CON_EVIDENCIA = {
+    "ref": "vehiculo",
+    "producto": "Producto prueba QA",
+    "lote": "QA-LOTE-110",
+    "cant_esperada": "10",
+    "cant_fisica": "10",
+    "cant_buena": "10",
+    "cant_danada": "",
+    "cant_faltante": "",
+    "comentario": "Material prueba patio",
+    "evidencia": [IMAGEN_PREPROD],
+}

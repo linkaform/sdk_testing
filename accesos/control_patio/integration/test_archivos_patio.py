@@ -15,6 +15,7 @@ from ..data.control_patio_data import (
     IMAGEN_PREPROD,
     INFORMACION_TRANSPORTISTA,
     DOCUMENTO_ADICIONAL,
+    MATERIAL_CON_EVIDENCIA,
 )
 
 
@@ -63,3 +64,21 @@ def test_documento_adicional_se_guarda_en_el_registro_del_patio(patio_obj, camio
     assert len(guardados) == 1, f"El documento no quedó en el registro: {documentos}"
     assert guardados[0].get("tipo") == DOCUMENTO_ADICIONAL["tipo"], f"El documento quedó con tipo {guardados[0].get('tipo')!r}"
     assert guardados[0]["documento"][0].get("file_name") == IMAGEN_PREPROD["file_name"]
+
+
+@pytest.mark.integration
+def test_evidencia_del_material_se_guarda_en_el_registro_del_patio(patio_obj, camion_en_arribo):
+    """
+    TB-110: la evidencia (foto) de un material en la inspección de material
+    debe quedar en el registro del patio con su file_url. Si se pierde, no
+    hay prueba del estado en que llegó el material.
+    """
+    record_id = camion_en_arribo
+
+    patio_obj.save_bitac_transportista_record(record_id, {"materiales": [MATERIAL_CON_EVIDENCIA]})
+
+    materiales = patio_obj.get_bitac_transportista_record(record_id).get("materiales") or []
+    guardados = [m for m in materiales if m.get("lote") == MATERIAL_CON_EVIDENCIA["lote"]]
+    assert len(guardados) == 1, f"El material no quedó en el registro: {materiales}"
+    urls = [e.get("file_url") for e in guardados[0].get("evidencia") or []]
+    assert urls == [IMAGEN_PREPROD["file_url"]], f"La evidencia del material quedó con {urls}"
