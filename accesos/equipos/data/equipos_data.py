@@ -26,3 +26,12 @@ EQUIPO_VISITA = {
     "color": "Negro",
     "serie": "QA-EQUIPOS-101",
 }
+
+# Visita con 2 equipos para recorrer Equipos de 1 fila por página (TB-103):
+# los dos quedan en páginas distintas.
+EQUIPOS_VISITA_DOS = [
+    dict(EQUIPO_VISITA, serie="QA-EQUIPOS-103-A"),
+    dict(EQUIPO_VISITA, tipo="Herramienta", nombre="Taladro prueba equipos", marca="Bosch",
+         modelo="GSB", serie="QA-EQUIPOS-103-B"),
+]
+FILAS_POR_PAGINA = 1
