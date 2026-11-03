@@ -35,3 +35,14 @@ EQUIPOS_VISITA_DOS = [
          modelo="GSB", serie="QA-EQUIPOS-103-B"),
 ]
 FILAS_POR_PAGINA = 1
+
+# Equipo que el guardia agrega a una visita abierta desde el modal de agregar
+# equipo (add-local-equipo.tsx): un objeto, sin 'action' (TB-104).
+EQUIPO_AGREGADO = {
+    "tipo": "Herramienta",
+    "nombre": "Taladro agregado",
+    "marca": "Bosch",
+    "modelo": "GSB",
+    "color": "Azul",
+    "serie": "QA-EQUIPOS-104",
+}
