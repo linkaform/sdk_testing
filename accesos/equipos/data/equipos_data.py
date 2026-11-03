@@ -46,3 +46,9 @@ EQUIPO_AGREGADO = {
     "color": "Azul",
     "serie": "QA-EQUIPOS-104",
 }
+
+# El modal manda el tipo tal como viene del catálogo de tipos de equipo de la
+# cuenta. 'Laptop' no es opción del radio de la bitácora; en la entrada
+# (do_access) se guarda como 'computo' (TB-105).
+EQUIPO_TIPO_CATALOGO = dict(EQUIPO_AGREGADO, tipo="Laptop", nombre="Laptop agregada", serie="QA-EQUIPOS-105")
+TIPO_EQUIPO_ESPERADO = "Computo"
