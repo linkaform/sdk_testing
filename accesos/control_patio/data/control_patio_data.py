@@ -119,3 +119,8 @@ INFORMACION_TRANSPORTISTA = {
     "vehiculo": {"tipo": "Tractocamión", "marca": "Kenworth", "placas": "QA-PATIO-108", "foto": IMAGEN_PREPROD},
     "foto_contenedores": IMAGEN_PREPROD,
 }
+
+# Documento adicional que sube el guardia en el detalle del camión
+# (handlePlacaDocFileChange en accesos/transportista/[id]/page.tsx): un
+# objeto con el tipo como slug de TIPOS_DOCUMENTO_TRANSPORTISTA (TB-109).
+DOCUMENTO_ADICIONAL = dict(IMAGEN_PREPROD, tipo="carta_porte", index=None)

@@ -14,6 +14,7 @@ from ..data.control_patio_data import (
     ESTATUS_DESCARTADO,
     IMAGEN_PREPROD,
     INFORMACION_TRANSPORTISTA,
+    DOCUMENTO_ADICIONAL,
 )
 
 
@@ -41,3 +42,24 @@ def test_fotos_del_transportista_se_guardan_en_el_pase(patio_obj, mock_pase_tran
         programado_id = patio_obj.get_pass_transportista(record_id=pase_id).get("bitacora_id")
         if programado_id:
             patio_obj.save_bitac_transportista_record(programado_id, {"estatus": ESTATUS_DESCARTADO})
+
+
+@pytest.mark.integration
+def test_documento_adicional_se_guarda_en_el_registro_del_patio(patio_obj, camion_en_arribo):
+    """
+    TB-109: un documento que sube el guardia en el detalle del camión (por
+    ejemplo la carta porte) debe quedar en el registro del patio con su tipo
+    y su archivo. Si no, el documento no aparece en el detalle.
+    """
+    record_id = camion_en_arribo
+
+    patio_obj.save_bitac_transportista_record(record_id, {"documentos_adicionales": DOCUMENTO_ADICIONAL})
+
+    documentos = patio_obj.get_bitac_transportista_record(record_id).get("documentos") or []
+    guardados = [
+        d for d in documentos
+        if any(a.get("file_url") == IMAGEN_PREPROD["file_url"] for a in d.get("documento") or [])
+    ]
+    assert len(guardados) == 1, f"El documento no quedó en el registro: {documentos}"
+    assert guardados[0].get("tipo") == DOCUMENTO_ADICIONAL["tipo"], f"El documento quedó con tipo {guardados[0].get('tipo')!r}"
+    assert guardados[0]["documento"][0].get("file_name") == IMAGEN_PREPROD["file_name"]
