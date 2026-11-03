@@ -4,13 +4,13 @@
 Búsqueda del pase en + Nuevo Acceso (search_access_pass): lo que el front usa
 para mostrar el pase y decidir si el botón es Registrar Ingreso o Registrar
 Salida.
-Notion: TB-081 y TB-082.
+Notion: TB-081 a TB-083.
 """
 
 import pytest
 
 from .fixtures import *
-from ..data.nuevo_acceso_data import LOCATION
+from ..data.nuevo_acceso_data import LOCATION, QR_INVALIDO
 from passes.integration.helpers import crear_pase
 
 
@@ -48,3 +48,19 @@ def test_search_access_pass_tras_ingreso_indica_salida(acceso_obj, pase_nueva_vi
     assert ultimos, "Tras el ingreso no trae últimos accesos"
     assert ultimos[0].get("_id") == entrada["_id"], f"El último acceso no es la entrada registrada: {ultimos[0]}"
     assert int(pase.get("total_entradas")) == 1, f"Tras un ingreso trae {pase.get('total_entradas')} entradas"
+
+
+@pytest.mark.integration
+def test_search_access_pass_qr_invalido_error_claro(acceso_obj):
+    """
+    TB-083: buscar con un QR que no es un id válido debe responder un error
+    de validación (status_code 400, 'El parametro para QR, no es valido'),
+    no una excepción interna; así el front puede mostrarle al guardia que
+    el QR no sirve.
+    """
+    with pytest.raises(Exception) as exc_info:
+        acceso_obj.search_access_pass(qr_code=QR_INVALIDO, location=LOCATION)
+
+    error = str(exc_info.value)
+    assert '"status_code": 400' in error, f"Error no controlado ({type(exc_info.value).__name__}): {error}"
+    assert "El parametro para QR, no es valido" in error, f"Mensaje inesperado: {error}"

@@ -45,3 +45,35 @@ PASE_NUEVA_VISITA = {
     "config_dias_acceso": [],
     "config_limitar_acceso": 0,
 }
+
+# QR que no es un ObjectId (lo que pasa si se escribe texto en el buscador).
+QR_INVALIDO = "no-es-un-qr"
+
+# Vehículo, equipo y comentario que el guardia agrega en + Nuevo Acceso antes
+# de Registrar Ingreso (mismas llaves que manda el front en do_access).
+# Placas y serie únicas de esta suite para encontrarlos en la visita.
+VEHICULO_NUEVA_VISITA = {
+    "tipo": "Automóvil",
+    "marca": "Nissan",
+    "modelo": "Versa",
+    "estado": "Nuevo León",
+    "placas": "QA-NUEVO-ACCESO-084",
+    "color": "Blanco",
+}
+EQUIPO_NUEVA_VISITA = {
+    "tipo": "computo",
+    "nombre": "Laptop prueba nuevo acceso",
+    "marca": "Dell",
+    "modelo": "Latitude",
+    "color": "Negro",
+    "serie": "QA-NUEVO-ACCESO-084",
+}
+COMENTARIO_PASE_NUEVA_VISITA = {
+    "comentario_pase": "Comentario de prueba nuevo acceso",
+    "tipo_de_comentario": "pase",
+}
+
+# Límite de entradas para probar un segundo ingreso (TB-085): do_access revisa
+# el límite antes que si la persona ya está dentro, y sin límite explícito el
+# pase queda con 1 entrada (app.py:3181).
+LIMITE_VARIAS_ENTRADAS = 5
