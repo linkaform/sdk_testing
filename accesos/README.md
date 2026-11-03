@@ -141,26 +141,23 @@ Si se usa un marker sin registrarlo, pytest lanza `PytestUnknownMarkWarning` (o 
 
 ### Markers temporales de bugs
 
-Cuando un bug afecta a **más de un test**, a esos tests se les agrega un marker temporal con el folio del ticket, `bug_<folio>`, para correrlos todos juntos sin escribir cada test:
+Cuando un bug afecta a **más de un test**, a esos tests se les agrega el marker temporal `bug` con el folio del ticket como argumento, para correrlos todos juntos sin escribir cada test:
 
     @pytest.mark.integration
-    @pytest.mark.bug_1477
+    @pytest.mark.bug(1477)
     def test_do_out_registra_salida_en_el_mismo_registro(acceso_obj, pase_dentro):
         ...
 
-Se registra en `pytest.ini` con el ticket y los tests que agrupa:
+El marker `bug` ya está registrado en `pytest.ini`; un ticket nuevo no necesita tocarlo. Quien corrige el ticket (y QA al verificarlo) corre solo esos tests con la opción `--bug` (definida en `conftest.py`):
 
-    bug_1477: Temporal, ticket 2610-1477 (salida con zona del empleado y duración legible): TB-055, TB-063, TB-076, TB-077
+    pytest -s --bug 1477
 
-Así, quien corrige el ticket (y QA al verificarlo) corre solo esos tests:
+El mismo comando va en "Cómo reproducir" del ticket. Para ver qué tests agrupa un ticket: `grep -rn "bug(1477)" .`
 
-    pytest -s -m bug_1477
-
-El mismo comando va en "Cómo reproducir" del ticket.
-
-- Va con el folio del ticket y no un `bug` genérico: `-m bug` correría los tests de todos los bugs abiertos, no solo los del ticket que se está corrigiendo.
+- Va con el folio y no solo `bug`: `-m bug` correría los tests de todos los bugs abiertos, no solo los del ticket que se está corrigiendo.
+- Si un test está afectado por dos tickets: `@pytest.mark.bug(1477, 1502)`.
 - Si el bug afecta a un solo test, no lleva marker: basta con correr ese test.
-- Es **temporal**: cuando el ticket queda corregido se quita el marker de los tests y de `pytest.ini`.
+- Es **temporal**: cuando el ticket queda corregido se quita el marker de los tests (`pytest.ini` no cambia).
 ---
 
 ## Docstrings

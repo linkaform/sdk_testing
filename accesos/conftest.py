@@ -31,6 +31,30 @@ def pytest_addoption(parser):
         default=False,
         help='Permite correr tests integration/e2e contra el entorno activo aunque no sea preprod.',
     )
+    parser.addoption(
+        '--bug',
+        action='store',
+        type=int,
+        default=None,
+        help='Corre solo los tests marcados con @pytest.mark.bug(<folio>) de ese ticket.',
+    )
+
+def pytest_collection_modifyitems(config, items):
+    """
+    Con --bug <folio> deja solo los tests que traen ese folio en su marker
+    bug(...). El folio va como argumento del marker para no registrar un
+    marker nuevo en pytest.ini por cada ticket.
+    """
+    folio = config.getoption('--bug')
+    if folio is None:
+        return
+    seleccionados, descartados = [], []
+    for item in items:
+        folios = {f for m in item.iter_markers('bug') for f in m.args}
+        (seleccionados if folio in folios else descartados).append(item)
+    if descartados:
+        config.hook.pytest_deselected(items=descartados)
+        items[:] = seleccionados
 
 @pytest.fixture(autouse=True)
 def _requiere_entorno_preprod(request):
