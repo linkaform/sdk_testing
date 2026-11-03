@@ -52,3 +52,6 @@ EQUIPO_AGREGADO = {
 # (do_access) se guarda como 'computo' (TB-105).
 EQUIPO_TIPO_CATALOGO = dict(EQUIPO_AGREGADO, tipo="Laptop", nombre="Laptop agregada", serie="QA-EQUIPOS-105")
 TIPO_EQUIPO_ESPERADO = "Computo"
+
+# Equipo para comparar el contador de equipos dentro con la lista (TB-106).
+EQUIPO_CONTADOR = dict(EQUIPO_VISITA, serie="QA-EQUIPOS-106")
