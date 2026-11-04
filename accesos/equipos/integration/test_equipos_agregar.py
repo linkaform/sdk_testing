@@ -42,6 +42,7 @@ def test_agregar_equipo_a_visita_abierta_aparece_en_dentro(acceso_obj, pase_acti
         )
         filas_visita = [r for r in dentro["records"] if r["_id"] == visita["_id"]]
         assert len(filas_visita) == 1, f"El equipo agregado no aparece en Dentro: {len(filas_visita)} filas"
+        assert len(filas_visita[0]["equipos"]) == 1, f"La fila de la visita debe traer un equipo: {filas_visita[0]['equipos']}"
         assert filas_visita[0]["equipos"][0]["numero_serie"] == EQUIPO_AGREGADO["serie"]
     finally:
         salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)
@@ -67,6 +68,7 @@ def test_agregar_equipo_con_tipo_del_catalogo_lo_guarda_con_tipo_valido(acceso_o
         )
         filas_visita = [r for r in dentro["records"] if r["_id"] == visita["_id"]]
         assert len(filas_visita) == 1, f"El equipo agregado no aparece en Dentro: {len(filas_visita)} filas"
+        assert len(filas_visita[0]["equipos"]) == 1, f"La fila de la visita debe traer un equipo: {filas_visita[0]['equipos']}"
         equipo = filas_visita[0]["equipos"][0]
         assert equipo["numero_serie"] == EQUIPO_TIPO_CATALOGO["serie"]
         assert equipo["tipo_equipo"] == TIPO_EQUIPO_ESPERADO, (
