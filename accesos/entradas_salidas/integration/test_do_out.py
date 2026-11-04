@@ -34,7 +34,6 @@ from .helpers import (
 
 
 @pytest.mark.integration
-@pytest.mark.bug(1477)
 def test_do_out_registra_salida_en_el_mismo_registro(acceso_obj, pase_dentro):
     """
     TB-055: tras la entrada, do_out debe cambiar ese mismo registro a
