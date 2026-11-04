@@ -3,7 +3,7 @@
 """
 Notas de Caseta: crear una nota y consultarla en Pendientes, Cerradas y Todos
 (notes.py: new_notes, get_notes, update_note).
-Notion: TB-132 y TB-133.
+Notion: TB-132 a TB-134.
 """
 
 from datetime import datetime
@@ -20,6 +20,7 @@ from ..data.notas_data import (
     ESTATUS_ABIERTO,
     ESTATUS_CERRADO,
     ZONA_FECHA_CIERRE,
+    NOTA_EDITADA,
     LIMITE_LISTA,
 )
 
@@ -74,3 +75,28 @@ def test_cerrar_nota_la_pasa_a_cerradas(acceso_obj, nota_abierta):
 
     pendientes = acceso_obj.get_list_notes(LOCATION, TODAS_LAS_AREAS, status=ESTATUS_ABIERTO, limit=LIMITE_LISTA)
     assert nota_abierta["_id"] not in {n["_id"] for n in pendientes["records"]}, "La nota cerrada sigue en Pendientes"
+
+
+@pytest.mark.integration
+def test_editar_nota_guarda_texto_comentario_y_foto(acceso_obj, nota_abierta):
+    """
+    TB-134: al editar una nota desde el modal Editar nota, debe quedar con el
+    título nuevo, el comentario agregado como texto y la foto. Si el
+    comentario se guarda como lista, el front no lo puede mostrar.
+    """
+    res = acceso_obj.update_notes(NOTA_EDITADA, nota_abierta["folio"])
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo editar la nota: {res}"
+
+    pendientes = acceso_obj.get_list_notes(LOCATION, TODAS_LAS_AREAS, status=ESTATUS_ABIERTO, limit=LIMITE_LISTA)
+    notas = {n["_id"]: n for n in pendientes["records"]}
+    assert nota_abierta["_id"] in notas, "La nota editada no aparece en Pendientes"
+    nota = notas[nota_abierta["_id"]]
+
+    assert nota.get("note") == NOTA_EDITADA["note"], f"El título no se editó: {nota.get('note')!r}"
+
+    comentario = NOTA_EDITADA["note_comments"][0]
+    textos = [c.get("note_comments") for c in nota.get("note_comments") or []]
+    assert comentario in textos, f"El comentario no quedó como texto en la nota: {textos}"
+
+    urls = [f.get("file_url") for f in nota.get("note_pic") or []]
+    assert NOTA_EDITADA["note_pic"][0]["file_url"] in urls, f"La foto no se guardó: {nota.get('note_pic')}"
