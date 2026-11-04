@@ -3,7 +3,7 @@
 """
 Lista de pases (get_my_pases): pestañas Activos, Por autorizar, En Proceso y
 Todos de la pantalla Pases de Entrada.
-Notion: TB-111 y TB-112.
+Notion: TB-111 a TB-113.
 """
 
 import copy
@@ -17,6 +17,8 @@ from ..data.pases_entrada_data import (
     ESTATUS_PROCESO,
     ESTATUS_ACTIVO,
     PASE_COMPLETAR,
+    TAB_POR_AUTORIZAR,
+    ESTATUS_POR_AUTORIZAR,
     LIMITE_LISTA,
 )
 from passes.integration.helpers import crear_pase
@@ -74,3 +76,25 @@ def test_completar_pase_lo_pasa_de_en_proceso_a_activos(acceso_obj, mock_pase_nu
 
     en_proceso = acceso_obj.get_my_pases(tab_status=TAB_EN_PROCESO, search_name=nombre, limit=LIMITE_LISTA)
     assert pase_id not in {p["_id"] for p in en_proceso["records"]}, "El pase completado sigue en En Proceso"
+
+
+@pytest.mark.integration
+def test_pase_de_auto_registro_completo_cae_en_por_autorizar(acceso_obj, mock_pase_auto_registro):
+    """
+    TB-113: un visitante que se registra solo (auto registro) con foto e
+    identificación deja un pase completo pero sin autorizar. Debe aparecer
+    en la pestaña Por autorizar y no en Activos; si sale en Activos, entra
+    sin que nadie lo haya autorizado.
+    """
+    pase_id = crear_pase(acceso_obj, mock_pase_auto_registro)
+    nombre = mock_pase_auto_registro["nombre"]
+
+    por_autorizar = acceso_obj.get_my_pases(tab_status=TAB_POR_AUTORIZAR, search_name=nombre, limit=LIMITE_LISTA)
+    pases_por_autorizar = {p["_id"]: p for p in por_autorizar["records"]}
+    assert pase_id in pases_por_autorizar, "El pase de auto registro no aparece en Por autorizar"
+    assert pases_por_autorizar[pase_id].get("estatus") == ESTATUS_POR_AUTORIZAR, (
+        f"El pase de auto registro quedó '{pases_por_autorizar[pase_id].get('estatus')}'"
+    )
+
+    activos = acceso_obj.get_my_pases(tab_status=TAB_ACTIVOS, search_name=nombre, limit=LIMITE_LISTA)
+    assert pase_id not in {p["_id"] for p in activos["records"]}, "El pase sin autorizar aparece en Activos"

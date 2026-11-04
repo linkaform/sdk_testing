@@ -34,8 +34,10 @@ PASE_NUEVO.update({
 # Pestañas de la lista de pases (tab_status de get_my_pases, pases/page.tsx).
 TAB_EN_PROCESO = "en_proceso"
 TAB_ACTIVOS = "activos"
+TAB_POR_AUTORIZAR = "por_autorizar"
 ESTATUS_PROCESO = "proceso"
 ESTATUS_ACTIVO = "activo"
+ESTATUS_POR_AUTORIZAR = "por_autorizar"
 
 # Registros por página al consultar la lista de pases filtrada por nombre.
 LIMITE_LISTA = 50
@@ -58,4 +60,30 @@ PASE_COMPLETAR = {
     "conservar_datos_por": "3 meses",
     "acompanantes": 0,
     "grupo_acompanantes": [],
+}
+
+# Pase de auto registro: el visitante se registra solo desde el link público
+# (registro-ingreso → add-pass-create-modal.tsx → create_access_pass). Trae
+# foto e identificación, pero el backend no lo auto-autoriza, así que queda
+# completo y sin autorizar. Sin fechas (el backend usa hoy). visita_a se llena
+# en el fixture con el email del usuario de la cuenta (el anfitrión). En auto
+# registro el teléfono va con 10 dígitos, sin lada internacional.
+PASE_AUTO_REGISTRO = {
+    "ubicaciones": [LOCATION],
+    "nombre": "Prueba auto registro pases",
+    "perfil_pase": "Walkin",
+    "telefono": "8110000099",
+    "visita_a": {},
+    "email": "pruebas.auto_registro@clave10.com",
+    "empresa": "Clave10",
+    "foto": FOTO_VALIDA,
+    "identificacion": IDENTIFICACION_VALIDA,
+    "equipos": [],
+    "vehiculos": [],
+    "motivo": "Prueba pases de entrada",
+    "created_from": "auto_registro",
+    "acepto_aviso_privacidad": "true",
+    "conservar_datos_por": "3 meses",
+    "firma_reglas_de_acceso": {"file_url": "", "file_name": ""},
+    "acepto_reglas_ingreso": "false",
 }
