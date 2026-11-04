@@ -5,7 +5,7 @@ import pytest
 
 from passes.integration.helpers import fecha_str, crear_pase
 from entradas_salidas.integration.helpers import dar_entrada, salida_silenciosa
-from ..data.nuevo_acceso_data import PASE_NUEVA_VISITA, LOCATION, AREA
+from ..data.nuevo_acceso_data import PASE_NUEVA_VISITA, PASE_GRUPO, LOCATION, AREA
 
 
 @pytest.fixture
@@ -42,3 +42,12 @@ def pase_nueva_visita_dentro(acceso_obj, mock_pase_nueva_visita):
     registro = dar_entrada(acceso_obj, pase_id, LOCATION, AREA)
     yield pase_id, registro
     salida_silenciosa(acceso_obj, pase_id, LOCATION, AREA)
+
+
+@pytest.fixture
+def mock_pase_grupo():
+    """Pase de grupo (titular + 2 acompañantes) vigente desde hoy y por 7 días."""
+    pase = copy.deepcopy(PASE_GRUPO)
+    pase["fecha_desde_visita"] = fecha_str(0)
+    pase["fecha_desde_hasta"] = fecha_str(7)
+    return pase
