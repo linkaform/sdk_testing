@@ -10,6 +10,7 @@ from entradas_salidas.data.bitacora_data import (  # noqa: F401
     AREA,
     LIMITE_LISTA,
 )
+from passes.integration.data.do_access_data import FOTO_VALIDA
 
 DESGLOSE_EQUIPOS = "equipos"
 
@@ -55,3 +56,7 @@ TIPO_EQUIPO_ESPERADO = "Computo"
 
 # Equipo para comparar el contador de equipos dentro con la lista (TB-106).
 EQUIPO_CONTADOR = dict(EQUIPO_VISITA, serie="QA-EQUIPOS-106")
+
+# Equipo con foto (TB-107): la foto es una imagen que ya existe en preprod
+# ({file_name, file_url}), la misma que usan los tests de Pases.
+EQUIPO_CON_FOTO = dict(EQUIPO_VISITA, serie="QA-EQUIPOS-107", foto_equipo=FOTO_VALIDA)

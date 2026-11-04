@@ -3,7 +3,7 @@
 """
 Lista de la pestaña Equipos de Bitácoras: get_list_bitacora con
 desglose='equipos' (una fila por equipo), opciones Dentro y Todos.
-Notion: TB-101 a TB-103.
+Notion: TB-101 a TB-103 y TB-107.
 """
 
 from math import ceil
@@ -20,6 +20,7 @@ from ..data.equipos_data import (
     EQUIPO_VISITA,
     EQUIPOS_VISITA_DOS,
     FILAS_POR_PAGINA,
+    EQUIPO_CON_FOTO,
 )
 from entradas_salidas.integration.helpers import ultima_visita, salida_silenciosa
 
@@ -127,6 +128,38 @@ def test_paginacion_de_equipos_no_repite_ni_pierde(acceso_obj, pase_activo):
         series_visita = [r["equipos"][0]["numero_serie"] for r in filas if r["_id"] == visita["_id"]]
         assert sorted(series_visita) == sorted(e["serie"] for e in EQUIPOS_VISITA_DOS), (
             f"Equipos de la visita al recorrer las páginas: {series_visita}"
+        )
+    finally:
+        salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)
+
+
+@pytest.mark.integration
+def test_foto_del_equipo_se_guarda_y_sale_en_la_lista(acceso_obj, pase_activo):
+    """
+    TB-107: al registrar la entrada con un equipo que trae foto, Equipos →
+    Dentro debe regresar esa misma foto (mismo file_url). Si la foto se
+    pierde, el guardia no puede comparar el equipo a la salida.
+    """
+    res = acceso_obj.do_access(pase_activo, LOCATION, AREA, {"equipo": [EQUIPO_CON_FOTO]})
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo dar entrada con equipo: {res}"
+
+    try:
+        visita = ultima_visita(acceso_obj, pase_activo)
+
+        dentro = acceso_obj.get_list_bitacora(
+            location=LOCATION, area=AREA, dynamic_filters=FILTRO_DENTRO,
+            desglose=DESGLOSE_EQUIPOS, limit=LIMITE_LISTA,
+        )
+        filas_visita = [r for r in dentro["records"] if r["_id"] == visita["_id"]]
+        assert len(filas_visita) == 1, f"El equipo no aparece en Dentro: {len(filas_visita)} filas"
+
+        equipos = filas_visita[0]["equipos"]
+        assert len(equipos) == 1, f"La fila de la visita debe traer un equipo: {equipos}"
+        equipo = equipos[0]
+        assert equipo["numero_serie"] == EQUIPO_CON_FOTO["serie"]
+        urls = [f.get("file_url") for f in equipo.get("foto_equipo") or []]
+        assert urls == [f["file_url"] for f in EQUIPO_CON_FOTO["foto_equipo"]], (
+            f"La foto del equipo no se guardó igual: {equipo.get('foto_equipo')}"
         )
     finally:
         salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)
