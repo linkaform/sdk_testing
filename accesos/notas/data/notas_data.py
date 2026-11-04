@@ -32,3 +32,6 @@ ESTATUS_CERRADO = "cerrado"
 
 # Registros por página al consultar la lista de notas (más nueva primero).
 LIMITE_LISTA = 50
+
+# Zona con la que el modal Cerrar nota arma note_close_date (close-note-modal.tsx).
+ZONA_FECHA_CIERRE = "America/Mexico_City"

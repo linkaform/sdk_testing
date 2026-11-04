@@ -3,10 +3,13 @@
 """
 Notas de Caseta: crear una nota y consultarla en Pendientes, Cerradas y Todos
 (notes.py: new_notes, get_notes, update_note).
-Notion: TB-132.
+Notion: TB-132 y TB-133.
 """
 
+from datetime import datetime
+
 import pytest
+import pytz
 
 from .fixtures import *
 from ..data.notas_data import (
@@ -15,6 +18,8 @@ from ..data.notas_data import (
     NOTA_NUEVA,
     TODAS_LAS_AREAS,
     ESTATUS_ABIERTO,
+    ESTATUS_CERRADO,
+    ZONA_FECHA_CIERRE,
     LIMITE_LISTA,
 )
 
@@ -42,3 +47,30 @@ def test_crear_nota_la_muestra_en_pendientes(acceso_obj):
     # La caseta se guarda en el área de la ubicación: es lo que filtra la lista.
     de_la_caseta = acceso_obj.get_list_notes(LOCATION, AREA, status=ESTATUS_ABIERTO, limit=LIMITE_LISTA)
     assert nota_id in {n["_id"] for n in de_la_caseta["records"]}, f"La nota no aparece al filtrar por la caseta {AREA}"
+
+
+@pytest.mark.integration
+def test_cerrar_nota_la_pasa_a_cerradas(acceso_obj, nota_abierta):
+    """
+    TB-133: al cerrar una nota desde el modal Cerrar nota, debe quedar
+    'cerrado' con fecha de cierre y quién la cerró, aparecer en Cerradas y
+    salir de Pendientes. Si sigue en Pendientes, el guardia la vuelve a
+    atender aunque ya se resolvió.
+    """
+    # Mismo payload que close-note-modal (notes.ts cerrarNota).
+    fecha_cierre = datetime.now(pytz.timezone(ZONA_FECHA_CIERRE)).strftime("%Y-%m-%d %H:%M:%S")
+    res = acceso_obj.update_notes(
+        {"note_close_date": fecha_cierre, "note_status": ESTATUS_CERRADO}, nota_abierta["folio"]
+    )
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo cerrar la nota: {res}"
+
+    cerradas = acceso_obj.get_list_notes(LOCATION, TODAS_LAS_AREAS, status=ESTATUS_CERRADO, limit=LIMITE_LISTA)
+    notas = {n["_id"]: n for n in cerradas["records"]}
+    assert nota_abierta["_id"] in notas, "La nota cerrada no aparece en Cerradas"
+    nota = notas[nota_abierta["_id"]]
+    assert nota.get("note_status") == ESTATUS_CERRADO, f"La nota quedó '{nota.get('note_status')}'"
+    assert nota.get("note_close_date"), "La nota cerrada no tiene fecha de cierre"
+    assert nota.get("note_guard_close"), "La nota cerrada no dice quién la cerró"
+
+    pendientes = acceso_obj.get_list_notes(LOCATION, TODAS_LAS_AREAS, status=ESTATUS_ABIERTO, limit=LIMITE_LISTA)
+    assert nota_abierta["_id"] not in {n["_id"] for n in pendientes["records"]}, "La nota cerrada sigue en Pendientes"
