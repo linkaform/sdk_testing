@@ -3,7 +3,7 @@
 """
 Lista de pases (get_my_pases): pestañas Activos, Por autorizar, En Proceso y
 Todos de la pantalla Pases de Entrada.
-Notion: TB-111 a TB-113.
+Notion: TB-111 a TB-114.
 """
 
 import copy
@@ -13,6 +13,7 @@ import pytest
 from .fixtures import *
 from ..data.pases_entrada_data import (
     TAB_EN_PROCESO,
+    TAB_TODOS,
     TAB_ACTIVOS,
     ESTATUS_PROCESO,
     ESTATUS_ACTIVO,
@@ -98,3 +99,22 @@ def test_pase_de_auto_registro_completo_cae_en_por_autorizar(acceso_obj, mock_pa
 
     activos = acceso_obj.get_my_pases(tab_status=TAB_ACTIVOS, search_name=nombre, limit=LIMITE_LISTA)
     assert pase_id not in {p["_id"] for p in activos["records"]}, "El pase sin autorizar aparece en Activos"
+
+
+@pytest.mark.integration
+def test_todos_trae_pases_de_cualquier_estatus(acceso_obj, mock_pase_nuevo, pase_completado):
+    """
+    TB-114: la pestaña Todos no filtra por estatus. Con un pase en proceso y
+    otro activo del mismo nombre, Todos debe traer los dos, cada uno con su
+    estatus; si falta uno, el guardia no encuentra el pase en la lista general.
+    """
+    # Copia: el fixture pase_completado ya creó un pase con este mismo mock.
+    pase_en_proceso = crear_pase(acceso_obj, copy.deepcopy(mock_pase_nuevo))
+
+    todos = acceso_obj.get_my_pases(tab_status=TAB_TODOS, search_name=mock_pase_nuevo["nombre"], limit=LIMITE_LISTA)
+    pases = {p["_id"]: p for p in todos["records"]}
+
+    assert pase_en_proceso in pases, "El pase en proceso no aparece en Todos"
+    assert pase_completado in pases, "El pase activo no aparece en Todos"
+    assert pases[pase_en_proceso].get("estatus") == ESTATUS_PROCESO
+    assert pases[pase_completado].get("estatus") == ESTATUS_ACTIVO

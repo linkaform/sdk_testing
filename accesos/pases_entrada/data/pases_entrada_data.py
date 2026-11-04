@@ -35,6 +35,7 @@ PASE_NUEVO.update({
 TAB_EN_PROCESO = "en_proceso"
 TAB_ACTIVOS = "activos"
 TAB_POR_AUTORIZAR = "por_autorizar"
+TAB_TODOS = ""
 ESTATUS_PROCESO = "proceso"
 ESTATUS_ACTIVO = "activo"
 ESTATUS_POR_AUTORIZAR = "por_autorizar"

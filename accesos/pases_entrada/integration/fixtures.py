@@ -3,8 +3,8 @@
 import copy
 import pytest
 
-from passes.integration.helpers import fecha_str
-from ..data.pases_entrada_data import PASE_NUEVO, PASE_AUTO_REGISTRO
+from passes.integration.helpers import fecha_str, crear_pase
+from ..data.pases_entrada_data import PASE_NUEVO, PASE_AUTO_REGISTRO, PASE_COMPLETAR
 
 
 @pytest.fixture
@@ -28,3 +28,21 @@ def mock_pase_auto_registro(acceso_obj):
     pase = copy.deepcopy(PASE_AUTO_REGISTRO)
     pase["visita_a"] = {"nombre": "", "email": acceso_obj.user["email"], "telefono": ""}
     return pase
+
+
+@pytest.fixture
+def pase_completado(acceso_obj, mock_pase_nuevo):
+    """
+    Pase de + Nuevo Pase ya completado por el visitante (payload del modal de
+    confirmación de pase-update), o sea activo. Regresa su id.
+    """
+    pase_id = crear_pase(acceso_obj, copy.deepcopy(mock_pase_nuevo))
+    completar = copy.deepcopy(PASE_COMPLETAR)
+    completar.update({
+        "nombre": mock_pase_nuevo["nombre"],
+        "email": mock_pase_nuevo["email"],
+        "telefono_pase": mock_pase_nuevo["telefono"],
+    })
+    res = acceso_obj.update_pass(completar, pase_id)
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo completar el pase: {res}"
+    return pase_id
