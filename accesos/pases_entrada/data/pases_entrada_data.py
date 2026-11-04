@@ -10,6 +10,8 @@ import copy
 from passes.integration.data.do_access_data import (  # noqa: F401
     LOCATION,
     PASE_ACCESO_BASE,
+    FOTO_VALIDA,
+    IDENTIFICACION_VALIDA,
 )
 
 # Pase con el payload que arma el front al guardar + Nuevo Pase
@@ -33,6 +35,27 @@ PASE_NUEVO.update({
 TAB_EN_PROCESO = "en_proceso"
 TAB_ACTIVOS = "activos"
 ESTATUS_PROCESO = "proceso"
+ESTATUS_ACTIVO = "activo"
 
 # Registros por página al consultar la lista de pases filtrada por nombre.
 LIMITE_LISTA = 50
+
+# Lo que manda el visitante al completar su pase: lo arma el modal de
+# confirmación de pase-update (add-pass-modal-2.tsx → update_pass), que pasa
+# los avisos a "sí"/"no". El formulario obliga a aceptar el de privacidad; los
+# de datos personales y reglas de acceso no se llenan en esa pantalla. nombre,
+# email y teléfono se llenan en el test con los del pase.
+PASE_COMPLETAR = {
+    "grupo_vehiculos": [],
+    "grupo_equipos": [],
+    "equipo_vehiculo_acompanante": [],
+    "status_pase": "Activo",
+    "walkin_fotografia": FOTO_VALIDA,
+    "walkin_identificacion": IDENTIFICACION_VALIDA,
+    "acepto_aviso_privacidad": "sí",
+    "acepto_aviso_datos_personales": "no",
+    "acepto_reglas_acceso": "no",
+    "conservar_datos_por": "3 meses",
+    "acompanantes": 0,
+    "grupo_acompanantes": [],
+}

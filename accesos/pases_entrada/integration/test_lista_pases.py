@@ -3,8 +3,10 @@
 """
 Lista de pases (get_my_pases): pestañas Activos, Por autorizar, En Proceso y
 Todos de la pantalla Pases de Entrada.
-Notion: TB-111.
+Notion: TB-111 y TB-112.
 """
+
+import copy
 
 import pytest
 
@@ -13,6 +15,8 @@ from ..data.pases_entrada_data import (
     TAB_EN_PROCESO,
     TAB_ACTIVOS,
     ESTATUS_PROCESO,
+    ESTATUS_ACTIVO,
+    PASE_COMPLETAR,
     LIMITE_LISTA,
 )
 from passes.integration.helpers import crear_pase
@@ -38,3 +42,35 @@ def test_pase_nuevo_de_web_aparece_en_proceso_y_no_en_activos(acceso_obj, mock_p
 
     activos = acceso_obj.get_my_pases(tab_status=TAB_ACTIVOS, search_name=nombre, limit=LIMITE_LISTA)
     assert pase_id not in {p["_id"] for p in activos["records"]}, "El pase en proceso aparece en Activos"
+
+
+@pytest.mark.integration
+def test_completar_pase_lo_pasa_de_en_proceso_a_activos(acceso_obj, mock_pase_nuevo):
+    """
+    TB-112: cuando el visitante completa su pase en pase-update (foto,
+    identificación y aviso de privacidad, con el payload del modal de
+    confirmación), el pase debe pasar a 'activo': aparecer en Activos y salir
+    de En Proceso. Si se queda en proceso, el visitante no puede entrar
+    aunque ya cumplió los requisitos.
+    """
+    pase_id = crear_pase(acceso_obj, mock_pase_nuevo)
+    nombre = mock_pase_nuevo["nombre"]
+
+    completar = copy.deepcopy(PASE_COMPLETAR)
+    completar.update({
+        "nombre": nombre,
+        "email": mock_pase_nuevo["email"],
+        "telefono_pase": mock_pase_nuevo["telefono"],
+    })
+    res = acceso_obj.update_pass(completar, pase_id)
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo completar el pase: {res}"
+
+    activos = acceso_obj.get_my_pases(tab_status=TAB_ACTIVOS, search_name=nombre, limit=LIMITE_LISTA)
+    pases_activos = {p["_id"]: p for p in activos["records"]}
+    assert pase_id in pases_activos, "El pase completado no aparece en Activos"
+    assert pases_activos[pase_id].get("estatus") == ESTATUS_ACTIVO, (
+        f"El pase completado quedó '{pases_activos[pase_id].get('estatus')}'"
+    )
+
+    en_proceso = acceso_obj.get_my_pases(tab_status=TAB_EN_PROCESO, search_name=nombre, limit=LIMITE_LISTA)
+    assert pase_id not in {p["_id"] for p in en_proceso["records"]}, "El pase completado sigue en En Proceso"
