@@ -102,3 +102,41 @@ EMBARQUE_EDITADO = {
     "no_orden_compra": "OC-QA-092",
     "procedencia": "Saltillo",
 }
+
+# Imagen que ya existe en preprod (la misma de los tests de Concesionados).
+# El back guarda {file_name, file_url} tal cual, sin subir el archivo.
+IMAGEN_PREPROD = {
+    "file_name": "Libreta.jpg",
+    "file_url": "https://b2.linkaform.com/file/app-linkaform/public-client-126/68600/6076166dfd84fa7ea446b917/2026-02-24T23:08:05.png",
+}
+
+# Información que llena el transportista en su pase (update_information_transportista):
+# foto de licencia del conductor y del ayudante, tarjeta de circulación del
+# vehículo y foto de contenedores (TB-108).
+INFORMACION_TRANSPORTISTA = {
+    "conductor": {"nombre": "Conductor prueba patio", "licencia": "QA-LIC-108", "foto": IMAGEN_PREPROD},
+    "ayudante": {"nombre": "Ayudante prueba patio", "licencia": "QA-LIC-108-B", "foto": IMAGEN_PREPROD},
+    "vehiculo": {"tipo": "Tractocamión", "marca": "Kenworth", "placas": "QA-PATIO-108", "foto": IMAGEN_PREPROD},
+    "foto_contenedores": IMAGEN_PREPROD,
+}
+
+# Documento adicional que sube el guardia en el detalle del camión
+# (handlePlacaDocFileChange en accesos/transportista/[id]/page.tsx): un
+# objeto con el tipo como slug de TIPOS_DOCUMENTO_TRANSPORTISTA (TB-109).
+DOCUMENTO_ADICIONAL = dict(IMAGEN_PREPROD, tipo="carta_porte", index=None)
+
+# Material con evidencia, como lo manda la inspección de material del detalle
+# (handleGuardar en accesos/transportista/[id]/page.tsx). Sin index para que
+# se agregue como fila nueva en un camión sin materiales (TB-110).
+MATERIAL_CON_EVIDENCIA = {
+    "ref": "vehiculo",
+    "producto": "Producto prueba QA",
+    "lote": "QA-LOTE-110",
+    "cant_esperada": "10",
+    "cant_fisica": "10",
+    "cant_buena": "10",
+    "cant_danada": "",
+    "cant_faltante": "",
+    "comentario": "Material prueba patio",
+    "evidencia": [IMAGEN_PREPROD],
+}
