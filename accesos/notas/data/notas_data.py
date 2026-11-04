@@ -30,6 +30,8 @@ TODAS_LAS_AREAS = "todas"
 # Estatus de la lista: Pendientes = abierto, Cerradas = cerrado.
 ESTATUS_ABIERTO = "abierto"
 ESTATUS_CERRADO = "cerrado"
+# Todos = sin filtro de estatus (/notas sin ?status).
+ESTATUS_TODOS = ""
 
 # Registros por página al consultar la lista de notas (más nueva primero).
 LIMITE_LISTA = 50

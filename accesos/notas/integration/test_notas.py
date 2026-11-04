@@ -3,7 +3,7 @@
 """
 Notas de Caseta: crear una nota y consultarla en Pendientes, Cerradas y Todos
 (notes.py: new_notes, get_notes, update_note).
-Notion: TB-132 a TB-134.
+Notion: TB-132 a TB-135.
 """
 
 from datetime import datetime
@@ -21,6 +21,7 @@ from ..data.notas_data import (
     ESTATUS_CERRADO,
     ZONA_FECHA_CIERRE,
     NOTA_EDITADA,
+    ESTATUS_TODOS,
     LIMITE_LISTA,
 )
 
@@ -100,3 +101,33 @@ def test_editar_nota_guarda_texto_comentario_y_foto(acceso_obj, nota_abierta):
 
     urls = [f.get("file_url") for f in nota.get("note_pic") or []]
     assert NOTA_EDITADA["note_pic"][0]["file_url"] in urls, f"La foto no se guardó: {nota.get('note_pic')}"
+
+
+@pytest.mark.integration
+def test_todos_trae_notas_abiertas_y_cerradas(acceso_obj, nota_abierta):
+    """
+    TB-135: la opción Todos no filtra por estatus. Con una nota abierta y otra
+    cerrada, Todos debe traer las dos con su estatus; si falta una, el guardia
+    no encuentra la nota en la lista general.
+    """
+    res = acceso_obj.create_note(LOCATION, AREA, NOTA_NUEVA)
+    nota_cerrada_id = (res.get("json") or {}).get("id")
+    assert res.get("status_code") in (200, 201, 202) and nota_cerrada_id, f"No se pudo crear la nota: {res}"
+
+    todos = acceso_obj.get_list_notes(LOCATION, TODAS_LAS_AREAS, status=ESTATUS_TODOS, limit=LIMITE_LISTA)
+    folios = {n["_id"]: n["folio"] for n in todos["records"]}
+    assert nota_cerrada_id in folios, "La segunda nota no aparece en Todos antes de cerrarla"
+
+    # Se cierra con el payload de close-note-modal.
+    fecha_cierre = datetime.now(pytz.timezone(ZONA_FECHA_CIERRE)).strftime("%Y-%m-%d %H:%M:%S")
+    cierre = acceso_obj.update_notes(
+        {"note_close_date": fecha_cierre, "note_status": ESTATUS_CERRADO}, folios[nota_cerrada_id]
+    )
+    assert cierre.get("status_code") in (200, 201, 202), f"No se pudo cerrar la nota: {cierre}"
+
+    todos = acceso_obj.get_list_notes(LOCATION, TODAS_LAS_AREAS, status=ESTATUS_TODOS, limit=LIMITE_LISTA)
+    notas = {n["_id"]: n for n in todos["records"]}
+    assert nota_abierta["_id"] in notas, "La nota abierta no aparece en Todos"
+    assert nota_cerrada_id in notas, "La nota cerrada no aparece en Todos"
+    assert notas[nota_abierta["_id"]].get("note_status") == ESTATUS_ABIERTO
+    assert notas[nota_cerrada_id].get("note_status") == ESTATUS_CERRADO
