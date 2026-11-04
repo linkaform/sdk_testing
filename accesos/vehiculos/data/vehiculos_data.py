@@ -46,3 +46,16 @@ VEHICULO_AGREGADO = {
     "tipo": "Automóvil",
     "foto_vehiculo": [],
 }
+
+# Visita con un vehículo con tipo y otro sin tipo (renglón vacío del grupo):
+# la lista Dentro omite el que no tiene tipo; el contador de vehículos dentro
+# debe contar lo mismo (TB-099, ticket 2610-1484).
+VEHICULOS_CON_Y_SIN_TIPO = [
+    dict(VEHICULO_VISITA, placas="QA-VEHICULOS-099"),
+    dict(VEHICULO_VISITA, tipo="", placas="QA-VEHICULOS-099-SIN-TIPO"),
+]
+
+# La app pide Vehículos Dentro con list_bitacora2 sin desglose y con la
+# prioridad 'entrada'; desglosa los vehículos en el celular (TB-100).
+PRIORIDADES_APP_DENTRO = ["entrada"]
+VEHICULO_APP = dict(VEHICULO_VISITA, placas="QA-VEHICULOS-100")
