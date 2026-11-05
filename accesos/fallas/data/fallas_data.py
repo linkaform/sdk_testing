@@ -33,6 +33,7 @@ FALLA_NUEVA = {
 # Las fallas de estas pruebas llevan un sufijo único por corrida en el
 # comentario para encontrar solo la suya.
 COMENTARIO_FALLA = "Falla de prueba QA"
+COMENTARIO_EDITADO = "Falla de prueba QA editada"
 
 # Estatus de la lista: Abiertas = abierto, Cerradas = resuelto, Todos = sin filtro.
 ESTATUS_ABIERTO = "abierto"
