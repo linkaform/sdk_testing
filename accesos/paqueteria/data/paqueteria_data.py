@@ -37,8 +37,14 @@ DESCRIPCION_PAQUETE = "Paquete de prueba QA"
 # quien_recibe_paqueteria.
 DESTINATARIO_EXTERNO = "Destinatario externo QA"
 
-# Estatus de la lista (menú de Paquetería): Pendientes = guardado.
+# Lo que manda entregar-paqueteria.tsx al entregar el paquete; la fecha de
+# entrega se llena en el helper.
+ENTREGADO_A = "Persona que recoge QA"
+
+# Estatus de la lista (menú de Paquetería): Pendientes = guardado,
+# Entregados = entregado.
 ESTATUS_GUARDADO = "guardado"
+ESTATUS_ENTREGADO = "entregado"
 
 # La lista del front pagina y filtra con el buscador (facets); la descripción
 # escrita va con exact False ("contiene").
