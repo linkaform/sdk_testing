@@ -6,11 +6,16 @@ Datos de prueba para la sección Nuevo Acceso (modal "Nueva Visita" de Accesos).
 Usa la misma caseta que el resto de las pruebas de Accesos.
 """
 
+import copy
+
 from passes.integration.data.do_access_data import (  # noqa: F401
     LOCATION,
     AREA,
     FOTO_VALIDA,
     IDENTIFICACION_VALIDA,
+    PASE_ACCESO_BASE,
+    ACOMPANANTE_UNO,
+    ACOMPANANTE_DOS,
 )
 
 # Llaves que regresa assets_access_pass y que el modal Nueva Visita usa para
@@ -77,3 +82,14 @@ COMENTARIO_PASE_NUEVA_VISITA = {
 # el límite antes que si la persona ya está dentro, y sin límite explícito el
 # pase queda con 1 entrada (app.py:3181).
 LIMITE_VARIAS_ENTRADAS = 5
+
+# Pase de grupo (titular + 2 acompañantes) para la salida grupal en Accesos
+# (TB-086). Se crea en + Nuevo Pase; en Accesos el guardia lo escanea y da
+# ingreso y salida al grupo. Las fechas se llenan en el fixture.
+PASE_GRUPO = copy.deepcopy(PASE_ACCESO_BASE)
+PASE_GRUPO.update({
+    "nombre": "Prueba salida grupal nuevo acceso",
+    "email": "pruebas.nuevo_acceso@clave10.com",
+    "acompanantes": 2,
+    "acompanantes_grupo": [copy.deepcopy(ACOMPANANTE_UNO), copy.deepcopy(ACOMPANANTE_DOS)],
+})
