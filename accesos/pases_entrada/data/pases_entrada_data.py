@@ -88,3 +88,16 @@ PASE_AUTO_REGISTRO = {
     "firma_reglas_de_acceso": {"file_url": "", "file_name": ""},
     "acepto_reglas_ingreso": "false",
 }
+
+# Paginación y buscador de la lista de pases (pases/page.tsx → useFacetSection).
+# El buscador manda los filtros como facets {key, values, exact}; un texto
+# escrito va con exact False ("contiene"). Los pases de estas pruebas llevan un
+# sufijo único por corrida para que la lista solo traiga los suyos.
+FACET_NOMBRE = "nombre"
+PASES_PARA_PAGINAR = 3
+LIMITE_PAGINA = 2
+PAGINAS_ESPERADAS = 2
+
+# Lo que manda el botón "Cancelar pase" de view-pass-modal (update_pass).
+CANCELAR_PASE = {"status_pase": "cancelado"}
+ESTATUS_CANCELADO = "cancelado"
