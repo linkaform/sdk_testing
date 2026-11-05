@@ -63,6 +63,17 @@ PASE_COMPLETAR = {
     "grupo_acompanantes": [],
 }
 
+# Editar el pase completo (tabla de pases → update-full-pass.tsx →
+# add-pass-modal-update.tsx → update_full_pass). Cambios que hace el guardia
+# en el formulario: nombre, empresa y fechas (días desde hoy). La fecha
+# "hasta" de un rango la guarda el front como fin del día.
+EDICION_NOMBRE_SUFIJO = " editado"
+EDICION_EMPRESA = "Clave10 Editada"
+EDICION_DIAS_DESDE = 1
+EDICION_DIAS_HASTA = 10
+EDICION_HORA_HASTA = "23:59:59"
+LINK_PASE_UPDATE = "https://web.clave10.com/dashboard/pase-update"
+
 # Pase de auto registro: el visitante se registra solo desde el link público
 # (registro-ingreso → add-pass-create-modal.tsx → create_access_pass). Trae
 # foto e identificación, pero el backend no lo auto-autoriza, así que queda
