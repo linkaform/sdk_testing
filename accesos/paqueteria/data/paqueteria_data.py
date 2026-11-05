@@ -33,6 +33,10 @@ PAQUETE_NUEVO = {
 }
 DESCRIPCION_PAQUETE = "Paquete de prueba QA"
 
+# Destinatario externo ("Otro"): el front manda quien_recibe_otro en lugar de
+# quien_recibe_paqueteria.
+DESTINATARIO_EXTERNO = "Destinatario externo QA"
+
 # Estatus de la lista (menú de Paquetería): Pendientes = guardado.
 ESTATUS_GUARDADO = "guardado"
 
