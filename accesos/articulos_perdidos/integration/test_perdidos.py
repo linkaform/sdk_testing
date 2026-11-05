@@ -4,7 +4,7 @@
 Artículos Perdidos: registrar un artículo y consultarlo en Pendientes,
 Entregados y Todos; entregarlo o donarlo (articulos_perdidos.py:
 nuevo_articulo, get_articles, update_article).
-Notion: TB-146 y TB-147.
+Notion: TB-146, TB-147 y TB-148.
 """
 
 import pytest
@@ -16,8 +16,11 @@ from ..data.perdidos_data import (
     AREA,
     DEVOLUCION,
     DEVOLUCION_ENTREGADO,
+    DEVOLUCION_DONADO,
     ESTATUS_PENDIENTE,
     ESTATUS_ENTREGADO,
+    ESTATUS_DONADO,
+    ESTATUS_TODOS,
 )
 
 
@@ -56,3 +59,22 @@ def test_entregar_articulo_lo_pasa_a_entregados(acceso_obj, articulo_pendiente):
     assert entregado.get("recibe_perdido") == DEVOLUCION["recibe_perdido"]
     assert entregado.get("telefono_recibe_perdido") == DEVOLUCION["telefono_recibe_perdido"]
     assert articulo_de_la_lista(acceso_obj, nombre, ESTATUS_PENDIENTE) is None, "El artículo entregado sigue en Pendientes"
+
+
+@pytest.mark.integration
+def test_donar_articulo_lo_deja_donado_con_fecha(acceso_obj, articulo_pendiente):
+    """
+    TB-148: al donar un artículo (botón Donado, que manda 'Donado' con
+    mayúscula) debe quedar 'donado', con fecha de entrega, y salir de
+    Pendientes. Si no, el artículo donado sigue apareciendo como pendiente
+    o sin fecha.
+    """
+    nombre = articulo_pendiente["articulo_perdido"]
+    res = acceso_obj.update_article_lost(payload_devolucion(DEVOLUCION_DONADO), articulo_pendiente["folio"])
+    assert res.get("status_code") in (201, 202), f"No se pudo donar el artículo: {res}"
+    assert res["json"].get("date_entrega_perdido"), "El artículo donado no tiene fecha de entrega"
+
+    donado = articulo_de_la_lista(acceso_obj, nombre, ESTATUS_TODOS)
+    assert donado, "El artículo donado no aparece en Todos"
+    assert donado.get("estatus_perdido") == ESTATUS_DONADO, f"El artículo donado quedó '{donado.get('estatus_perdido')}'"
+    assert articulo_de_la_lista(acceso_obj, nombre, ESTATUS_PENDIENTE) is None, "El artículo donado sigue en Pendientes"

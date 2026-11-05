@@ -38,7 +38,8 @@ ARTICULO_NUEVO = {
 }
 NOMBRE_ARTICULO = "Artículo perdido QA"
 
-# Lo que manda devolucion-article-modal al entregar el artículo.
+# Lo que manda devolucion-article-modal al entregar o donar el artículo. El
+# botón Donado manda el estatus con mayúscula.
 DEVOLUCION = {
     "foto_recibe_perdido": FOTO_VALIDA,
     "identificacion_recibe_perdido": IDENTIFICACION_VALIDA,
@@ -46,11 +47,14 @@ DEVOLUCION = {
     "telefono_recibe_perdido": "8110000099",
 }
 DEVOLUCION_ENTREGADO = "entregado"
+DEVOLUCION_DONADO = "Donado"
 
 # Estatus de la lista: Pendientes = pendiente, Entregados = entregado,
 # Todos = sin filtro.
 ESTATUS_PENDIENTE = "pendiente"
 ESTATUS_ENTREGADO = "entregado"
+ESTATUS_DONADO = "donado"
+ESTATUS_TODOS = ""
 
 # La lista del front pagina y filtra con el buscador (facets); el nombre
 # escrito va con exact False ("contiene").
