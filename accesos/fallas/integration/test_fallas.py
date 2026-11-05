@@ -43,6 +43,7 @@ def test_crear_falla_la_muestra_en_abiertas(mock_falla_nueva, falla_abierta):
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1521)
 def test_cerrar_falla_la_pasa_a_cerradas(acceso_obj, falla_abierta):
     """
     TB-139: al cerrar una falla desde su detalle debe quedar 'resuelto' con
@@ -77,6 +78,7 @@ def test_editar_falla_guarda_los_cambios(acceso_obj, falla_abierta):
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1521)
 def test_todos_trae_fallas_abiertas_y_cerradas(acceso_obj, mock_falla_nueva, falla_abierta):
     """
     TB-143: la pestaña Todos no filtra por estatus. Con una falla abierta y
