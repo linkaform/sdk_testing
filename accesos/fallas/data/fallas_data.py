@@ -36,6 +36,10 @@ COMENTARIO_FALLA = "Falla de prueba QA"
 
 # Estatus de la lista: Abiertas = abierto, Cerradas = resuelto, Todos = sin filtro.
 ESTATUS_ABIERTO = "abierto"
+ESTATUS_RESUELTO = "resuelto"
+
+# Lo que manda el botón de close-falla-modal (update_failure).
+CERRAR_FALLA = {"falla_estatus": "resuelto"}
 
 # La lista del front pagina y filtra con el buscador (facets); el comentario
 # escrito va con exact False ("contiene").
