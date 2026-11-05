@@ -22,8 +22,13 @@ def payload_editar_pase(acceso_obj, pase, cambios):
     formulario: nombre, empresa, fecha_desde_visita y fecha_desde_hasta.
     """
     visita_a = [v["nombre"] for v in pase.get("visita_a") or [] if v.get("nombre")]
+    # La lista regresa el área como note_booth; el formulario la toma de
+    # nombre_area o, si no viene, de note_booth (areasFormateadas).
     areas = [
-        {"nombre_area": a.get("nombre_area"), "commentario_area": a.get("commentario_area") or ""}
+        {
+            "nombre_area": a.get("nombre_area") or a.get("note_booth") or "",
+            "commentario_area": a.get("commentario_area") or "",
+        }
         for a in pase.get("grupo_areas_acceso") or []
     ]
     telefono = pase.get("telefono") or ""
