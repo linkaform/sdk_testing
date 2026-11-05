@@ -4,10 +4,11 @@
 Paquetería: recibir un paquete y consultarlo en Pendientes, Entregados y
 Todos, y entregarlo (paqueteria.py: nuevo_paquete, get_paquetes,
 actualizar_paquete).
-Notion: TB-152, TB-153 y TB-154.
+Notion: TB-152, TB-153, TB-154 y TB-156.
 """
 
 import copy
+import uuid
 
 import pytest
 
@@ -16,10 +17,12 @@ from .helpers import paquete_de_la_lista, payload_entrega
 from ..data.paqueteria_data import (
     LOCATION,
     AREA,
+    DESCRIPCION_PAQUETE,
     DESTINATARIO_EXTERNO,
     ENTREGADO_A,
     ESTATUS_GUARDADO,
     ESTATUS_ENTREGADO,
+    ESTATUS_TODOS,
 )
 
 
@@ -79,3 +82,27 @@ def test_entregar_paquete_lo_pasa_a_entregados(acceso_obj, paquete_guardado):
     assert entregado.get("fecha_entregado_paqueteria") == entrega["fecha_entregado_paqueteria"]
     assert entregado.get("entregado_a_paqueteria") == ENTREGADO_A
     assert paquete_de_la_lista(acceso_obj, descripcion, ESTATUS_GUARDADO) is None, "El paquete entregado sigue en Pendientes"
+
+
+@pytest.mark.integration
+def test_todos_trae_paquetes_guardados_y_entregados(acceso_obj, mock_paquete_nuevo, paquete_guardado):
+    """
+    TB-156: la pestaña Todos no filtra por estatus. Con un paquete guardado
+    y otro entregado, Todos debe traer los dos, cada uno con su estatus; si
+    falta uno, el historial de paquetería queda incompleto.
+    """
+    otro = copy.deepcopy(mock_paquete_nuevo)
+    otro["descripcion_paqueteria"] = f"{DESCRIPCION_PAQUETE} {uuid.uuid4().hex[:8]}"
+    res = acceso_obj.create_paquete(otro)
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo recibir el segundo paquete: {res}"
+    por_entregar = paquete_de_la_lista(acceso_obj, otro["descripcion_paqueteria"], ESTATUS_GUARDADO)
+    assert por_entregar, "El segundo paquete no aparece en Pendientes"
+    entrega = acceso_obj.update_paquete(payload_entrega(acceso_obj), por_entregar["folio"])
+    assert entrega.get("status_code") in (201, 202), f"No se pudo entregar el segundo paquete: {entrega}"
+
+    guardado = paquete_de_la_lista(acceso_obj, paquete_guardado["descripcion_paqueteria"], ESTATUS_TODOS)
+    entregado = paquete_de_la_lista(acceso_obj, otro["descripcion_paqueteria"], ESTATUS_TODOS)
+    assert guardado, "El paquete guardado no aparece en Todos"
+    assert entregado, "El paquete entregado no aparece en Todos"
+    assert guardado.get("estatus_paqueteria") == ESTATUS_GUARDADO
+    assert entregado.get("estatus_paqueteria") == ESTATUS_ENTREGADO

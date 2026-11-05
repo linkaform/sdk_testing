@@ -42,9 +42,10 @@ DESTINATARIO_EXTERNO = "Destinatario externo QA"
 ENTREGADO_A = "Persona que recoge QA"
 
 # Estatus de la lista (menú de Paquetería): Pendientes = guardado,
-# Entregados = entregado.
+# Entregados = entregado, Todos = sin filtro.
 ESTATUS_GUARDADO = "guardado"
 ESTATUS_ENTREGADO = "entregado"
+ESTATUS_TODOS = ""
 
 # La lista del front pagina y filtra con el buscador (facets); la descripción
 # escrita va con exact False ("contiene").
