@@ -4,9 +4,10 @@
 Fallas de Seguridad: crear una falla y consultarla en Abiertas, Cerradas y
 Todos, cerrarla y editarla (fallas.py: new_failure, get_failures,
 update_failure).
-Notion: TB-138, TB-139 y TB-141.
+Notion: TB-138, TB-139, TB-141 y TB-143.
 """
 
+import copy
 import uuid
 
 import pytest
@@ -16,9 +17,11 @@ from .helpers import falla_de_la_lista, payload_editar_falla
 from ..data.fallas_data import (
     LOCATION,
     AREA,
+    COMENTARIO_FALLA,
     COMENTARIO_EDITADO,
     ESTATUS_ABIERTO,
     ESTATUS_RESUELTO,
+    ESTATUS_TODOS,
     CERRAR_FALLA,
 )
 
@@ -71,3 +74,27 @@ def test_editar_falla_guarda_los_cambios(acceso_obj, falla_abierta):
     editada = falla_de_la_lista(acceso_obj, comentario_nuevo, ESTATUS_ABIERTO)
     assert editada, "La falla editada no aparece en Abiertas con el comentario nuevo"
     assert editada["folio"] == falla_abierta["folio"], "La edición creó o modificó otra falla"
+
+
+@pytest.mark.integration
+def test_todos_trae_fallas_abiertas_y_cerradas(acceso_obj, mock_falla_nueva, falla_abierta):
+    """
+    TB-143: la pestaña Todos no filtra por estatus. Con una falla abierta y
+    otra cerrada, Todos debe traer las dos, cada una con su estatus; si falta
+    una, el historial de fallas queda incompleto.
+    """
+    otra = copy.deepcopy(mock_falla_nueva)
+    otra["falla_comentarios"] = f"{COMENTARIO_FALLA} {uuid.uuid4().hex[:8]}"
+    res = acceso_obj.create_failure(otra)
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo crear la segunda falla: {res}"
+    por_cerrar = falla_de_la_lista(acceso_obj, otra["falla_comentarios"], ESTATUS_ABIERTO)
+    assert por_cerrar, "La segunda falla no aparece en Abiertas"
+    cierre = acceso_obj.update_failure(dict(CERRAR_FALLA), por_cerrar["folio"])
+    assert cierre.get("status_code") in (201, 202), f"No se pudo cerrar la segunda falla: {cierre}"
+
+    abierta = falla_de_la_lista(acceso_obj, falla_abierta["falla_comentarios"], ESTATUS_TODOS)
+    cerrada = falla_de_la_lista(acceso_obj, otra["falla_comentarios"], ESTATUS_TODOS)
+    assert abierta, "La falla abierta no aparece en Todos"
+    assert cerrada, "La falla cerrada no aparece en Todos"
+    assert abierta.get("falla_estatus") == ESTATUS_ABIERTO
+    assert cerrada.get("falla_estatus") == ESTATUS_RESUELTO

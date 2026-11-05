@@ -38,6 +38,7 @@ COMENTARIO_EDITADO = "Falla de prueba QA editada"
 # Estatus de la lista: Abiertas = abierto, Cerradas = resuelto, Todos = sin filtro.
 ESTATUS_ABIERTO = "abierto"
 ESTATUS_RESUELTO = "resuelto"
+ESTATUS_TODOS = ""
 
 # Lo que manda el botón de close-falla-modal (update_failure).
 CERRAR_FALLA = {"falla_estatus": "resuelto"}
