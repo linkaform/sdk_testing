@@ -4,8 +4,11 @@
 Artículos Perdidos: registrar un artículo y consultarlo en Pendientes,
 Entregados y Todos; entregarlo o donarlo (articulos_perdidos.py:
 nuevo_articulo, get_articles, update_article).
-Notion: TB-146, TB-147 y TB-148.
+Notion: TB-146, TB-147, TB-148 y TB-150.
 """
+
+import copy
+import uuid
 
 import pytest
 
@@ -14,6 +17,7 @@ from .helpers import articulo_de_la_lista, payload_devolucion
 from ..data.perdidos_data import (
     LOCATION,
     AREA,
+    NOMBRE_ARTICULO,
     DEVOLUCION,
     DEVOLUCION_ENTREGADO,
     DEVOLUCION_DONADO,
@@ -78,3 +82,27 @@ def test_donar_articulo_lo_deja_donado_con_fecha(acceso_obj, articulo_pendiente)
     assert donado, "El artículo donado no aparece en Todos"
     assert donado.get("estatus_perdido") == ESTATUS_DONADO, f"El artículo donado quedó '{donado.get('estatus_perdido')}'"
     assert articulo_de_la_lista(acceso_obj, nombre, ESTATUS_PENDIENTE) is None, "El artículo donado sigue en Pendientes"
+
+
+@pytest.mark.integration
+def test_todos_trae_articulos_pendientes_y_entregados(acceso_obj, mock_articulo_nuevo, articulo_pendiente):
+    """
+    TB-150: la pestaña Todos no filtra por estatus. Con un artículo pendiente
+    y otro entregado, Todos debe traer los dos, cada uno con su estatus; si
+    falta uno, el historial de artículos queda incompleto.
+    """
+    otro = copy.deepcopy(mock_articulo_nuevo)
+    otro["articulo_perdido"] = f"{NOMBRE_ARTICULO} {uuid.uuid4().hex[:8]}"
+    res = acceso_obj.create_article_lost(otro)
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo registrar el segundo artículo: {res}"
+    por_entregar = articulo_de_la_lista(acceso_obj, otro["articulo_perdido"], ESTATUS_PENDIENTE)
+    assert por_entregar, "El segundo artículo no aparece en Pendientes"
+    entrega = acceso_obj.update_article_lost(payload_devolucion(DEVOLUCION_ENTREGADO), por_entregar["folio"])
+    assert entrega.get("status_code") in (201, 202), f"No se pudo entregar el segundo artículo: {entrega}"
+
+    pendiente = articulo_de_la_lista(acceso_obj, articulo_pendiente["articulo_perdido"], ESTATUS_TODOS)
+    entregado = articulo_de_la_lista(acceso_obj, otro["articulo_perdido"], ESTATUS_TODOS)
+    assert pendiente, "El artículo pendiente no aparece en Todos"
+    assert entregado, "El artículo entregado no aparece en Todos"
+    assert pendiente.get("estatus_perdido") == ESTATUS_PENDIENTE
+    assert entregado.get("estatus_perdido") == ESTATUS_ENTREGADO
