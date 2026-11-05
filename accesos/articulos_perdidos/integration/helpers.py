@@ -4,7 +4,9 @@
 Helpers de las pruebas de integración de Artículos Perdidos.
 """
 
-from ..data.perdidos_data import LOCATION, FACET_NOMBRE, LIMITE_LISTA
+import copy
+
+from ..data.perdidos_data import LOCATION, FACET_NOMBRE, LIMITE_LISTA, DEVOLUCION
 
 
 def articulo_de_la_lista(acceso_obj, nombre, status):
@@ -17,3 +19,10 @@ def articulo_de_la_lista(acceso_obj, nombre, status):
         "", "", status, limit=LIMITE_LISTA, locations=[LOCATION], facets=facets
     )
     return next((a for a in lista["records"] if a.get("articulo_perdido") == nombre), None)
+
+
+def payload_devolucion(estatus):
+    """Payload de devolucion-article-modal con el tipo de devolución elegido."""
+    payload = copy.deepcopy(DEVOLUCION)
+    payload["estatus_perdido"] = estatus
+    return payload

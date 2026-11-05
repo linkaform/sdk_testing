@@ -8,6 +8,8 @@ Artículo, Pendientes, Entregados y Todos; script articulos_perdidos.py).
 from passes.integration.data.do_access_data import (  # noqa: F401
     LOCATION,
     AREA,
+    FOTO_VALIDA,
+    IDENTIFICACION_VALIDA,
 )
 
 # Artículo con el payload que arma el modal + Nuevo Artículo
@@ -36,9 +38,19 @@ ARTICULO_NUEVO = {
 }
 NOMBRE_ARTICULO = "Artículo perdido QA"
 
+# Lo que manda devolucion-article-modal al entregar el artículo.
+DEVOLUCION = {
+    "foto_recibe_perdido": FOTO_VALIDA,
+    "identificacion_recibe_perdido": IDENTIFICACION_VALIDA,
+    "recibe_perdido": "Persona que recibe QA",
+    "telefono_recibe_perdido": "8110000099",
+}
+DEVOLUCION_ENTREGADO = "entregado"
+
 # Estatus de la lista: Pendientes = pendiente, Entregados = entregado,
 # Todos = sin filtro.
 ESTATUS_PENDIENTE = "pendiente"
+ESTATUS_ENTREGADO = "entregado"
 
 # La lista del front pagina y filtra con el buscador (facets); el nombre
 # escrito va con exact False ("contiene").
