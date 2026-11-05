@@ -84,6 +84,7 @@ def test_vehiculo_tras_la_salida_sale_de_dentro_y_sigue_en_todos(acceso_obj, pas
         filas_visita = [r for r in todos["records"] if r["_id"] == visita["_id"]]
         assert len(filas_visita) == 1, f"El vehículo no aparece en Todos: {len(filas_visita)} filas"
         assert filas_visita[0]["status_visita"] == "Salida", f"En Todos quedó '{filas_visita[0]['status_visita']}'"
+        assert len(filas_visita[0]["vehiculos"]) == 1, f"La fila de la visita debe traer un vehículo: {filas_visita[0]['vehiculos']}"
         assert filas_visita[0]["vehiculos"][0]["placas"] == VEHICULO_VISITA["placas"]
     finally:
         # Si do_out falló, cierra la visita para no dejarla abierta en preprod.
@@ -125,6 +126,7 @@ def test_paginacion_de_vehiculos_no_repite_ni_pierde(acceso_obj, pase_activo):
             filas.extend(res_pagina["records"])
 
         assert len(filas) == total, f"Recorriendo las páginas salen {len(filas)} filas y el total dice {total}"
+        assert all(len(r["vehiculos"]) == 1 for r in filas), "Hay filas con más de un vehículo o sin vehículo"
         placas_visita = [r["vehiculos"][0]["placas"] for r in filas if r["_id"] == visita["_id"]]
         assert sorted(placas_visita) == sorted(v["placas"] for v in VEHICULOS_VISITA_DOS), (
             f"Vehículos de la visita al recorrer las páginas: {placas_visita}"
@@ -152,6 +154,7 @@ def test_agregar_vehiculo_a_visita_abierta_aparece_en_dentro(acceso_obj, pase_ac
         )
         filas_visita = [r for r in dentro["records"] if r["_id"] == visita["_id"]]
         assert len(filas_visita) == 1, f"El vehículo agregado no aparece en Dentro: {len(filas_visita)} filas"
+        assert len(filas_visita[0]["vehiculos"]) == 1, f"La fila de la visita debe traer un vehículo: {filas_visita[0]['vehiculos']}"
         assert filas_visita[0]["vehiculos"][0]["placas"] == VEHICULO_AGREGADO["placas"]
     finally:
         salida_silenciosa(acceso_obj, pase_activo, LOCATION, AREA)

@@ -84,6 +84,7 @@ def test_equipo_tras_la_salida_sale_de_dentro_y_sigue_en_todos(acceso_obj, pase_
         filas_visita = [r for r in todos["records"] if r["_id"] == visita["_id"]]
         assert len(filas_visita) == 1, f"El equipo no aparece en Todos: {len(filas_visita)} filas"
         assert filas_visita[0]["status_visita"] == "Salida", f"En Todos quedó '{filas_visita[0]['status_visita']}'"
+        assert len(filas_visita[0]["equipos"]) == 1, f"La fila de la visita debe traer un equipo: {filas_visita[0]['equipos']}"
         assert filas_visita[0]["equipos"][0]["numero_serie"] == EQUIPO_VISITA["serie"]
     finally:
         # Si do_out falló, cierra la visita para no dejarla abierta en preprod.
@@ -125,6 +126,7 @@ def test_paginacion_de_equipos_no_repite_ni_pierde(acceso_obj, pase_activo):
             filas.extend(res_pagina["records"])
 
         assert len(filas) == total, f"Recorriendo las páginas salen {len(filas)} filas y el total dice {total}"
+        assert all(len(r["equipos"]) == 1 for r in filas), "Hay filas con más de un equipo o sin equipo"
         series_visita = [r["equipos"][0]["numero_serie"] for r in filas if r["_id"] == visita["_id"]]
         assert sorted(series_visita) == sorted(e["serie"] for e in EQUIPOS_VISITA_DOS), (
             f"Equipos de la visita al recorrer las páginas: {series_visita}"
