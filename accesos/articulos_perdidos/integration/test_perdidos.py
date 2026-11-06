@@ -2,9 +2,9 @@
 
 """
 Artículos Perdidos: registrar un artículo y consultarlo en Pendientes,
-Entregados y Todos; entregarlo o donarlo (articulos_perdidos.py:
+Entregados y Todos; entregarlo, donarlo o editarlo (articulos_perdidos.py:
 nuevo_articulo, get_articles, update_article).
-Notion: TB-146, TB-147, TB-148 y TB-150.
+Notion: TB-146 a TB-150.
 """
 
 import copy
@@ -13,7 +13,7 @@ import uuid
 import pytest
 
 from .fixtures import *
-from .helpers import articulo_de_la_lista, payload_devolucion
+from .helpers import articulo_de_la_lista, payload_devolucion, payload_editar_articulo
 from ..data.perdidos_data import (
     LOCATION,
     AREA,
@@ -25,6 +25,8 @@ from ..data.perdidos_data import (
     ESTATUS_ENTREGADO,
     ESTATUS_DONADO,
     ESTATUS_TODOS,
+    EDICION_COLOR,
+    EDICION_DESCRIPCION,
 )
 
 
@@ -106,3 +108,21 @@ def test_todos_trae_articulos_pendientes_y_entregados(acceso_obj, mock_articulo_
     assert entregado, "El artículo entregado no aparece en Todos"
     assert pendiente.get("estatus_perdido") == ESTATUS_PENDIENTE
     assert entregado.get("estatus_perdido") == ESTATUS_ENTREGADO
+
+
+@pytest.mark.integration
+def test_editar_articulo_guarda_los_cambios(acceso_obj, articulo_pendiente):
+    """
+    TB-149: al editar un artículo y cambiar su color y descripción, la lista
+    debe mostrar los valores nuevos con el mismo folio y el artículo seguir
+    en Pendientes. Si no se guarda, quien lo reclama no lo reconoce.
+    """
+    cambios = {"color_perdido": EDICION_COLOR, "descripcion": EDICION_DESCRIPCION}
+    res = acceso_obj.update_article_lost(payload_editar_articulo(articulo_pendiente, cambios), articulo_pendiente["folio"])
+    assert res.get("status_code") in (201, 202), f"No se pudo editar el artículo: {res}"
+
+    editado = articulo_de_la_lista(acceso_obj, articulo_pendiente["articulo_perdido"], ESTATUS_PENDIENTE)
+    assert editado, "El artículo editado no sigue en Pendientes"
+    assert editado["folio"] == articulo_pendiente["folio"], "La edición creó o modificó otro artículo"
+    assert editado.get("color_perdido") == EDICION_COLOR, f"El color quedó {editado.get('color_perdido')!r}"
+    assert editado.get("descripcion") == EDICION_DESCRIPCION, f"La descripción quedó {editado.get('descripcion')!r}"

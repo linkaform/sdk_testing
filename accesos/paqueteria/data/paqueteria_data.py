@@ -37,6 +37,9 @@ DESCRIPCION_PAQUETE = "Paquete de prueba QA"
 # quien_recibe_paqueteria.
 DESTINATARIO_EXTERNO = "Destinatario externo QA"
 
+# Las descripciones editadas también llevan un sufijo único por corrida.
+DESCRIPCION_EDITADA = "Paquete de prueba QA editado"
+
 # Lo que manda entregar-paqueteria.tsx al entregar el paquete; la fecha de
 # entrega se llena en el helper.
 ENTREGADO_A = "Persona que recoge QA"
