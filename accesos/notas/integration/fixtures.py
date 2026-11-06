@@ -1,5 +1,8 @@
 # coding: utf-8
 
+import copy
+import uuid
+
 import pytest
 
 from ..data.notas_data import (
@@ -9,6 +12,7 @@ from ..data.notas_data import (
     TODAS_LAS_AREAS,
     ESTATUS_ABIERTO,
     LIMITE_LISTA,
+    NOTA_BUSCADOR,
 )
 
 
@@ -32,3 +36,17 @@ def nota_abierta(acceso_obj):
     notas = {n["_id"]: n for n in pendientes["records"]}
     assert nota_id in notas, "La nota nueva no aparece en Pendientes"
     return notas[nota_id]
+
+
+@pytest.fixture
+def nota_texto_unico(acceso_obj):
+    """
+    Nota de + Nueva Nota con un texto que solo existe en esta corrida.
+    Regresa su _id y el texto.
+    """
+    nota = copy.deepcopy(NOTA_NUEVA)
+    nota["note"] = f"{NOTA_BUSCADOR} {uuid.uuid4().hex[:8]}"
+    res = acceso_obj.create_note(LOCATION, AREA, nota)
+    nota_id = (res.get("json") or {}).get("id")
+    assert res.get("status_code") in (200, 201, 202) and nota_id, f"No se pudo crear la nota: {res}"
+    return nota_id, nota["note"]

@@ -48,3 +48,12 @@ NOTA_EDITADA = {
     "note_file": [],
     "note_pic": FOTO_VALIDA,
 }
+
+# Buscador de notas (notas/page.tsx → useFacetSection, script notes.py). El
+# texto escrito va como facet {key, values, exact False} ("contiene"); los
+# conteos usan las ubicaciones del header (locations) sin location ni área.
+FACET_NOTA = "note"
+FACET_CASETA = "note_booth"
+# Las notas del buscador llevan un sufijo único por corrida para que la
+# búsqueda solo traiga la suya.
+NOTA_BUSCADOR = "Nota buscador QA"
