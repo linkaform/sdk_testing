@@ -2,8 +2,8 @@
 
 """
 Lista de pases (get_my_pases): pestañas Activos, Por autorizar, En Proceso y
-Todos de la pantalla Pases de Entrada.
-Notion: TB-111 a TB-114.
+Todos de la pantalla Pases de Entrada, su paginación y su buscador.
+Notion: TB-111 a TB-116.
 """
 
 import copy
@@ -21,6 +21,10 @@ from ..data.pases_entrada_data import (
     TAB_POR_AUTORIZAR,
     ESTATUS_POR_AUTORIZAR,
     LIMITE_LISTA,
+    FACET_NOMBRE,
+    PASES_PARA_PAGINAR,
+    LIMITE_PAGINA,
+    PAGINAS_ESPERADAS,
 )
 from passes.integration.helpers import crear_pase
 
@@ -118,3 +122,56 @@ def test_todos_trae_pases_de_cualquier_estatus(acceso_obj, mock_pase_nuevo, pase
     assert pase_completado in pases, "El pase activo no aparece en Todos"
     assert pases[pase_en_proceso].get("estatus") == ESTATUS_PROCESO
     assert pases[pase_completado].get("estatus") == ESTATUS_ACTIVO
+
+
+@pytest.mark.integration
+def test_paginacion_de_pases_no_repite_ni_pierde_pases(acceso_obj, pases_para_paginar):
+    """
+    TB-115: la lista de pases pagina con limit/skip y el buscador del front
+    (facets). Con 3 pases y 2 por página, las dos páginas deben traer los 3
+    pases sin repetir ninguno, con el mismo total en las dos y la página
+    actual que corresponde a skip. Si se repiten o se pierden, el guardia no
+    encuentra un pase aunque exista.
+    """
+    nombre, ids = pases_para_paginar
+    facets = [{"key": FACET_NOMBRE, "values": [nombre], "exact": False}]
+
+    pagina_1 = acceso_obj.get_my_pases(tab_status=TAB_TODOS, limit=LIMITE_PAGINA, skip=0, facets=facets)
+    pagina_2 = acceso_obj.get_my_pases(tab_status=TAB_TODOS, limit=LIMITE_PAGINA, skip=LIMITE_PAGINA, facets=facets)
+    ids_1 = {p["_id"] for p in pagina_1["records"]}
+    ids_2 = {p["_id"] for p in pagina_2["records"]}
+
+    assert pagina_1["total_records"] == pagina_2["total_records"] == PASES_PARA_PAGINAR, (
+        f"Totales: {pagina_1['total_records']} y {pagina_2['total_records']}, se crearon {PASES_PARA_PAGINAR}"
+    )
+    assert pagina_1["total_pages"] == PAGINAS_ESPERADAS, f"total_pages = {pagina_1['total_pages']}"
+    assert (pagina_1["actual_page"], pagina_2["actual_page"]) == (1, 2)
+    assert pagina_1["records_on_page"] == LIMITE_PAGINA
+    assert pagina_2["records_on_page"] == PASES_PARA_PAGINAR - LIMITE_PAGINA
+    assert not ids_1 & ids_2, f"Pases repetidos entre páginas: {ids_1 & ids_2}"
+    assert ids_1 | ids_2 == ids, f"Faltan pases en las páginas: {ids - (ids_1 | ids_2)}"
+
+
+@pytest.mark.integration
+def test_buscador_de_pases_encuentra_el_pase_por_nombre(acceso_obj, mock_pase_nombre_unico):
+    """
+    TB-116: el buscador de la lista ofrece el campo Visitante (nombre) y,
+    al escribir el nombre de un pase, cuenta y trae ese pase. Si no, el
+    guardia no lo encuentra aunque exista.
+    """
+    pase_id = crear_pase(acceso_obj, mock_pase_nombre_unico)
+    nombre = mock_pase_nombre_unico["nombre"]
+
+    campos = {c["key"]: c for c in acceso_obj.get_search_fields_pases()}
+    assert FACET_NOMBRE in campos, f"El buscador no ofrece el campo '{FACET_NOMBRE}': {sorted(campos)}"
+    assert campos[FACET_NOMBRE]["type"] == "text"
+
+    candidato = {"key": FACET_NOMBRE, "value": nombre, "exact": False}
+    conteo = acceso_obj.get_search_counts_pases(tab_status=TAB_TODOS, facets=[], candidates=[candidato])
+    assert conteo == [1], f"El buscador cuenta {conteo} pases con el nombre '{nombre}'"
+
+    facets = [{"key": FACET_NOMBRE, "values": [nombre], "exact": False}]
+    lista = acceso_obj.get_my_pases(tab_status=TAB_TODOS, limit=LIMITE_LISTA, facets=facets)
+    assert [p["_id"] for p in lista["records"]] == [pase_id], (
+        f"El buscador trae {[p['_id'] for p in lista['records']]}, se esperaba solo {pase_id}"
+    )
