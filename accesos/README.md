@@ -139,9 +139,9 @@ Si se usa un marker sin registrarlo, pytest lanza `PytestUnknownMarkWarning` (o 
 **Cuidado con nombres de test duplicados:** si dos funciones en el mismo archivo tienen el mismo nombre, Python sobreescribe la primera al importar el módulo — pytest solo colecciona la segunda, y los markers de la primera (incluyendo markers de funcionalidad como `do_access`) desaparecen silenciosamente sin ningún warning. Si vas a copiar un test para adaptarlo a otra capa (por ejemplo de `integration` a `e2e`), cambia el nombre de la función.
 
 
-### Markers temporales de bugs
+### Markers de bugs
 
-Cuando un bug afecta a **más de un test**, a esos tests se les agrega el marker temporal `bug` con el folio del ticket como argumento, para correrlos todos juntos sin escribir cada test:
+Cuando un bug afecta a **más de un test**, a esos tests se les agrega el marker `bug` con el folio del ticket como argumento, para correrlos todos juntos sin escribir cada test:
 
     @pytest.mark.integration
     @pytest.mark.bug(1477)
@@ -154,10 +154,11 @@ El marker `bug` ya está registrado en `pytest.ini`; un ticket nuevo no necesita
 
 El mismo comando va en "Cómo reproducir" del ticket. Para ver qué tests agrupa un ticket: `grep -rn "bug(1477)" .`
 
-- Va con el folio y no solo `bug`: `-m bug` correría los tests de todos los bugs abiertos, no solo los del ticket que se está corrigiendo.
-- Si un test está afectado por dos tickets: `@pytest.mark.bug(1477, 1502)`.
+- Va con el folio y no solo `bug`: `-m bug` correría los tests de todos los tickets, no solo los del que se está revisando.
+- Si un test está ligado a dos tickets: `@pytest.mark.bug(1477, 1502)`.
 - Si el bug afecta a un solo test, no lleva marker: basta con correr ese test.
-- Es **temporal**: cuando el ticket queda corregido se quita el marker de los tests (`pytest.ini` no cambia).
+- Es **permanente**: cuando el ticket queda corregido el marker **se queda**, para poder volver a correr esos tests con el comando del ticket si el problema regresa (regresión). Si el bug está abierto o corregido se ve en Notion (Resultado del test y Estado del ticket).
+
 ---
 
 ## Docstrings

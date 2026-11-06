@@ -5,7 +5,23 @@ import uuid
 import pytest
 
 from passes.integration.helpers import fecha_str, crear_pase
-from ..data.pases_entrada_data import PASE_NUEVO, PASE_AUTO_REGISTRO, PASE_COMPLETAR, PASES_PARA_PAGINAR
+from ..data.pases_entrada_data import (
+    PASE_NUEVO,
+    PASE_AUTO_REGISTRO,
+    PASE_COMPLETAR,
+    PASE_AUTO_ACTIVACION,
+    PASE_SIN_REQUISITOS,
+    PASE_PIDE_FOTO_E_IDENTIFICACION,
+    PASES_PARA_PAGINAR,
+)
+
+
+def _vigente_7_dias(pase):
+    """Copia del pase vigente desde hoy y por 7 días."""
+    pase = copy.deepcopy(pase)
+    pase["fecha_desde_visita"] = fecha_str(0)
+    pase["fecha_desde_hasta"] = fecha_str(7)
+    return pase
 
 
 @pytest.fixture
@@ -17,10 +33,25 @@ def acceso_obj(accesos_api):
 @pytest.fixture
 def mock_pase_nuevo():
     """Pase de + Nuevo Pase vigente desde hoy y por 7 días, listo para crearse."""
-    pase = copy.deepcopy(PASE_NUEVO)
-    pase["fecha_desde_visita"] = fecha_str(0)
-    pase["fecha_desde_hasta"] = fecha_str(7)
-    return pase
+    return _vigente_7_dias(PASE_NUEVO)
+
+
+@pytest.fixture
+def mock_pase_auto_activacion():
+    """+ Nuevo Pase con "Activar pase por defecto" prendido, sin foto ni identificación."""
+    return _vigente_7_dias(PASE_AUTO_ACTIVACION)
+
+
+@pytest.fixture
+def mock_pase_sin_requisitos():
+    """+ Nuevo Pase sin auto activación y con foto e identificación apagadas por el admin."""
+    return _vigente_7_dias(PASE_SIN_REQUISITOS)
+
+
+@pytest.fixture
+def mock_pase_pide_foto_e_identificacion():
+    """+ Nuevo Pase sin auto activación que pide foto e identificación, sin traerlas."""
+    return _vigente_7_dias(PASE_PIDE_FOTO_E_IDENTIFICACION)
 
 
 @pytest.fixture
