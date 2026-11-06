@@ -28,3 +28,23 @@ def payload_entrega(acceso_obj):
         "fecha_entregado_paqueteria": datetime.now(pytz.timezone(acceso_obj.user["timezone"])).strftime("%Y-%m-%d %H:%M:%S"),
         "entregado_a_paqueteria": ENTREGADO_A,
     }
+
+
+def payload_editar_paquete(paquete, cambios):
+    """
+    Payload de update_paquete como lo arma editar-paqueteria.tsx: los valores
+    del paquete más los que el guardia cambió en el formulario.
+    """
+    payload = {
+        "ubicacion_paqueteria": paquete.get("ubicacion_paqueteria") or "",
+        "area_paqueteria": paquete.get("area_paqueteria") or "",
+        "fotografia_paqueteria": paquete.get("fotografia_paqueteria") or [],
+        "descripcion_paqueteria": paquete.get("descripcion_paqueteria") or "",
+        "quien_recibe_paqueteria": paquete.get("quien_recibe_paqueteria") or "",
+        "guardado_en_paqueteria": paquete.get("guardado_en_paqueteria") or "",
+        "fecha_recibido_paqueteria": paquete.get("fecha_recibido_paqueteria") or "",
+        "entregado_a_paqueteria": paquete.get("entregado_a_paqueteria") or "",
+        "proveedor": paquete.get("proveedor") or "",
+    }
+    payload.update(cambios)
+    return payload
