@@ -14,25 +14,33 @@ Desde la raíz de `addons`, levanta el contenedor de pruebas:
 
     ./lkf start test
 
-Una vez dentro del contenedor, usa `pytest` normalmente:
+El contenedor abre en `/srv/lkf_test` (la carpeta `addons/test`). Entra a
+`sdk_testing` y corre `pytest` siempre con una ruta dentro del módulo:
 
-    # Todos los tests
-    pytest -v
+    cd sdk_testing
+
+    # Todos los tests de Accesos
+    pytest accesos/ -v
 
     # Solo unitarios (no requieren conexión)
-    pytest -m unit -v
+    pytest accesos/ -m unit -v
 
     # Solo integración (requieren API activa)
-    pytest -m integration -v
+    pytest accesos/ -m integration -v
 
     # Solo E2E
-    pytest -m e2e -v
+    pytest accesos/ -m e2e -v
 
-    # Un módulo específico
-    pytest accesos/ -v
+    # Una sección
+    pytest accesos/entradas_salidas/ -v
 
     # Un archivo específico
     pytest accesos/menus/unit/test_get_config_accesos.py -v
+
+La ruta es obligatoria: la configuración de cada módulo (`pytest.ini`, con el
+`pythonpath` de sus scripts, y su `conftest.py`) vive dentro del módulo, y
+pytest solo la lee si el comando apunta ahí. Un `pytest -m unit` sin ruta
+desde `sdk_testing` falla al recolectar los tests.
 
 ## Estructura de un módulo
 

@@ -117,12 +117,15 @@ Un test puede tener más de un marker apilando los decoradores. Además del mark
 
 Para correr solo los tests que cumplan **todas** las condiciones (AND):
 
-    pytest -m "integration and do_access"
+    pytest accesos/ -m "integration and do_access"
 
 También se puede filtrar con `or` (cualquiera de los dos) o `not` (excluir):
 
-    pytest -m "integration or e2e"
-    pytest -m "integration and not do_access"
+    pytest accesos/ -m "integration or e2e"
+    pytest accesos/ -m "integration and not do_access"
+
+Los comandos van desde `sdk_testing` y con la ruta `accesos/`: sin ella pytest
+no lee el `pytest.ini` ni el `conftest.py` de este módulo.
 
 ### Registrar un marker nuevo
 
@@ -150,9 +153,9 @@ Cuando un bug afecta a **más de un test**, a esos tests se les agrega el marker
 
 El marker `bug` ya está registrado en `pytest.ini`; un ticket nuevo no necesita tocarlo. Quien corrige el ticket (y QA al verificarlo) corre solo esos tests con la opción `--bug` (definida en `conftest.py`):
 
-    pytest -s --bug 1477
+    pytest accesos/ -s --bug 1477
 
-El mismo comando va en "Cómo reproducir" del ticket. Para ver qué tests agrupa un ticket: `grep -rn "bug(1477)" .`
+El mismo comando va en "Cómo reproducir" del ticket. Lleva la ruta `accesos/` porque `--bug` se define en `accesos/conftest.py`: sin ella pytest responde `unrecognized arguments: --bug`. Para ver qué tests agrupa un ticket: `grep -rn "bug(1477)" accesos/`
 
 - Va con el folio y no solo `bug`: `-m bug` correría los tests de todos los tickets, no solo los del que se está revisando.
 - Si un test está ligado a dos tickets: `@pytest.mark.bug(1477, 1502)`.
