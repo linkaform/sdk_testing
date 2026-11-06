@@ -2,9 +2,9 @@
 
 """
 Fallas de Seguridad: crear una falla y consultarla en Abiertas, Cerradas y
-Todos, cerrarla y editarla (fallas.py: new_failure, get_failures,
-update_failure).
-Notion: TB-138, TB-139, TB-141 y TB-143.
+Todos, cerrarla, editarla y agregarle seguimiento (fallas.py: new_failure,
+get_failures, update_failure, update_failure_seguimiento).
+Notion: TB-138, TB-139, TB-140, TB-141 y TB-143.
 """
 
 import copy
@@ -13,7 +13,7 @@ import uuid
 import pytest
 
 from .fixtures import *
-from .helpers import falla_de_la_lista, payload_editar_falla
+from .helpers import falla_de_la_lista, payload_editar_falla, payload_seguimiento
 from ..data.fallas_data import (
     LOCATION,
     AREA,
@@ -23,6 +23,7 @@ from ..data.fallas_data import (
     ESTATUS_RESUELTO,
     ESTATUS_TODOS,
     CERRAR_FALLA,
+    SEGUIMIENTO_FALLA,
 )
 
 
@@ -100,3 +101,28 @@ def test_todos_trae_fallas_abiertas_y_cerradas(acceso_obj, mock_falla_nueva, fal
     assert cerrada, "La falla cerrada no aparece en Todos"
     assert abierta.get("falla_estatus") == ESTATUS_ABIERTO
     assert cerrada.get("falla_estatus") == ESTATUS_RESUELTO
+
+
+@pytest.mark.integration
+def test_agregar_seguimiento_a_falla_lo_guarda(acceso_obj, falla_abierta):
+    """
+    TB-140: al agregar un seguimiento a una falla abierta sin cerrarla, la
+    falla debe seguir abierta y mostrar ese seguimiento con su acción y su
+    fecha. Si no se guarda, se pierde lo que ya se hizo para resolverla.
+    """
+    seguimiento = payload_seguimiento(falla_abierta)
+    res = acceso_obj.update_failure_seguimiento(
+        location="", area="", status=ESTATUS_ABIERTO, folio=falla_abierta["folio"], falla_grupo_seguimiento=seguimiento
+    )
+    assert res.get("status_code") in (201, 202), f"No se pudo agregar el seguimiento: {res}"
+
+    falla = falla_de_la_lista(acceso_obj, falla_abierta["falla_comentarios"], ESTATUS_ABIERTO)
+    assert falla, "La falla con seguimiento no sigue en Abiertas"
+    seguimientos = falla.get("falla_grupo_seguimiento_formated") or []
+    assert len(seguimientos) == 1, f"La falla tiene {len(seguimientos)} seguimientos, se agregó 1"
+    assert seguimientos[0].get("falla_accion_realizada") == SEGUIMIENTO_FALLA["accion_correctiva_incidencia"], (
+        f"La acción del seguimiento quedó {seguimientos[0].get('falla_accion_realizada')!r}"
+    )
+    assert seguimientos[0].get("falla_fecha_seguimiento") == seguimiento["fecha_inicio_seg"], (
+        f"La fecha del seguimiento quedó {seguimientos[0].get('falla_fecha_seguimiento')!r}"
+    )
