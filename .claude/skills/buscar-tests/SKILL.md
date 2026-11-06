@@ -1,6 +1,6 @@
 ---
 name: buscar-tests
-description: Dado un problema descrito en palabras ("al editar un pase se duplican los acompañantes", "la salida marca mal la duración", "rompí get_paquetes"), busca en sdk_testing qué tests existentes lo cubren, dice cuáles correr y con qué comando, consulta su estado en Notion (Testing Backend) y reporta claramente si no hay cobertura. Úsala siempre que alguien de Clave 10 pregunte qué test correr, qué pruebas cubren una sección/función/script de Accesos, si hay tests para un bug o ticket 2610-XXXX, o quiera validar un cambio en accesos_utils.py o en un script de Accesos, aunque no diga "test" explícitamente.
+description: Dado un problema descrito en palabras ("al editar un pase se duplican los acompañantes", "la salida marca mal la duración", "rompí get_paquetes"), busca en sdk_testing qué tests existentes lo cubren, dice cuáles correr y con qué comando, consulta su estado en Notion (Testing Backend) y, si no hay cobertura, lo dice y crea un ticket en Tareas del Equipo asignado a QA (Citlali) con el contexto, sin explicar a nadie cómo hacer el test. Úsala siempre que alguien de Clave 10 pregunte qué test correr, qué pruebas cubren una sección/función/script de Accesos, si hay tests para un bug o ticket 2610-XXXX, o quiera validar un cambio en accesos_utils.py o en un script de Accesos, aunque no diga "test" explícitamente.
 ---
 
 # Buscar tests en sdk_testing
@@ -10,10 +10,11 @@ le dices **qué tests de sdk_testing ya existen para eso, cómo correrlos y
 qué tan confiables son hoy**. Si no hay test que lo cubra, lo dices sin
 rodeos: ese hueco es información valiosa para QA.
 
-No escribes tests ni corres pytest. La persona corre los tests en su
-contenedor; tú solo le das la lista y los comandos. Esto importa porque los
-tests de integración y E2E escriben datos reales en preprod, y quien los
-corre debe decidir cuándo hacerlo.
+No escribes tests, no explicas cómo escribirlos y no corres pytest. La
+persona corre los tests en su contenedor; tú solo le das la lista y los
+comandos, porque los tests de integración y E2E escriben datos reales en
+preprod y quien los corre debe decidir cuándo hacerlo. Los tests nuevos los
+diseña QA: si falta uno, creas un ticket asignado a Citlali.
 
 ## Paso 1. Entender el problema
 
@@ -94,7 +95,8 @@ Lo que te importa:
 
 Si Notion no está conectado o la consulta falla, sigue sin él y dilo en una
 línea al final ("no pude consultar Notion; el estado de cada TB no está
-verificado"). Solo lees Notion: no cambies nada ahí.
+verificado"). En Testing Backend solo lees: no cambies nada ahí. Lo único
+que escribes en Notion es el ticket para QA cuando falta cobertura.
 
 ## Paso 4. Responder
 
@@ -164,18 +166,71 @@ No sugieras `--allow-prod-integration`.
 
 Si ningún test cubre lo que describen, o solo cubre una parte, dilo primero
 y con claridad: "No hay ningún test en sdk_testing que cubra <caso>." No
-lo suavices recomendando tests lejanos para llenar la respuesta.
+lo suavices recomendando tests lejanos para llenar la respuesta. Si hay
+tests parecidos, puedes decir en una línea por qué no lo detectan (p. ej.
+"todos mandan `acompanantes: 0`"): es un hecho sobre lo que ya existe.
 
-Luego propone el caso que faltaría, en concreto:
+Después **crea un ticket para QA** (siguiente sección) y a la persona solo
+dile:
 
-- **Sección / opción**: …
-- **Función a probar**: `archivo.py: funcion`, con la ruta desde `addons/`
-- **Tipo sugerido**: unit si la lógica se puede aislar, integration si
-  depende de lo que guarda la API.
-- **Qué debería validar**: una o dos frases.
+> No hay test que cubra esto. Ya le asigné el caso a Citlali (QA):
+> ticket 2610-<folio>.
 
-Y termina con: "Avísale a QA (Citlali) para que lo agregue al plan." No
-escribas el test: QA decide la prioridad, el ID TB y dónde va.
+**No le digas cómo hacer el test**: ni qué función probar, ni de qué
+tipo, ni qué debería validar, ni código, ni ofrezcas escribirlo, y no le
+muestres el contenido del ticket. Si lo pide ("¿cómo lo pruebo?",
+"escríbeme el test"), responde que los tests de sdk_testing los diseña y
+escribe QA y que el caso ya está asignado a Citlali. QA decide qué se
+prueba, la prioridad, el ID TB y dónde va; un test armado fuera de ese plan
+no queda registrado en Notion y rompe el mapa de cobertura.
+
+### Ticket para QA
+
+Va en **Tareas del Equipo** (data source
+`collection://26425e25-55ec-8017-b0cc-000bef0c8aae`). Es para Citlali: le
+explica el problema y su contexto para que ella decida el test. No le dice
+qué test hacer.
+
+1. **Antes de crear, busca si ya existe.** Busca en esa base por la
+   función o la sección. Si ya hay un ticket abierto asignado a Citlali para
+   el mismo caso, no crees otro: dile a la persona que ya está asignado y
+   el folio.
+2. **Créalo** con estas propiedades:
+   - `Tarea`: provisional, se corrige en el paso 3.
+   - `Task Type`: `Task` · `Platform`: `["Testing"]` · `Cliente`: `["Clave10"]`
+   - `Sección`: `Accesos` · `Estado`: `ToDo`
+   - `Asignado a`: `["user://3bbd872b-594c-81ce-ad2c-00022fe42a91"]` (Citlali Carrillo)
+   - `Test Case`: vacío. Es para tests que fallan por un bug, y aquí no hay
+     test.
+3. **Título con folio.** Lee `Folio Consecutivo` de la página creada y pon
+   `Tarea` = `2610-<folio> · Accesos · <Opción>: <qué no se está validando>`,
+   p. ej. `2610-1540 · Accesos · Pases de Entrada: no se valida editar un
+   pase con acompañantes`. Usa el mismo prefijo que los tickets recientes
+   de la base (hoy `2610`).
+4. **Cuerpo**, con estas secciones:
+
+   ```markdown
+   ## Qué pasa
+   <el problema tal como lo describió la persona, quién lo reportó y cuándo>
+
+   ## Qué no se está validando
+   <qué parte no tiene test. Si hay tests parecidos: cuáles son (ruta::test,
+   TB) y por qué no lo detectan. Si no hay ninguno en la sección, dilo.>
+
+   ## Dónde
+   <funciones y archivos involucrados, con la ruta desde addons/ y la copia
+   en lkf-sanic-apps si existe; sin números de línea>
+
+   ## Contexto
+   <lo que encontraste: ticket probable relacionado, commit del fix, si el
+   cambio fue solo de front, etc. Omite la sección si no hay nada.>
+   ```
+
+   No incluyas cómo hacer el test, tipo, qué validar ni "Cómo reproducir".
+
+Si no tienes las herramientas de Notion, no puedes crear el ticket: dile a
+la persona que no hay test y que se lo asigne a Citlali en Tareas del
+Equipo, sin más detalle.
 
 ## Ejemplo
 
@@ -193,12 +248,9 @@ Respuesta (resumida):
 > **No hay ningún test en sdk_testing que edite un pase con acompañantes.**
 > Todos los que llaman a `update_full_pass` mandan `acompanantes: 0` y
 > `acompanantes_grupo: []`, así que pasarían aunque el bug siguiera.
-> - **Función a probar**: `lkf_addons/addons/accesos/app.py: update_full_pass`
-> - **Tipo sugerido**: integration (depende de los pases hijo que crea la API)
-> - **Qué debería validar**: crear un titular con 2 acompañantes, editarlo
->   con los mismos 2 y confirmar que el grupo sigue en 2.
 >
-> Avísale a QA (Citlali) para que lo agregue al plan.
+> No hay test que cubra esto. Ya le asigné el caso a Citlali (QA):
+> ticket 2610-<folio>.
 >
 > ### Relacionados (no cubren exactamente tu caso)
 > 1. `accesos/pases_entrada/integration/test_editar_pase.py::test_editar_pase_completo_guarda_los_cambios` — TB-121 · integration
