@@ -2,6 +2,7 @@
 # test_rondines.py
 
 import logging, simplejson
+import pytest
 import sys, os,time
 from bson import ObjectId
 
@@ -167,6 +168,7 @@ def do_crear_check_areas(acceso_obj, mock_check_basic):
     return mock_rondin, check_ids
  
 
+@pytest.mark.integration
 def test_sync_rondin_to_lkf(acceso_obj,  mock_check_basic):
     """
     Con el rondín y sus check_areas ya en CouchDB,

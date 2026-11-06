@@ -26,5 +26,6 @@ class TestAccesos:
     def setup_method(self):
         self.accesos = Accesos(settings, use_api=True)
 
+    @pytest.mark.integration
     def test_number_one(self):
         logging.info('Arranca test #1: .')
