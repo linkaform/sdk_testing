@@ -13,6 +13,7 @@ from ..data.pases_entrada_data import (
     PASE_SIN_REQUISITOS,
     PASE_PIDE_FOTO_E_IDENTIFICACION,
     PASES_PARA_PAGINAR,
+    ACOMPANANTES_PASE,
 )
 
 
@@ -34,6 +35,14 @@ def acceso_obj(accesos_api):
 def mock_pase_nuevo():
     """Pase de + Nuevo Pase vigente desde hoy y por 7 días, listo para crearse."""
     return _vigente_7_dias(PASE_NUEVO)
+
+
+@pytest.fixture
+def mock_pase_con_acompanantes(mock_pase_nuevo):
+    """+ Nuevo Pase con dos acompañantes, listo para crearse."""
+    mock_pase_nuevo["acompanantes"] = len(ACOMPANANTES_PASE)
+    mock_pase_nuevo["acompanantes_grupo"] = copy.deepcopy(ACOMPANANTES_PASE)
+    return mock_pase_nuevo
 
 
 @pytest.fixture
