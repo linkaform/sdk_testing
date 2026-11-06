@@ -117,6 +117,22 @@ EDICION_DIAS_HASTA = 10
 EDICION_HORA_HASTA = "23:59:59"
 LINK_PASE_UPDATE = "https://web.clave10.com/dashboard/pase-update"
 
+# Acompañantes del titular en + Nuevo Pase (add-pass-modal.tsx manda nombre,
+# email y teléfono de cada uno). El backend crea un pase en proceso por cada
+# uno y lo liga al titular en acompanantes_grupo.
+ACOMPANANTES_PASE = [
+    {
+        "nombre": "Acompañante Uno pases_entrada",
+        "email": "acompanante.uno.pases_entrada@clave10.com",
+        "telefono": "8110000011",
+    },
+    {
+        "nombre": "Acompañante Dos pases_entrada",
+        "email": "acompanante.dos.pases_entrada@clave10.com",
+        "telefono": "8110000012",
+    },
+]
+
 # Pase de auto registro: el visitante se registra solo desde el link público
 # (registro-ingreso → add-pass-create-modal.tsx → create_access_pass). Trae
 # foto e identificación, pero el backend no lo auto-autoriza, así que queda
