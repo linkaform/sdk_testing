@@ -31,6 +31,49 @@ PASE_NUEVO.update({
     "acompanantes_grupo": [],
 })
 
+# + Nuevo Pase con los toggles del formulario (pase-entrada/page.tsx). El front
+# manda auto_activacion solo si la ubicación permite "Activar pase por
+# defecto", y habilitar_fotografia/identificacion ("sí"/"no", con acento) solo
+# si la ubicación pide ese dato; el admin puede apagarlos. Sin foto ni
+# identificación: el front solo las captura con la auto activación prendida.
+PASE_AUTO_ACTIVACION = copy.deepcopy(PASE_NUEVO)
+PASE_AUTO_ACTIVACION.update({
+    "auto_activacion": "sí",
+    "habilitar_fotografia": "sí",
+    "habilitar_identificacion": "sí",
+})
+
+PASE_SIN_REQUISITOS = copy.deepcopy(PASE_NUEVO)
+PASE_SIN_REQUISITOS.update({
+    "habilitar_fotografia": "no",
+    "habilitar_identificacion": "no",
+})
+
+PASE_PIDE_FOTO_E_IDENTIFICACION = copy.deepcopy(PASE_NUEVO)
+PASE_PIDE_FOTO_E_IDENTIFICACION.update({
+    "habilitar_fotografia": "sí",
+    "habilitar_identificacion": "sí",
+})
+
+# Configuración de la ubicación que pide + Nuevo Pase al elegir la ubicación
+# (useGetConfSeguridad → get_config_modulo_seguridad).
+LLAVES_CONFIG_UBICACION = {
+    "ubicaciones",
+    "ubicaciones_info",
+    "requerimientos",
+    "envios",
+    "tipos",
+    "condiciones_servicio",
+    "permisos_certificaciones",
+    "logotipo_pase",
+    "auto_activacion",
+    "acompanantes_requeridos",
+    "empresa",
+}
+LLAVES_LISTA_CONFIG = ("requerimientos", "envios", "tipos")
+REQUERIMIENTOS_VALIDOS = {"fotografia", "identificacion"}
+VALORES_SI_NO = {"sí", "no"}
+
 # Pestañas de la lista de pases (tab_status de get_my_pases, pases/page.tsx).
 TAB_EN_PROCESO = "en_proceso"
 TAB_ACTIVOS = "activos"
