@@ -49,6 +49,11 @@ DEVOLUCION = {
 DEVOLUCION_ENTREGADO = "entregado"
 DEVOLUCION_DONADO = "Donado"
 
+# Cambios que hace el guardia en editar-article-modal.tsx (color de
+# catalogoColores() del front y descripción nueva).
+EDICION_COLOR = "Blanco"
+EDICION_DESCRIPCION = "Descripción editada en la prueba QA"
+
 # Estatus de la lista: Pendientes = pendiente, Entregados = entregado,
 # Todos = sin filtro.
 ESTATUS_PENDIENTE = "pendiente"
