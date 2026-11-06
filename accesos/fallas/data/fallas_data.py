@@ -8,6 +8,7 @@ Cerradas y Todos; script fallas.py).
 from passes.integration.data.do_access_data import (  # noqa: F401
     LOCATION,
     AREA,
+    FOTO_VALIDA,
 )
 
 # Falla con el payload que arma el modal + Nueva Falla (add-falla.tsx →
@@ -39,6 +40,18 @@ COMENTARIO_EDITADO = "Falla de prueba QA editada"
 ESTATUS_ABIERTO = "abierto"
 ESTATUS_RESUELTO = "resuelto"
 ESTATUS_TODOS = ""
+
+# Seguimiento con el payload de add-seguimiento-falla-cerrar.tsx (un solo
+# seguimiento por envío, sin cerrar la falla: status 'abierto'). La fecha y
+# el tiempo transcurrido se llenan en el helper: una hora después de la falla,
+# con el formato de calcularTiempoDesdeIncidencia del front.
+SEGUIMIENTO_FALLA = {
+    "accion_correctiva_incidencia": "Se cambió la pieza dañada (prueba QA)",
+    "incidencia_personas_involucradas": "Guardia de prueba QA",
+    "incidencia_documento_solucion": [],
+    "incidencia_evidencia_solucion": FOTO_VALIDA,
+}
+TIEMPO_SEGUIMIENTO = "1 hora(s)"
 
 # Lo que manda el botón de close-falla-modal (update_failure).
 CERRAR_FALLA = {"falla_estatus": "resuelto"}

@@ -4,7 +4,10 @@
 Helpers de las pruebas de integración de Fallas.
 """
 
-from ..data.fallas_data import LOCATION, FACET_COMENTARIOS, LIMITE_LISTA
+import copy
+from datetime import datetime, timedelta
+
+from ..data.fallas_data import LOCATION, FACET_COMENTARIOS, LIMITE_LISTA, SEGUIMIENTO_FALLA, TIEMPO_SEGUIMIENTO
 
 
 def falla_de_la_lista(acceso_obj, comentario, status):
@@ -37,3 +40,15 @@ def payload_editar_falla(falla, cambios):
     }
     payload.update(cambios)
     return payload
+
+
+def payload_seguimiento(falla):
+    """
+    Seguimiento de add-seguimiento-falla-cerrar.tsx una hora después de la
+    falla, con el tiempo transcurrido como lo calcula el front.
+    """
+    inicio = datetime.strptime(falla["falla_fecha_hora"], "%Y-%m-%d %H:%M:%S") + timedelta(hours=1)
+    seguimiento = copy.deepcopy(SEGUIMIENTO_FALLA)
+    seguimiento["fecha_inicio_seg"] = inicio.strftime("%Y-%m-%d %H:%M:%S")
+    seguimiento["tiempo_transcurrido"] = TIEMPO_SEGUIMIENTO
+    return seguimiento
