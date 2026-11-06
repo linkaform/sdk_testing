@@ -2,9 +2,10 @@
 
 """
 Fallas de Seguridad: crear una falla y consultarla en Abiertas, Cerradas y
-Todos, cerrarla, editarla y agregarle seguimiento (fallas.py: new_failure,
-get_failures, update_failure, update_failure_seguimiento).
-Notion: TB-138, TB-139, TB-140, TB-141 y TB-143.
+Todos, cerrarla, editarla, agregarle seguimiento y eliminarla (fallas.py:
+new_failure, get_failures, update_failure, update_failure_seguimiento,
+delete_failure).
+Notion: TB-138 a TB-143.
 """
 
 import copy
@@ -125,4 +126,19 @@ def test_agregar_seguimiento_a_falla_lo_guarda(acceso_obj, falla_abierta):
     )
     assert seguimientos[0].get("falla_fecha_seguimiento") == seguimiento["fecha_inicio_seg"], (
         f"La fecha del seguimiento quedó {seguimientos[0].get('falla_fecha_seguimiento')!r}"
+    )
+
+
+@pytest.mark.integration
+def test_eliminar_falla_la_quita_de_la_lista(acceso_obj, falla_abierta):
+    """
+    TB-142: al eliminar una falla desde la lista (delete-falla-modal manda la
+    lista de folios), ya no debe aparecer en ninguna pestaña. Si sigue en
+    Todos, la lista muestra fallas que el guardia ya borró.
+    """
+    res = acceso_obj.delete_failure([falla_abierta["folio"]])
+    assert str(res.get("status_code")).startswith("2"), f"No se pudo eliminar la falla: {res}"
+
+    assert falla_de_la_lista(acceso_obj, falla_abierta["falla_comentarios"], ESTATUS_TODOS) is None, (
+        "La falla eliminada sigue en Todos"
     )
