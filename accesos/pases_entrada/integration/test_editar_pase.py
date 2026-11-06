@@ -3,7 +3,7 @@
 """
 Editar el pase completo desde la tabla de pases (Editar → update-full-pass.tsx
 → add-pass-modal-update.tsx → update_full_pass).
-Notion: TB-121 y TB-158.
+Notion: TB-121, TB-158 y TB-159.
 """
 
 import pytest
@@ -93,3 +93,43 @@ def test_editar_pase_con_acompanantes_no_los_duplica(acceso_obj, mock_pase_con_a
     assert sorted(qr_despues) == sorted(qr_antes), (
         f"Los acompañantes cambiaron al editar: antes {qr_antes}, después {qr_despues}"
     )
+
+
+@pytest.mark.integration
+def test_editar_fechas_del_titular_las_heredan_sus_acompanantes(acceso_obj, mock_pase_con_acompanantes):
+    """
+    TB-159: al cambiar las fechas de un pase con acompañantes, el pase de cada
+    acompañante debe quedar con las mismas fechas. Si no las heredan, el
+    titular entra en las fechas nuevas y sus acompañantes se quedan con las
+    viejas (ticket 2610-1369).
+    """
+    pase_id = crear_pase(acceso_obj, mock_pase_con_acompanantes)
+    qr_hijos = obtener_qr_hijos(acceso_obj, pase_id)
+    assert len(qr_hijos) == len(ACOMPANANTES_PASE), (
+        f"El pase se creó con {len(qr_hijos)} acompañantes, se mandaron {len(ACOMPANANTES_PASE)}"
+    )
+    pase = pase_de_la_lista(acceso_obj, pase_id, mock_pase_con_acompanantes["nombre"])
+    assert pase, f"El pase {pase_id} no aparece en la lista para editarlo"
+
+    cambios = {
+        "nombre": pase["nombre"],
+        "empresa": pase["empresa"],
+        "fecha_desde_visita": fecha_str(EDICION_DIAS_DESDE),
+        "fecha_desde_hasta": f"{fecha_str(EDICION_DIAS_HASTA)[:10]} {EDICION_HORA_HASTA}",
+    }
+    res = acceso_obj.update_full_pass(
+        payload_editar_pase(acceso_obj, pase, cambios),
+        folio=pase["folio"],
+        qr_code=pase_id,
+        location=pase["ubicacion"],
+    )
+    assert res.get("status_code") in (200, 201, 202), f"No se pudo editar el pase: {res}"
+
+    for qr in qr_hijos:
+        acompanante = acceso_obj.get_detail_access_pass(qr)
+        assert acompanante.get("fecha_de_expedicion") == cambios["fecha_desde_visita"], (
+            f"El acompañante {qr} quedó desde '{acompanante.get('fecha_de_expedicion')}'"
+        )
+        assert acompanante.get("fecha_de_caducidad") == cambios["fecha_desde_hasta"], (
+            f"El acompañante {qr} quedó hasta '{acompanante.get('fecha_de_caducidad')}'"
+        )
