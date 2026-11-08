@@ -3,10 +3,12 @@
 from .fixtures import *
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import *
 import logging
+import pytest
 
 
 
 
+@pytest.mark.integration
 def test_get_articulos_list(acceso_obj, mock_lista_concesionados, mock_crea_consecion_otro, mock_crea_consecion):
     """
     Provamos que la lista nos regres un numero de articulos concesionados, luego agreagmos 2 y vemos q la lista regrese 2 mas

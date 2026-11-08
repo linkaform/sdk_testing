@@ -1,7 +1,9 @@
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import *
 from .fixtures import accesos_turnos_api, accesos_turnos_api_15864
 import logging
+import pytest
 
+@pytest.mark.integration
 def test_turn_happy_path(accesos_turnos_api):
     """
     Test para iniciar y finalizar un turno correctamente. 
