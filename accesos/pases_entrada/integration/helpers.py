@@ -4,13 +4,39 @@
 Helpers de las pruebas de integración de Pases de Entrada.
 """
 
-from ..data.pases_entrada_data import LIMITE_LISTA, LINK_PASE_UPDATE
+from ..data.pases_entrada_data import LIMITE_LISTA, LINK_PASE_UPDATE, ESTATUS_PROCESO
 
 
 def pase_de_la_lista(acceso_obj, pase_id, nombre, tab_status=""):
     """Registro del pase tal como lo regresa get_my_pases (la fila de la tabla), o None."""
     lista = acceso_obj.get_my_pases(tab_status=tab_status, search_name=nombre, limit=LIMITE_LISTA)
     return next((p for p in lista["records"] if p["_id"] == pase_id), None)
+
+
+def acompanantes_del_formulario(pase):
+    """
+    Acompañantes que manda el formulario de edición (update-full-pass.tsx):
+    solo los que siguen en proceso, cada uno con el id de su pase (qr_code);
+    los activos no se mandan. Foto e identificación vacías no se mandan
+    (normalizeImageField las deja en undefined).
+    """
+    acompanantes = []
+    for a in pase.get("acompanantes_grupo") or []:
+        if (a.get("estatus") or "").lower() != ESTATUS_PROCESO:
+            continue
+        miembro = {
+            "id": a.get("qr_code") or "",
+            "nombre": a.get("nombre_acompanante") or "",
+            "email": a.get("email_acompanante") or "",
+            "telefono": a.get("telefono_acompanante") or "",
+            "estatus": a.get("estatus") or "",
+            "link": a.get("link") or "",
+        }
+        for llave in ("foto", "identificacion"):
+            if a.get(llave):
+                miembro[llave] = a[llave]
+        acompanantes.append(miembro)
+    return acompanantes
 
 
 def payload_editar_pase(acceso_obj, pase, cambios):
@@ -72,5 +98,5 @@ def payload_editar_pase(acceso_obj, pase, cambios):
         "enviar_correo": [],
         "habilitar_vehiculo": "sí" if pase.get("habilitar_vehiculo") in ("sí", True) else "no",
         "acompanantes": int(pase.get("acompanantes") or 0),
-        "acompanantes_grupo": pase.get("acompanantes_grupo") or [],
+        "acompanantes_grupo": acompanantes_del_formulario(pase),
     }
