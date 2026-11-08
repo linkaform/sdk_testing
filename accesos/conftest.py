@@ -19,6 +19,9 @@ Fixtures disponibles:
 """
 
 import pytest
+
+# marker target + --target= para ./lkf test (ver ../lkf_target.py)
+pytest_plugins = ["lkf_target"]
 from lkf_modules.accesos.items.scripts.Accesos.accesos_utils import Accesos
 from account_settings import settings
 

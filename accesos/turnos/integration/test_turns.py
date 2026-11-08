@@ -4,6 +4,7 @@ import logging
 import pytest
 
 @pytest.mark.integration
+@pytest.mark.target("get_shift_data", "do_checkin", "do_checkout")
 def test_turn_happy_path(accesos_turnos_api):
     """
     Test para iniciar y finalizar un turno correctamente. 

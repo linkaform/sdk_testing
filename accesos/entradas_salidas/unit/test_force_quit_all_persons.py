@@ -23,6 +23,7 @@ from ..data.bitacora_data import (
 
 
 @pytest.mark.unit
+@pytest.mark.target("force_quit_all_persons")
 def test_force_quit_sin_ubicacion_no_cierra_otras_ubicaciones(accesos_no_api, mocker):
     """
     TB-072: sin ubicación (location vacío), la salida masiva no debe cerrar las visitas
@@ -45,6 +46,7 @@ def test_force_quit_sin_ubicacion_no_cierra_otras_ubicaciones(accesos_no_api, mo
 
 
 @pytest.mark.unit
+@pytest.mark.target("force_quit_all_persons")
 @pytest.mark.bug(1477)
 def test_force_quit_guarda_cierre_general_y_hora_del_empleado(accesos_no_api, mocker):
     """
