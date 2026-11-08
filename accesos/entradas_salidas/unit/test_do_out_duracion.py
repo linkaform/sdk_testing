@@ -27,6 +27,7 @@ from ..data.bitacora_data import (
 
 
 @pytest.mark.unit
+@pytest.mark.target("do_out")
 @pytest.mark.bug(1477)
 def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
     """
@@ -61,6 +62,7 @@ def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
 
 
 @pytest.mark.unit
+@pytest.mark.target("do_out")
 @pytest.mark.bug(1477)
 def test_do_out_duracion_de_mas_de_un_dia_es_legible(accesos_no_api, mocker):
     """

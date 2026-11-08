@@ -9,6 +9,7 @@ def test_instancia_accesos_no_api(accesos_no_api):
     assert accesos_no_api is not None
 
 @pytest.mark.unit
+@pytest.mark.target("get_config_accesos")
 def test_get_config_accesos_retorna_dict(accesos_no_api, mocker):
     """
     Valida que get_config_accesos() retorna un dict cuando hay datos.
@@ -34,6 +35,7 @@ def test_get_config_accesos_retorna_dict(accesos_no_api, mocker):
     assert "Turnos" in resultado["menus"]
 
 @pytest.mark.unit
+@pytest.mark.target("get_config_accesos")
 def test_get_config_accesos_sin_datos_retorna_dict_vacio(accesos_no_api, mocker):
     """
     Cuando MongoDB no encuentra configuración para el usuario,
