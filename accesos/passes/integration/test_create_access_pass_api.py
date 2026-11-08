@@ -17,6 +17,7 @@ def _build_pase():
 @pytest.mark.integration
 @pytest.mark.prod_test
 @pytest.mark.create_passes
+@pytest.mark.target("create_access_pass")
 def test_create_access_pass_status_code_201(accesos_api):
     """
     TB-001: create_access_pass() debe responder 201 al crear un pase
