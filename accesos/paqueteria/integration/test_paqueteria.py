@@ -2,9 +2,9 @@
 
 """
 Paquetería: recibir un paquete y consultarlo en Pendientes, Entregados y
-Todos, y entregarlo (paqueteria.py: nuevo_paquete, get_paquetes,
+Todos, entregarlo y editarlo (paqueteria.py: nuevo_paquete, get_paquetes,
 actualizar_paquete).
-Notion: TB-152, TB-153, TB-154 y TB-156.
+Notion: TB-152 a TB-156.
 """
 
 import copy
@@ -13,11 +13,12 @@ import uuid
 import pytest
 
 from .fixtures import *
-from .helpers import paquete_de_la_lista, payload_entrega
+from .helpers import paquete_de_la_lista, payload_entrega, payload_editar_paquete
 from ..data.paqueteria_data import (
     LOCATION,
     AREA,
     DESCRIPCION_PAQUETE,
+    DESCRIPCION_EDITADA,
     DESTINATARIO_EXTERNO,
     ENTREGADO_A,
     ESTATUS_GUARDADO,
@@ -106,3 +107,27 @@ def test_todos_trae_paquetes_guardados_y_entregados(acceso_obj, mock_paquete_nue
     assert entregado, "El paquete entregado no aparece en Todos"
     assert guardado.get("estatus_paqueteria") == ESTATUS_GUARDADO
     assert entregado.get("estatus_paqueteria") == ESTATUS_ENTREGADO
+
+
+@pytest.mark.integration
+def test_editar_paquete_guarda_cambios_y_conserva_area_y_destinatario(acceso_obj, paquete_guardado):
+    """
+    TB-155: al editar un paquete y cambiar su descripción, la lista debe
+    mostrar la descripción nueva con el mismo folio y conservar el área y el
+    destinatario. Si se pierden, el guardia no sabe dónde está ni de quién es.
+    """
+    descripcion_nueva = f"{DESCRIPCION_EDITADA} {uuid.uuid4().hex[:8]}"
+    payload = payload_editar_paquete(paquete_guardado, {"descripcion_paqueteria": descripcion_nueva})
+    res = acceso_obj.update_paquete(payload, paquete_guardado["folio"])
+    assert res.get("status_code") in (201, 202), f"No se pudo editar el paquete: {res}"
+
+    editado = paquete_de_la_lista(acceso_obj, descripcion_nueva, ESTATUS_GUARDADO)
+    assert editado, "El paquete editado no aparece en Pendientes con la descripción nueva"
+    assert editado["folio"] == paquete_guardado["folio"], "La edición creó o modificó otro paquete"
+    assert editado.get("area_paqueteria") == paquete_guardado["area_paqueteria"], (
+        f"El área quedó {editado.get('area_paqueteria')!r}, antes era {paquete_guardado['area_paqueteria']!r}"
+    )
+    assert editado.get("quien_recibe_paqueteria") == paquete_guardado["quien_recibe_paqueteria"], (
+        f"El destinatario quedó {editado.get('quien_recibe_paqueteria')!r}, "
+        f"antes era {paquete_guardado['quien_recibe_paqueteria']!r}"
+    )
