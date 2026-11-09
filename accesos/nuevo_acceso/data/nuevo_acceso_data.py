@@ -116,3 +116,14 @@ ZONA_DIA_ACCESO = "America/Mexico_City"
 # Pase con límite de 3 entradas que ya las usó (get_count_ingresos).
 LIMITE_ENTRADAS = 3
 INGRESOS_EN_EL_LIMITE = {"total_records": LIMITE_ENTRADAS}
+
+# Nueva Visita en modo "Fecha Fija": el front deriva fecha_desde_visita como
+# el día anterior a la fecha elegida (getPreviousDay) y limita el acceso al
+# día de la semana de esa fecha (aplicarDiaDeAccesoFijo). Las fechas y el día
+# se llenan en el fixture.
+PASE_NUEVA_VISITA_FECHA_FIJA = copy.deepcopy(PASE_NUEVA_VISITA)
+PASE_NUEVA_VISITA_FECHA_FIJA.update({
+    "nombre": "Prueba nueva visita fecha fija",
+    "tipo_visita_pase": "fecha_fija",
+    "config_dia_de_acceso": "limitar_días_de_acceso",
+})
