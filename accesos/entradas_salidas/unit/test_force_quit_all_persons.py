@@ -53,6 +53,7 @@ def test_force_quit_guarda_cierre_general_y_hora_del_empleado(accesos_no_api, mo
     TB-077: el cierre general de una ubicación guarda la salida en la hora
     del empleado y "Cierre general" como duración, porque no se sabe a qué
     hora salió cada persona (hoy usa hora de CDMX y no llena la duración).
+    Bug 2610-1477 corregido (addons e8a511d).
     """
     ahora_empleado = datetime.now(pytz.timezone(ZONA_EMPLEADO_OTRA)).replace(tzinfo=None)
 
