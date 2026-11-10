@@ -66,6 +66,7 @@ def test_cerrar_nota_guarda_quien_la_cerro_donde_la_lista_lo_lee(accesos_no_api,
 
 
 @pytest.mark.unit
+@pytest.mark.bug(1516)
 def test_editar_nota_agrega_el_comentario_como_texto(accesos_no_api, mocker):
     """
     TB-165: edit-note-modal manda el comentario nuevo como lista de un texto.
