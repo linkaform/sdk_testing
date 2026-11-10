@@ -1,0 +1,55 @@
+# coding: utf-8
+
+"""
+Conteos del buscador de notas (get_search_counts_notas) contra la lista
+(get_list_notes): el número junto a cada opción debe ser lo que trae la lista
+al hacer clic. Solo lectura: no crea, edita ni borra notas.
+Notion: TB-188 a TB-191.
+"""
+
+import pytest
+
+from .fixtures import *
+from ..data.notas_data import (
+    LOCATION,
+    AREA,
+    TODAS_LAS_AREAS,
+    ESTATUS_TODOS,
+    ESTATUS_ABIERTO,
+    ESTATUS_CERRADO,
+    FACET_ESTATUS,
+    FACET_NOTA,
+    TEXTO_BUSCADOR_LARGO,
+)
+
+
+def _total_lista(acceso_obj, area, locations, facets):
+    """Total de registros que trae la lista con esos filtros (lo que ve el guardia al hacer clic)."""
+    res = acceso_obj.get_list_notes(
+        LOCATION, area, status=ESTATUS_TODOS, limit=1, locations=locations, facets=facets
+    )
+    return res["total_records"]
+
+
+@pytest.mark.integration
+@pytest.mark.bug(1552)
+def test_get_search_counts_notas_candidato_de_la_misma_llave_cuenta_como_or(acceso_obj):
+    """
+    TB-188: con el chip Estatus=abierto puesto, la opción "cerrado" debe
+    mostrar cuántas notas trae la lista al agregarla. FacetSearch.tsx mete el
+    valor en el mismo facet (OR), pero count_facet_candidates lo cuenta como
+    un facet aparte (AND), así que muestra 0 aunque al hacer clic salgan todas.
+    """
+    facets = [{"key": FACET_ESTATUS, "values": [ESTATUS_ABIERTO], "exact": True}]
+    candidato = {"key": FACET_ESTATUS, "value": ESTATUS_CERRADO, "exact": True}
+
+    conteo = acceso_obj.get_search_counts_notas(
+        "", "", status=ESTATUS_TODOS, locations=[LOCATION], facets=facets, candidates=[candidato]
+    )
+    al_hacer_clic = _total_lista(
+        acceso_obj, TODAS_LAS_AREAS, [LOCATION],
+        [{"key": FACET_ESTATUS, "values": [ESTATUS_ABIERTO, ESTATUS_CERRADO], "exact": True}],
+    )
+    assert conteo == [al_hacer_clic], (
+        f"La opción '{ESTATUS_CERRADO}' muestra {conteo} y al hacer clic la lista trae {al_hacer_clic}"
+    )
