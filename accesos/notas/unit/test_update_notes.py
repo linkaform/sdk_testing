@@ -44,6 +44,7 @@ def test_cerrar_nota_guarda_estatus_y_fecha_de_cierre(accesos_no_api, mocker):
 
 
 @pytest.mark.unit
+@pytest.mark.bug(1515)
 def test_cerrar_nota_guarda_quien_la_cerro_donde_la_lista_lo_lee(accesos_no_api, mocker):
     """
     TB-164: al cerrar, el nombre del empleado que la cierra debe quedar en el

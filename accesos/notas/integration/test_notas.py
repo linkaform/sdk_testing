@@ -52,6 +52,7 @@ def test_crear_nota_la_muestra_en_pendientes(acceso_obj):
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1515)
 def test_cerrar_nota_la_pasa_a_cerradas(acceso_obj, nota_abierta):
     """
     TB-133: al cerrar una nota desde el modal Cerrar nota, debe quedar
