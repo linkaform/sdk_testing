@@ -122,3 +122,9 @@ VENCIDO_HACE_MIN = 120
 DENTRO_DE_TOLERANCIA_MIN = 30
 # Respuesta del registro de la entrada en la bitácora cuando se guarda bien.
 ENTRADA_REGISTRADA = {"status_code": 201, "json": {"id": "6650a1b2c3d4e5f6a7b8c9d2"}}
+# Pase de fecha fija: la cita con 60 min de diferencia contra ahora queda
+# fuera de la tolerancia por defecto (15 min antes o después, sin requisitos
+# de la ubicación en la configuración). Vigente 2 horas más.
+CITA_FUERA_DE_TOLERANCIA_MIN = 60
+VIGENTE_POR_MIN = 120
+CONFIG_SIN_TOLERANCIA = {"requisitos": []}
