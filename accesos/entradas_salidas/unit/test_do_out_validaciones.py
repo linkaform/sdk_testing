@@ -3,7 +3,7 @@
 """
 Validaciones de la salida (do_out) sin tocar preprod: se simula la última
 visita del pase y se revisa que no se guarde la salida cuando no debe.
-Notion: TB-185 y TB-186.
+Notion: TB-185 a TB-187.
 """
 
 import pytest
@@ -47,5 +47,21 @@ def test_no_se_puede_salir_por_otra_ubicacion_distinta_a_la_de_entrada(accesos_n
     guardar = mocker.patch.object(accesos_no_api.lkf_api, "patch_multi_record")
 
     with pytest.raises(Exception, match="no puede salir en"):
+        accesos_no_api.do_out(VISITA_ABIERTA_DURACION["folio"], LOCATION, AREA)
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_sin_entrada_registrada_la_salida_responde_un_error_claro(accesos_no_api, mocker):
+    """
+    TB-187: si el pase no tiene una entrada registrada en la ubicación,
+    do_out debe detenerse con el aviso de que no hay entrada y no guardar
+    nada. Si truena con otro error, el guardia no sabe por qué no puede
+    registrar la salida.
+    """
+    mocker.patch.object(accesos_no_api, "get_last_user_move", return_value={})
+    guardar = mocker.patch.object(accesos_no_api.lkf_api, "patch_multi_record")
+
+    with pytest.raises(Exception, match="no tiene una entrada registrada"):
         accesos_no_api.do_out(VISITA_ABIERTA_DURACION["folio"], LOCATION, AREA)
     guardar.assert_not_called()
