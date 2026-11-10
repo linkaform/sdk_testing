@@ -43,7 +43,6 @@ def test_cerrar_nota_guarda_estatus_y_fecha_de_cierre(accesos_no_api, mocker):
     )
 
 
-@pytest.mark.unit
 @pytest.mark.bug(1515)
 def test_cerrar_nota_guarda_quien_la_cerro_donde_la_lista_lo_lee(accesos_no_api, mocker):
     """
@@ -65,7 +64,6 @@ def test_cerrar_nota_guarda_quien_la_cerro_donde_la_lista_lo_lee(accesos_no_api,
     )
 
 
-@pytest.mark.unit
 @pytest.mark.bug(1516)
 def test_editar_nota_agrega_el_comentario_como_texto(accesos_no_api, mocker):
     """
