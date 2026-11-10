@@ -4,7 +4,7 @@
 Filtro de la lista de notas (notas_base_match): Pendientes, Cerradas, Todos,
 el turno, las ubicaciones del header y las fechas. Es una función que solo
 arma el filtro de Mongo, así que se prueba directo, sin red.
-Notion: TB-168 y TB-169.
+Notion: TB-168 a TB-170.
 """
 
 import pytest
@@ -16,6 +16,7 @@ from ..data.notas_data import (
     ESTATUS_ABIERTO,
     ESTATUS_TODOS,
     ESTATUS_TURNO,
+    OTRA_UBICACION,
 )
 
 
@@ -56,3 +57,18 @@ def test_todos_y_el_turno_no_filtran_por_estatus(accesos_no_api):
     for valor in (ESTATUS_TODOS, ESTATUS_TURNO):
         filtro = acc.notas_base_match(LOCATION, TODAS_LAS_AREAS, valor)
         assert estatus not in filtro, f"Con estatus {valor!r} filtró por {filtro[estatus]!r}"
+
+
+@pytest.mark.unit
+def test_las_ubicaciones_del_header_filtran_con_todas_a_la_vez(accesos_no_api):
+    """
+    TB-170: el buscador manda las ubicaciones elegidas en el header
+    (locations). Con dos ubicaciones, el filtro debe traer las notas de las
+    dos ($in), aunque también venga location. Si solo usa location, la lista
+    esconde las notas de la otra ubicación.
+    """
+    acc = accesos_no_api
+    ubicacion = f"answers.{acc.AREAS_DE_LAS_UBICACIONES_CAT_OBJ_ID}.{acc.f['location']}"
+
+    filtro = acc.notas_base_match(LOCATION, TODAS_LAS_AREAS, ESTATUS_TODOS, locations=[LOCATION, OTRA_UBICACION])
+    assert filtro[ubicacion] == {"$in": [LOCATION, OTRA_UBICACION]}, f"El filtro de ubicación quedó {filtro[ubicacion]!r}"
