@@ -119,3 +119,6 @@ INGRESOS_EN_EL_LIMITE = {"total_records": LIMITE_ENTRADAS}
 # Fechas del pase relativas a ahora, en minutos (do_access da 1 hora de
 # margen después de la caducidad).
 VENCIDO_HACE_MIN = 120
+DENTRO_DE_TOLERANCIA_MIN = 30
+# Respuesta del registro de la entrada en la bitácora cuando se guarda bien.
+ENTRADA_REGISTRADA = {"status_code": 201, "json": {"id": "6650a1b2c3d4e5f6a7b8c9d2"}}
