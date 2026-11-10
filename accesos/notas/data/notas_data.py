@@ -64,3 +64,5 @@ NOTA_BUSCADOR = "Nota buscador QA"
 EMPLEADO_NOTA = {"worker_name": "Guardia de prueba QA", "timezone": "America/Cancun"}
 FECHA_SERVIDOR = "2026-11-10 09:30:00"
 FOLIO_NOTA = "588-10"
+# La descripción de + Nueva Nota con dos comentarios (el front la manda como lista).
+COMENTARIOS_NOTA = ["Primer comentario de prueba", "Segundo comentario de prueba"]
