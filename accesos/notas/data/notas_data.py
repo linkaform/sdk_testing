@@ -57,3 +57,10 @@ FACET_CASETA = "note_booth"
 # Las notas del buscador llevan un sufijo único por corrida para que la
 # búsqueda solo traiga la suya.
 NOTA_BUSCADOR = "Nota buscador QA"
+
+# Unitarios (sin red): empleado que regresa get_employee_data, fecha que
+# regresa today_str y folio de la nota que se edita o se cierra. La zona del
+# empleado es distinta a la del usuario para revisar que se use la suya.
+EMPLEADO_NOTA = {"worker_name": "Guardia de prueba QA", "timezone": "America/Cancun"}
+FECHA_SERVIDOR = "2026-11-10 09:30:00"
+FOLIO_NOTA = "588-10"
