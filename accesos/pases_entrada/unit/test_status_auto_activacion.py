@@ -16,6 +16,7 @@ from ..data.pases_entrada_data import (
     DIAS_VIGENTE,
     AUTO_ACTIVACION_SI,
     AUTO_ACTIVACION_NO,
+    URL_PADRE,
     REQUIERE_FOTO_E_IDENTIFICACION,
 )
 
@@ -53,3 +54,22 @@ def test_auto_activacion_deja_activo_sin_foto_ni_identificacion(accesos_no_api):
 
     estatus = accesos_no_api._status_auto_activacion(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
     assert estatus == "activo", f"El pase con auto activación quedó {estatus!r}"
+
+
+@pytest.mark.unit
+def test_acompanante_sin_nombre_se_queda_en_proceso(accesos_no_api):
+    """
+    TB-194: el pase de un acompañante (trae url_padre) hereda la auto
+    activación del titular, pero sin nombre debe quedar en 'proceso' hasta
+    que lo llenen. Si queda activo, hay un pase vigente sin saber de quién.
+    """
+    answers = answers_pase(
+        accesos_no_api,
+        auto_activacion=AUTO_ACTIVACION_SI,
+        url_padre=URL_PADRE,
+        walkin_nombre="",
+        fecha_desde_hasta=fecha_hasta(accesos_no_api, DIAS_VIGENTE),
+    )
+
+    estatus = accesos_no_api._status_auto_activacion(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
+    assert estatus == "proceso", f"El acompañante sin nombre quedó {estatus!r}"
