@@ -53,3 +53,26 @@ def test_get_search_counts_notas_candidato_de_la_misma_llave_cuenta_como_or(acce
     assert conteo == [al_hacer_clic], (
         f"La opción '{ESTATUS_CERRADO}' muestra {conteo} y al hacer clic la lista trae {al_hacer_clic}"
     )
+
+
+@pytest.mark.integration
+@pytest.mark.bug(1552)
+def test_get_search_counts_notas_respeta_el_area_de_la_caseta(acceso_obj):
+    """
+    TB-189: la lista de notas se pide con el área de la caseta; el conteo del
+    buscador debe contar sobre las mismas notas. getSearchCounts
+    (facet-search.ts) no manda área, así que cuenta notas de todas las casetas
+    y el número no coincide con lo que sale al hacer clic.
+    """
+    candidato = {"key": FACET_ESTATUS, "value": ESTATUS_ABIERTO, "exact": True}
+    # Payload de getSearchCounts tal como lo manda el front: location "" y sin área.
+    conteo = acceso_obj.get_search_counts_notas(
+        "", "", status=ESTATUS_TODOS, locations=[LOCATION], candidates=[candidato]
+    )
+    al_hacer_clic = _total_lista(
+        acceso_obj, AREA, [LOCATION],
+        [{"key": FACET_ESTATUS, "values": [ESTATUS_ABIERTO], "exact": True}],
+    )
+    assert conteo == [al_hacer_clic], (
+        f"En {AREA} el conteo de '{ESTATUS_ABIERTO}' es {conteo} y la lista trae {al_hacer_clic}"
+    )
