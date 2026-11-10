@@ -116,3 +116,6 @@ ZONA_DIA_ACCESO = "America/Mexico_City"
 # Pase con límite de 3 entradas que ya las usó (get_count_ingresos).
 LIMITE_ENTRADAS = 3
 INGRESOS_EN_EL_LIMITE = {"total_records": LIMITE_ENTRADAS}
+# Fechas del pase relativas a ahora, en minutos (do_access da 1 hora de
+# margen después de la caducidad).
+VENCIDO_HACE_MIN = 120
