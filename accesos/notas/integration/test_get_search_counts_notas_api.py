@@ -76,3 +76,26 @@ def test_get_search_counts_notas_respeta_el_area_de_la_caseta(acceso_obj):
     assert conteo == [al_hacer_clic], (
         f"En {AREA} el conteo de '{ESTATUS_ABIERTO}' es {conteo} y la lista trae {al_hacer_clic}"
     )
+
+
+@pytest.mark.integration
+@pytest.mark.bug(1552)
+def test_get_search_counts_notas_sin_ubicaciones_del_header_usa_la_de_la_caseta(acceso_obj):
+    """
+    TB-190: sin ubicaciones elegidas en el header (selectedLocations = [], así
+    arranca el store), la lista filtra por la ubicación de la caseta, pero el
+    conteo queda con answers.AREAS.L == "" y da 0 en todas las opciones.
+    """
+    candidato = {"key": FACET_ESTATUS, "value": ESTATUS_ABIERTO, "exact": True}
+    # Payload de getSearchCounts tal como lo manda el front: location "" y sin área.
+    conteo = acceso_obj.get_search_counts_notas(
+        "", "", status=ESTATUS_TODOS, locations=[], candidates=[candidato]
+    )
+    al_hacer_clic = _total_lista(
+        acceso_obj, AREA, [],
+        [{"key": FACET_ESTATUS, "values": [ESTATUS_ABIERTO], "exact": True}],
+    )
+    assert al_hacer_clic > 0, f"No hay notas '{ESTATUS_ABIERTO}' en {LOCATION}/{AREA} para comparar"
+    assert conteo == [al_hacer_clic], (
+        f"Sin ubicaciones en el header el conteo es {conteo} y la lista trae {al_hacer_clic}"
+    )
