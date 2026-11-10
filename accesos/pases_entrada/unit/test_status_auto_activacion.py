@@ -14,6 +14,7 @@ from .helpers import answers_pase, fecha_hasta
 from ..data.pases_entrada_data import (
     NOMBRE_PASE_UNIT,
     DIAS_VIGENTE,
+    AUTO_ACTIVACION_SI,
     AUTO_ACTIVACION_NO,
     REQUIERE_FOTO_E_IDENTIFICACION,
 )
@@ -33,3 +34,22 @@ def test_sin_auto_activacion_sigue_el_flujo_normal(accesos_no_api):
 
     sin_llave = answers_pase(accesos_no_api, **campos)
     assert accesos_no_api._status_auto_activacion(sin_llave, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION) is None
+
+
+@pytest.mark.unit
+def test_auto_activacion_deja_activo_sin_foto_ni_identificacion(accesos_no_api):
+    """
+    TB-193: con auto_activacion "sí", nombre y fecha vigente, el pase debe
+    quedar 'activo' aunque la ubicación pida foto e identificación y no las
+    traiga. Si queda en proceso, el guardia espera a un visitante que el
+    anfitrión ya quería dejar pasar.
+    """
+    answers = answers_pase(
+        accesos_no_api,
+        auto_activacion=AUTO_ACTIVACION_SI,
+        walkin_nombre=NOMBRE_PASE_UNIT,
+        fecha_desde_hasta=fecha_hasta(accesos_no_api, DIAS_VIGENTE),
+    )
+
+    estatus = accesos_no_api._status_auto_activacion(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
+    assert estatus == "activo", f"El pase con auto activación quedó {estatus!r}"
