@@ -99,3 +99,18 @@ def test_get_search_counts_notas_sin_ubicaciones_del_header_usa_la_de_la_caseta(
     assert conteo == [al_hacer_clic], (
         f"Sin ubicaciones en el header el conteo es {conteo} y la lista trae {al_hacer_clic}"
     )
+
+
+@pytest.mark.integration
+@pytest.mark.bug(1552)
+def test_get_search_counts_notas_texto_largo_no_truena(acceso_obj):
+    """
+    TB-191: un texto de 2000 letras en el buscador se expande a una regex de
+    ~40 KB, arriba del límite de Mongo (code 51091 "regular expression is too
+    large"). El buscador debe recortar o validar el texto en vez de tronar.
+    """
+    candidato = {"key": FACET_NOTA, "value": TEXTO_BUSCADOR_LARGO, "exact": False}
+    conteo = acceso_obj.get_search_counts_notas(
+        "", "", status=ESTATUS_TODOS, locations=[LOCATION], candidates=[candidato]
+    )
+    assert isinstance(conteo, list) and len(conteo) == 1, f"Respuesta inesperada: {conteo}"
