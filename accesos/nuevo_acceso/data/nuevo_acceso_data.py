@@ -128,3 +128,5 @@ ENTRADA_REGISTRADA = {"status_code": 201, "json": {"id": "6650a1b2c3d4e5f6a7b8c9
 CITA_FUERA_DE_TOLERANCIA_MIN = 60
 VIGENTE_POR_MIN = 120
 CONFIG_SIN_TOLERANCIA = {"requisitos": []}
+# Ubicación de otro pase (no la de la caseta); también se usa en otros tests.
+OTRA_UBICACION = "Planta Durango"

@@ -4,7 +4,7 @@
 Vigencia, horario de la cita y ubicación del pase al dar acceso (do_access)
 sin tocar preprod: se simulan el pase, sus entradas y la caseta, y se revisa
 si se registra o no la entrada.
-Notion: TB-178 a TB-181.
+Notion: TB-178 a TB-182.
 """
 
 import pytest
@@ -22,6 +22,7 @@ from ..data.nuevo_acceso_data import (
     CITA_FUERA_DE_TOLERANCIA_MIN,
     VIGENTE_POR_MIN,
     CONFIG_SIN_TOLERANCIA,
+    OTRA_UBICACION,
 )
 
 
@@ -107,5 +108,28 @@ def test_con_fecha_fija_no_se_puede_entrar_despues_de_la_tolerancia(accesos_no_a
     registrar = mocker.patch.object(accesos_no_api, "_do_access")
 
     with pytest.raises(Exception, match="El tiempo de tolerancia ha expirado"):
+        accesos_no_api.do_access(QR_PASE_UNIT, LOCATION, AREA, {})
+    registrar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_ubicacion_que_no_esta_en_el_pase_no_da_acceso(accesos_no_api, mocker):
+    """
+    TB-182: en una caseta de una ubicación que no está en el pase, do_access
+    debe detenerse con el aviso de que la ubicación no está en el pase y no
+    registrar la entrada. Si la registra, el pase sirve en lugares a los que
+    no se le dio acceso.
+    """
+    pase = {
+        **PASE_DETALLE_ACTIVO,
+        "ubicacion": [OTRA_UBICACION],
+        "fecha_de_caducidad": fecha_relativa(accesos_no_api, VIGENTE_POR_MIN),
+    }
+    mocker.patch.object(accesos_no_api, "get_detail_access_pass", return_value=pase)
+    mocker.patch.object(accesos_no_api, "get_count_ingresos", return_value=dict(SIN_INGRESOS))
+    mocker.patch.object(accesos_no_api, "get_booth_locations", return_value=[LOCATION])
+    registrar = mocker.patch.object(accesos_no_api, "_do_access")
+
+    with pytest.raises(Exception, match="no se encuentra en el pase"):
         accesos_no_api.do_access(QR_PASE_UNIT, LOCATION, AREA, {})
     registrar.assert_not_called()
