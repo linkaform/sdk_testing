@@ -64,5 +64,8 @@ NOTA_BUSCADOR = "Nota buscador QA"
 EMPLEADO_NOTA = {"worker_name": "Guardia de prueba QA", "timezone": "America/Cancun"}
 FECHA_SERVIDOR = "2026-11-10 09:30:00"
 FOLIO_NOTA = "588-10"
+# Lo que manda close-note-modal al cerrar: su propia fecha (zona de CDMX) y
+# el estatus. El backend debe guardar la fecha en la zona del empleado.
+CERRAR_NOTA = {"note_close_date": "2026-11-10 08:30:00", "note_status": "cerrado"}
 # La descripción de + Nueva Nota con dos comentarios (el front la manda como lista).
 COMENTARIOS_NOTA = ["Primer comentario de prueba", "Segundo comentario de prueba"]
