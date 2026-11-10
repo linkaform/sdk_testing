@@ -113,3 +113,6 @@ SIN_INGRESOS = {}
 # do_access decide el día de hoy con esta lista y en la zona de CDMX.
 DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 ZONA_DIA_ACCESO = "America/Mexico_City"
+# Pase con límite de 3 entradas que ya las usó (get_count_ingresos).
+LIMITE_ENTRADAS = 3
+INGRESOS_EN_EL_LIMITE = {"total_records": LIMITE_ENTRADAS}

@@ -4,7 +4,7 @@
 Validaciones del pase al dar acceso (do_access) sin tocar preprod: se simulan
 el pase y su conteo de entradas, y se revisa que no se registre la entrada
 cuando el pase no debe pasar.
-Notion: TB-173 a TB-176.
+Notion: TB-173 a TB-177.
 """
 
 import json
@@ -21,6 +21,8 @@ from ..data.nuevo_acceso_data import (
     SIN_INGRESOS,
     DIAS_SEMANA,
     ZONA_DIA_ACCESO,
+    LIMITE_ENTRADAS,
+    INGRESOS_EN_EL_LIMITE,
 )
 
 
@@ -93,3 +95,21 @@ def test_pase_limitado_a_ciertos_dias_no_deja_entrar_otro_dia(accesos_no_api, mo
     aviso = json.loads(str(error.value))["exception"]["msg"][0]
     for dia in permitidos:
         assert dia.capitalize() in aviso, f"El aviso no dice que puede entrar el {dia}: {aviso}"
+
+
+@pytest.mark.unit
+def test_pase_que_llego_a_su_limite_de_entradas_no_da_acceso(accesos_no_api, mocker):
+    """
+    TB-177: un pase activo con límite de entradas que ya las usó todas debe
+    detenerse con el aviso de límite completado y no registrar otra entrada.
+    Si se registra, el pase da más entradas de las que se autorizaron.
+    """
+    mocker.patch.object(
+        accesos_no_api, "get_detail_access_pass", return_value={**PASE_DETALLE_ACTIVO, "limite_de_acceso": LIMITE_ENTRADAS}
+    )
+    mocker.patch.object(accesos_no_api, "get_count_ingresos", return_value=dict(INGRESOS_EN_EL_LIMITE))
+    registrar = mocker.patch.object(accesos_no_api, "_do_access")
+
+    with pytest.raises(Exception, match="limite de entradas"):
+        accesos_no_api.do_access(QR_PASE_UNIT, LOCATION, AREA, {})
+    registrar.assert_not_called()
