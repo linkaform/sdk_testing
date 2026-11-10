@@ -93,3 +93,20 @@ PASE_GRUPO.update({
     "acompanantes": 2,
     "acompanantes_grupo": [copy.deepcopy(ACOMPANANTE_UNO), copy.deepcopy(ACOMPANANTE_DOS)],
 })
+
+# Unitarios de do_access (sin red): el pase como lo regresa
+# get_detail_access_pass, activo, para la ubicación de la caseta, sin días
+# limitados ni límite de entradas. Cada test cambia solo lo que revisa.
+QR_PASE_UNIT = "6650a1b2c3d4e5f6a7b8c9d1"
+PASE_DETALLE_ACTIVO = {
+    "_id": QR_PASE_UNIT,
+    "estatus": "activo",
+    "ubicacion": [LOCATION],
+    "limitado_a_dias": [],
+    "limite_de_acceso": 0,
+    "tipo_visita_pase": "rango_de_fechas",
+    "fecha_de_expedicion": "",
+    "fecha_de_caducidad": "",
+}
+# get_count_ingresos sin entradas registradas.
+SIN_INGRESOS = {}
