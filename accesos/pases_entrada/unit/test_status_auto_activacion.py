@@ -14,6 +14,7 @@ from .helpers import answers_pase, fecha_hasta
 from ..data.pases_entrada_data import (
     NOMBRE_PASE_UNIT,
     DIAS_VIGENTE,
+    DIAS_VENCIDO,
     AUTO_ACTIVACION_SI,
     AUTO_ACTIVACION_NO,
     URL_PADRE,
@@ -73,3 +74,21 @@ def test_acompanante_sin_nombre_se_queda_en_proceso(accesos_no_api):
 
     estatus = accesos_no_api._status_auto_activacion(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
     assert estatus == "proceso", f"El acompañante sin nombre quedó {estatus!r}"
+
+
+@pytest.mark.unit
+def test_auto_activacion_no_reactiva_un_pase_vencido(accesos_no_api):
+    """
+    TB-195: con auto_activacion "sí" y la fecha hasta en el pasado, la fecha
+    manda y el pase debe quedar 'vencido'. Si queda activo, entra alguien
+    fuera de la vigencia que le dieron.
+    """
+    answers = answers_pase(
+        accesos_no_api,
+        auto_activacion=AUTO_ACTIVACION_SI,
+        walkin_nombre=NOMBRE_PASE_UNIT,
+        fecha_desde_hasta=fecha_hasta(accesos_no_api, DIAS_VENCIDO),
+    )
+
+    estatus = accesos_no_api._status_auto_activacion(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
+    assert estatus == "vencido", f"El pase vencido con auto activación quedó {estatus!r}"
