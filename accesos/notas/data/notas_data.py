@@ -38,6 +38,10 @@ ESTATUS_TURNO = "dia"
 OTRA_UBICACION = "Planta Durango"
 # Un solo día en el filtro de fechas (dateFrom = dateTo, sin filterDate).
 DIA_FILTRO = "2026-11-10"
+# Paginación de la lista: segunda página de 10 con 25 notas en total.
+NOTAS_EN_TOTAL = 25
+NOTAS_POR_PAGINA = 10
+SALTAR_NOTAS = 10
 
 # Registros por página al consultar la lista de notas (más nueva primero).
 LIMITE_LISTA = 50
