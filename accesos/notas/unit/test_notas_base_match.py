@@ -4,7 +4,7 @@
 Filtro de la lista de notas (notas_base_match): Pendientes, Cerradas, Todos,
 el turno, las ubicaciones del header y las fechas. Es una función que solo
 arma el filtro de Mongo, así que se prueba directo, sin red.
-Notion: TB-168 a TB-170.
+Notion: TB-168 a TB-171.
 """
 
 import pytest
@@ -17,6 +17,7 @@ from ..data.notas_data import (
     ESTATUS_TODOS,
     ESTATUS_TURNO,
     OTRA_UBICACION,
+    DIA_FILTRO,
 )
 
 
@@ -72,3 +73,19 @@ def test_las_ubicaciones_del_header_filtran_con_todas_a_la_vez(accesos_no_api):
 
     filtro = acc.notas_base_match(LOCATION, TODAS_LAS_AREAS, ESTATUS_TODOS, locations=[LOCATION, OTRA_UBICACION])
     assert filtro[ubicacion] == {"$in": [LOCATION, OTRA_UBICACION]}, f"El filtro de ubicación quedó {filtro[ubicacion]!r}"
+
+
+@pytest.mark.unit
+def test_filtrar_un_solo_dia_trae_el_dia_completo(accesos_no_api):
+    """
+    TB-171: con la misma fecha en desde y hasta, el filtro de fecha de
+    apertura debe cubrir el día completo, de 00:00:00 a 23:59:59. Si compara
+    solo la fecha, las notas de ese día con hora no salen.
+    """
+    acc = accesos_no_api
+    apertura = f"answers.{acc.notes_fields['note_open_date']}"
+
+    filtro = acc.notas_base_match(LOCATION, TODAS_LAS_AREAS, ESTATUS_TODOS, dateFrom=DIA_FILTRO, dateTo=DIA_FILTRO)
+    assert filtro[apertura] == {"$gte": f"{DIA_FILTRO} 00:00:00", "$lte": f"{DIA_FILTRO} 23:59:59"}, (
+        f"El filtro de fecha quedó {filtro[apertura]!r}"
+    )

@@ -36,6 +36,8 @@ ESTATUS_TODOS = ""
 ESTATUS_TURNO = "dia"
 # Segunda ubicación del header para el filtro con varias ubicaciones.
 OTRA_UBICACION = "Planta Durango"
+# Un solo día en el filtro de fechas (dateFrom = dateTo, sin filterDate).
+DIA_FILTRO = "2026-11-10"
 
 # Registros por página al consultar la lista de notas (más nueva primero).
 LIMITE_LISTA = 50
