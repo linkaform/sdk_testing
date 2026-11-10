@@ -182,3 +182,6 @@ AUTO_ACTIVACION_SI = "sí"
 AUTO_ACTIVACION_NO = "no"
 URL_PADRE = "https://app.linkaform.com/#/records/detail/000000000000000000000001"
 REQUIERE_FOTO_E_IDENTIFICACION = ["fotografia", "identificacion"]
+REQUIERE_IDENTIFICACION = ["identificacion"]
+HABILITAR_SI = "sí"
+HABILITAR_NO = "no"
