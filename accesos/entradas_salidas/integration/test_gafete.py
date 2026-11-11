@@ -64,6 +64,7 @@ def test_assing_gafete_entrada_guarda_y_marca_en_uso(acceso_obj, pase_dentro):
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1466)
 def test_devolver_gafete_lo_libera_y_permite_la_salida(acceso_obj, pase_dentro):
     """
     TB-068: el front recibe el gafete con status 'entregado' y

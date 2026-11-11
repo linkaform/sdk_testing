@@ -15,8 +15,7 @@ from ..data.nuevo_acceso_data import (
 )
 
 
-@pytest.mark.unit
-@pytest.mark.target("assets_access_pass")
+@pytest.mark.bug(1482)
 def test_assets_access_pass_sin_configuracion_no_truena(accesos_no_api, mocker):
     """
     TB-079: si falla la configuración de la ubicación, assets_access_pass

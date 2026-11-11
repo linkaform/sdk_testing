@@ -47,6 +47,7 @@ def test_buscador_de_notas_encuentra_la_nota_por_texto(acceso_obj, nota_texto_un
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1520)
 def test_buscador_de_notas_encuentra_la_nota_por_caseta(acceso_obj, nota_texto_unico):
     """
     TB-145: el buscador ofrece el campo Caseta y, junto con el texto de la
