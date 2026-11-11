@@ -105,6 +105,7 @@ def test_todos_trae_fallas_abiertas_y_cerradas(acceso_obj, mock_falla_nueva, fal
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1535)
 def test_agregar_seguimiento_a_falla_lo_guarda(acceso_obj, falla_abierta):
     """
     TB-140: al agregar un seguimiento a una falla abierta sin cerrarla, la

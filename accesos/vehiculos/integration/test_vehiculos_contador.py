@@ -20,6 +20,7 @@ from entradas_salidas.integration.helpers import salida_silenciosa
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1484)
 def test_contador_de_vehiculos_dentro_cuadra_con_la_lista(acceso_obj, pase_activo):
     """
     TB-099: con una visita abierta que trae un vehículo sin tipo, el contador

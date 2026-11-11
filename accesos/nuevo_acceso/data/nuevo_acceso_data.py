@@ -116,6 +116,20 @@ ZONA_DIA_ACCESO = "America/Mexico_City"
 # Pase con límite de 3 entradas que ya las usó (get_count_ingresos).
 LIMITE_ENTRADAS = 3
 INGRESOS_EN_EL_LIMITE = {"total_records": LIMITE_ENTRADAS}
+# Fechas del pase relativas a ahora, en minutos (do_access da 1 hora de
+# margen después de la caducidad).
+VENCIDO_HACE_MIN = 120
+DENTRO_DE_TOLERANCIA_MIN = 30
+# Respuesta del registro de la entrada en la bitácora cuando se guarda bien.
+ENTRADA_REGISTRADA = {"status_code": 201, "json": {"id": "6650a1b2c3d4e5f6a7b8c9d2"}}
+# Pase de fecha fija: la cita con 60 min de diferencia contra ahora queda
+# fuera de la tolerancia por defecto (15 min antes o después, sin requisitos
+# de la ubicación en la configuración). Vigente 2 horas más.
+CITA_FUERA_DE_TOLERANCIA_MIN = 60
+VIGENTE_POR_MIN = 120
+CONFIG_SIN_TOLERANCIA = {"requisitos": []}
+# Ubicación de otro pase (no la de la caseta); también se usa en otros tests.
+OTRA_UBICACION = "Planta Durango"
 
 # Nueva Visita en modo "Fecha Fija": el front deriva fecha_desde_visita como
 # el día anterior a la fecha elegida (getPreviousDay) y limita el acceso al

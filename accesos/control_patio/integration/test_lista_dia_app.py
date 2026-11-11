@@ -17,6 +17,7 @@ from ..data.lista_dia_data import PETICION_LISTA_DIA_APP
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1513)
 def test_lista_del_dia_de_la_app_solo_trae_camiones_de_ese_dia(patio_obj, camion_en_arribo):
     """
     TB-094: la tarjeta de Control de patio de la app pide la lista solo con
