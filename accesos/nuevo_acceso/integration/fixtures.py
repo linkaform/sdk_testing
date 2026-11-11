@@ -1,11 +1,20 @@
 # coding: utf-8
 
 import copy
+from datetime import date, timedelta
+
 import pytest
 
 from passes.integration.helpers import fecha_str, crear_pase
 from entradas_salidas.integration.helpers import dar_entrada, salida_silenciosa
-from ..data.nuevo_acceso_data import PASE_NUEVA_VISITA, PASE_GRUPO, LOCATION, AREA
+from ..data.nuevo_acceso_data import (
+    PASE_NUEVA_VISITA,
+    PASE_NUEVA_VISITA_FECHA_FIJA,
+    PASE_GRUPO,
+    DIAS_SEMANA,
+    LOCATION,
+    AREA,
+)
 
 
 @pytest.fixture
@@ -50,4 +59,23 @@ def mock_pase_grupo():
     pase = copy.deepcopy(PASE_GRUPO)
     pase["fecha_desde_visita"] = fecha_str(0)
     pase["fecha_desde_hasta"] = fecha_str(7)
+    return pase
+
+
+@pytest.fixture
+def mock_pase_fecha_fija_hoy(acceso_obj):
+    """
+    Pase de Nueva Visita en modo Fecha Fija con la fecha de hoy, armado como
+    lo manda el front: desde = ayer 00:00:00, hasta = hoy 23:59:00 y acceso
+    solo el día de la semana de hoy.
+    """
+    anfitriones = acceso_obj.assets_access_pass(LOCATION)["Visita_a"]
+    assert anfitriones, f"{LOCATION} no tiene anfitriones para el pase de Nueva Visita"
+
+    hoy = date.fromisoformat(fecha_str(0)[:10])
+    pase = copy.deepcopy(PASE_NUEVA_VISITA_FECHA_FIJA)
+    pase["visita_a"] = anfitriones[0]
+    pase["fecha_desde_visita"] = f"{hoy - timedelta(days=1)} 00:00:00"
+    pase["fecha_desde_hasta"] = f"{hoy} 23:59:00"
+    pase["config_dias_acceso"] = [DIAS_SEMANA[hoy.weekday()]]
     return pase

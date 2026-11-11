@@ -130,3 +130,14 @@ VIGENTE_POR_MIN = 120
 CONFIG_SIN_TOLERANCIA = {"requisitos": []}
 # Ubicación de otro pase (no la de la caseta); también se usa en otros tests.
 OTRA_UBICACION = "Planta Durango"
+
+# Nueva Visita en modo "Fecha Fija": el front deriva fecha_desde_visita como
+# el día anterior a la fecha elegida (getPreviousDay) y limita el acceso al
+# día de la semana de esa fecha (aplicarDiaDeAccesoFijo). Las fechas y el día
+# se llenan en el fixture.
+PASE_NUEVA_VISITA_FECHA_FIJA = copy.deepcopy(PASE_NUEVA_VISITA)
+PASE_NUEVA_VISITA_FECHA_FIJA.update({
+    "nombre": "Prueba nueva visita fecha fija",
+    "tipo_visita_pase": "fecha_fija",
+    "config_dia_de_acceso": "limitar_días_de_acceso",
+})
