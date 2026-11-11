@@ -17,6 +17,8 @@ from ..data.nuevo_acceso_data import (
     PASE_DETALLE_ACTIVO,
     SIN_INGRESOS,
     VIGENTE_POR_MIN,
+    ENTRADA_REGISTRADA,
+    OTRA_UBICACION,
 )
 
 
@@ -38,3 +40,28 @@ def test_visitante_que_ya_esta_dentro_no_vuelve_a_entrar(accesos_no_api, mocker)
     with pytest.raises(Exception, match="ya se encuentra dentro de una ubicacion"):
         accesos_no_api.do_access(QR_PASE_UNIT, LOCATION, AREA, {})
     registrar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_caseta_multiubicacion_registra_en_la_ubicacion_del_pase(accesos_no_api, mocker):
+    """
+    TB-184: en una caseta que atiende dos ubicaciones, un pase que solo es
+    para la segunda debe dar acceso y registrar la entrada en la ubicación del
+    pase, no en la de la caseta. Si se registra en la de la caseta, la persona
+    aparece dentro de una planta a la que no tiene acceso.
+    """
+    pase = {
+        **PASE_DETALLE_ACTIVO,
+        "ubicacion": [OTRA_UBICACION],
+        "fecha_de_caducidad": fecha_relativa(accesos_no_api, VIGENTE_POR_MIN),
+    }
+    mocker.patch.object(accesos_no_api, "get_detail_access_pass", return_value=pase)
+    mocker.patch.object(accesos_no_api, "get_count_ingresos", return_value=dict(SIN_INGRESOS))
+    mocker.patch.object(accesos_no_api, "get_booth_locations", return_value=[LOCATION, OTRA_UBICACION])
+    mocker.patch.object(accesos_no_api, "validate_access_pass_location", return_value=False)
+    registrar = mocker.patch.object(accesos_no_api, "_do_access", return_value=dict(ENTRADA_REGISTRADA))
+
+    respuesta = accesos_no_api.do_access(QR_PASE_UNIT, LOCATION, AREA, {})
+
+    registrar.assert_called_once_with(pase, OTRA_UBICACION, AREA, {})
+    assert respuesta == ENTRADA_REGISTRADA
