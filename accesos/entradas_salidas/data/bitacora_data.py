@@ -146,3 +146,9 @@ VISITAS_ABIERTAS_UBICACION = [
     {"_id": "6ae000000000000000000012"},
 ]
 DURACION_CIERRE_GENERAL = "Cierre general"
+
+# Unitarios de las validaciones de do_out (sin red): visita abierta con el
+# gafete todavía asignado (no se ha devuelto).
+GAFETE_SIN_DEVOLVER = "asignado"
+# Ubicación de entrada distinta a la de la caseta donde se intenta salir.
+OTRA_UBICACION_ENTRADA = "Planta Durango"
