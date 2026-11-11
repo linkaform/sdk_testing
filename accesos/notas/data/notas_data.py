@@ -72,3 +72,15 @@ NOTA_BUSCADOR = "Nota buscador QA"
 # límite de tamaño de la regex de Mongo (~32 KB al expandir vocales).
 FACET_ESTATUS = "estatus"
 TEXTO_BUSCADOR_LARGO = "a" * 2000
+
+# Unitarios (sin red): empleado que regresa get_employee_data, fecha que
+# regresa today_str y folio de la nota que se edita o se cierra. La zona del
+# empleado es distinta a la del usuario para revisar que se use la suya.
+EMPLEADO_NOTA = {"worker_name": "Guardia de prueba QA", "timezone": "America/Cancun"}
+FECHA_SERVIDOR = "2026-11-10 09:30:00"
+FOLIO_NOTA = "588-10"
+# Lo que manda close-note-modal al cerrar: su propia fecha (zona de CDMX) y
+# el estatus. El backend debe guardar la fecha en la zona del empleado.
+CERRAR_NOTA = {"note_close_date": "2026-11-10 08:30:00", "note_status": "cerrado"}
+# La descripción de + Nueva Nota con dos comentarios (el front la manda como lista).
+COMENTARIOS_NOTA = ["Primer comentario de prueba", "Segundo comentario de prueba"]
