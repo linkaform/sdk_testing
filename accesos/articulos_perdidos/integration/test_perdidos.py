@@ -68,6 +68,7 @@ def test_entregar_articulo_lo_pasa_a_entregados(acceso_obj, articulo_pendiente):
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1530)
 def test_donar_articulo_lo_deja_donado_con_fecha(acceso_obj, articulo_pendiente):
     """
     TB-148: al donar un artículo (botón Donado, que manda 'Donado' con

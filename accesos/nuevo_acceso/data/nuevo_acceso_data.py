@@ -93,3 +93,40 @@ PASE_GRUPO.update({
     "acompanantes": 2,
     "acompanantes_grupo": [copy.deepcopy(ACOMPANANTE_UNO), copy.deepcopy(ACOMPANANTE_DOS)],
 })
+
+# Unitarios de do_access (sin red): el pase como lo regresa
+# get_detail_access_pass, activo, para la ubicación de la caseta, sin días
+# limitados ni límite de entradas. Cada test cambia solo lo que revisa.
+QR_PASE_UNIT = "6650a1b2c3d4e5f6a7b8c9d1"
+PASE_DETALLE_ACTIVO = {
+    "_id": QR_PASE_UNIT,
+    "estatus": "activo",
+    "ubicacion": [LOCATION],
+    "limitado_a_dias": [],
+    "limite_de_acceso": 0,
+    "tipo_visita_pase": "rango_de_fechas",
+    "fecha_de_expedicion": "",
+    "fecha_de_caducidad": "",
+}
+# get_count_ingresos sin entradas registradas.
+SIN_INGRESOS = {}
+# do_access decide el día de hoy con esta lista y en la zona de CDMX.
+DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+ZONA_DIA_ACCESO = "America/Mexico_City"
+# Pase con límite de 3 entradas que ya las usó (get_count_ingresos).
+LIMITE_ENTRADAS = 3
+INGRESOS_EN_EL_LIMITE = {"total_records": LIMITE_ENTRADAS}
+# Fechas del pase relativas a ahora, en minutos (do_access da 1 hora de
+# margen después de la caducidad).
+VENCIDO_HACE_MIN = 120
+DENTRO_DE_TOLERANCIA_MIN = 30
+# Respuesta del registro de la entrada en la bitácora cuando se guarda bien.
+ENTRADA_REGISTRADA = {"status_code": 201, "json": {"id": "6650a1b2c3d4e5f6a7b8c9d2"}}
+# Pase de fecha fija: la cita con 60 min de diferencia contra ahora queda
+# fuera de la tolerancia por defecto (15 min antes o después, sin requisitos
+# de la ubicación en la configuración). Vigente 2 horas más.
+CITA_FUERA_DE_TOLERANCIA_MIN = 60
+VIGENTE_POR_MIN = 120
+CONFIG_SIN_TOLERANCIA = {"requisitos": []}
+# Ubicación de otro pase (no la de la caseta); también se usa en otros tests.
+OTRA_UBICACION = "Planta Durango"

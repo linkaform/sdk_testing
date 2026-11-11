@@ -32,6 +32,16 @@ ESTATUS_ABIERTO = "abierto"
 ESTATUS_CERRADO = "cerrado"
 # Todos = sin filtro de estatus (/notas sin ?status).
 ESTATUS_TODOS = ""
+# La página de Turnos pide las notas del día con status 'dia' (sin filtro de estatus).
+ESTATUS_TURNO = "dia"
+# Segunda ubicación del header para el filtro con varias ubicaciones.
+OTRA_UBICACION = "Planta Durango"
+# Un solo día en el filtro de fechas (dateFrom = dateTo, sin filterDate).
+DIA_FILTRO = "2026-11-10"
+# Paginación de la lista: segunda página de 10 con 25 notas en total.
+NOTAS_EN_TOTAL = 25
+NOTAS_POR_PAGINA = 10
+SALTAR_NOTAS = 10
 
 # Registros por página al consultar la lista de notas (más nueva primero).
 LIMITE_LISTA = 50
@@ -57,6 +67,11 @@ FACET_CASETA = "note_booth"
 # Las notas del buscador llevan un sufijo único por corrida para que la
 # búsqueda solo traiga la suya.
 NOTA_BUSCADOR = "Nota buscador QA"
+
+# Buscador: llave del facet de estatus y texto de 2000 letras para probar el
+# límite de tamaño de la regex de Mongo (~32 KB al expandir vocales).
+FACET_ESTATUS = "estatus"
+TEXTO_BUSCADOR_LARGO = "a" * 2000
 
 # Unitarios (sin red): empleado que regresa get_employee_data, fecha que
 # regresa today_str y folio de la nota que se edita o se cierra. La zona del

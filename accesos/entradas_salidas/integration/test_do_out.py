@@ -40,6 +40,7 @@ def test_do_out_registra_salida_en_el_mismo_registro(acceso_obj, pase_dentro):
     TB-055: tras la entrada, do_out debe cambiar ese mismo registro a
     'salida' con fecha_salida y duracion. Si falla, la
     bitácora deja a la persona "dentro" o pierde cuánto tiempo estuvo.
+    Bug 2610-1477 corregido (addons e8a511d).
     """
     folio, entrada = pase_dentro
 

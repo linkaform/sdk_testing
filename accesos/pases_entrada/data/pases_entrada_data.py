@@ -171,3 +171,17 @@ PAGINAS_ESPERADAS = 2
 # Lo que manda el botón "Cancelar pase" de view-pass-modal (update_pass).
 CANCELAR_PASE = {"status_pase": "cancelado"}
 ESTATUS_CANCELADO = "cancelado"
+
+# Unitarios del estatus del pase (pases_entrada/unit). La fecha "hasta" se
+# arma con estos días contra hoy; URL_PADRE es la liga al titular que
+# create_access_pass le pone al pase de cada acompañante.
+NOMBRE_PASE_UNIT = "Prueba unit pases_entrada"
+DIAS_VIGENTE = 5
+DIAS_VENCIDO = -1
+AUTO_ACTIVACION_SI = "sí"
+AUTO_ACTIVACION_NO = "no"
+URL_PADRE = "https://app.linkaform.com/#/records/detail/000000000000000000000001"
+REQUIERE_FOTO_E_IDENTIFICACION = ["fotografia", "identificacion"]
+REQUIERE_IDENTIFICACION = ["identificacion"]
+HABILITAR_SI = "sí"
+HABILITAR_NO = "no"

@@ -16,6 +16,7 @@ from entradas_salidas.integration.helpers import ultima_visita, salida_silencios
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1514)
 def test_salida_grupal_saca_tambien_a_los_acompanantes(acceso_obj, mock_pase_grupo):
     """
     TB-086: tras el ingreso del titular con sus 2 acompañantes, Registrar

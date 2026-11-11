@@ -33,8 +33,9 @@ def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
     """
     TB-063: la entrada se guarda con la zona del empleado; la salida también
     debe usarla. Con un empleado en Cancún y una entrada de hace 10 min, la
-    salida debe quedar en hora de Cancún y durar 10 min (hoy se guarda en
-    hora de CDMX y la duración sale casi de un día).
+    salida debe quedar en hora de Cancún y durar 10 min (antes se guardaba
+    en hora de CDMX y la duración salía casi de un día).
+    Bug 2610-1477 corregido (addons e8a511d).
     """
     ahora_empleado = datetime.now(pytz.timezone(ZONA_EMPLEADO_OTRA)).replace(tzinfo=None)
     entrada = (ahora_empleado - ENTRADA_HACE_10_MIN).strftime("%Y-%m-%d %H:%M:%S")
@@ -67,7 +68,8 @@ def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
 def test_do_out_duracion_de_mas_de_un_dia_es_legible(accesos_no_api, mocker):
     """
     TB-076: una visita de más de 24 h debe mostrar los días ("1 día 1 h
-    5 min"); hoy el formato HH:MM:SS da la vuelta y se ve como 01:05:00.
+    5 min"); antes el formato HH:MM:SS daba la vuelta y se veía como 01:05:00.
+    Bug 2610-1477 corregido (addons e8a511d).
     """
     ahora_empleado = datetime.now(pytz.timezone(ZONA_EMPLEADO_CDMX)).replace(tzinfo=None)
     entrada = (ahora_empleado - ENTRADA_HACE_MAS_DE_UN_DIA).strftime("%Y-%m-%d %H:%M:%S")
