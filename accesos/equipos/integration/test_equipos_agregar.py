@@ -49,6 +49,7 @@ def test_agregar_equipo_a_visita_abierta_aparece_en_dentro(acceso_obj, pase_acti
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1512)
 def test_agregar_equipo_con_tipo_del_catalogo_lo_guarda_con_tipo_valido(acceso_obj, pase_activo):
     """
     TB-105: el modal de agregar equipo manda el tipo tal como viene del
