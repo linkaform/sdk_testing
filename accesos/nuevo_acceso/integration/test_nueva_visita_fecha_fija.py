@@ -12,6 +12,7 @@ from .fixtures import *
 
 
 @pytest.mark.integration
+@pytest.mark.bug(1547)
 def test_nueva_visita_fecha_fija_hoy_crea_el_pase(acceso_obj, mock_pase_fecha_fija_hoy):
     """
     TB-160: al guardar Nueva Visita en Fecha Fija con la fecha de hoy, el
