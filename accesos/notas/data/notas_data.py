@@ -67,3 +67,8 @@ FACET_CASETA = "note_booth"
 # Las notas del buscador llevan un sufijo único por corrida para que la
 # búsqueda solo traiga la suya.
 NOTA_BUSCADOR = "Nota buscador QA"
+
+# Buscador: llave del facet de estatus y texto de 2000 letras para probar el
+# límite de tamaño de la regex de Mongo (~32 KB al expandir vocales).
+FACET_ESTATUS = "estatus"
+TEXTO_BUSCADOR_LARGO = "a" * 2000
