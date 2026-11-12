@@ -54,3 +54,28 @@ ESTATUS_TODOS = ""
 # escrita va con exact False ("contiene").
 FACET_DESCRIPCION = "descripcion_paqueteria"
 LIMITE_LISTA = 50
+
+# Unitarios (paqueteria/unit): el paquete como lo manda + Nuevo Paquete con
+# todo lleno, para un empleado o para "Otro". METADATA_PAQUETE es lo que
+# regresa get_metadata (la forma no importa: se revisan los answers).
+OTRA_UBICACION = "Planta Durango"
+PAQUETE_UNIT = {
+    **PAQUETE_NUEVO,
+    "descripcion_paqueteria": DESCRIPCION_PAQUETE,
+    "quien_recibe_paqueteria": "Empleado de prueba QA",
+    "guardado_en_paqueteria": "Locker de prueba QA",
+    "proveedor": "Proveedor de prueba QA",
+    "fecha_recibido_paqueteria": "2026-11-12 10:00:00",
+}
+PAQUETE_UNIT_OTRO = {
+    key: value for key, value in PAQUETE_UNIT.items() if key != "quien_recibe_paqueteria"
+}
+PAQUETE_UNIT_OTRO["quien_recibe_otro"] = DESTINATARIO_EXTERNO
+METADATA_PAQUETE = {}
+GUARDADO_OK = {"status_code": 201}
+GUARDADO_FALLIDO = {"status_code": 400}
+# Aviso al destinatario: canales como los manda el front, con y sin email.
+CANALES_CORREO = ["correo"]
+AVISO_CORREO = {"canales": CANALES_CORREO, "email": "destinatario.qa@clave10.com"}
+AVISO_SIN_EMAIL = {"canales": CANALES_CORREO, "email": ""}
+AVISO_ENVIADO = {"correo": {"ok": True, "error": None}}
