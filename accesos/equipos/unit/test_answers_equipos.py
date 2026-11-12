@@ -52,13 +52,14 @@ def test_equipos_del_pase_guardan_el_tipo_en_el_catalogo_de_tipos(accesos_no_api
     assert con_tipo[acc.mf["numero_serie"]] == EQUIPO_VISITA["serie"]
 
 
-@pytest.mark.unit
+@pytest.mark.bug(1565)
 def test_equipo_con_llaves_de_id_regresa_su_modelo_no_su_marca(accesos_no_api):
     """
     TB-263: un equipo que llega con los ids de los campos debe leerse con su
     modelo en 'modelo' y su marca en 'marca'. format_equipos_simple lo usa
     para la entrada de los acompañantes (_data_acompanante); si regresa la
-    marca como modelo, la bitácora guarda el equipo con datos cruzados.
+    marca como modelo, la bitácora guarda el equipo con datos cruzados
+    (ticket 2610-1565).
     """
     acc = accesos_no_api
     mf = acc.mf
