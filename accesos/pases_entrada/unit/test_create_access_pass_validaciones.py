@@ -10,7 +10,7 @@ Notion: TB-202 a TB-206.
 import pytest
 
 from .helpers import crear_pase_simulado, pase_nuevo
-from ..data.pases_entrada_data import CAMPOS_REQUERIDOS
+from ..data.pases_entrada_data import CAMPOS_REQUERIDOS, TELEFONO_SIN_LADA, TELEFONO_CON_LETRAS
 
 
 @pytest.mark.unit
@@ -27,4 +27,19 @@ def test_pase_sin_ubicacion_perfil_ni_visita_a_responde_que_falta(accesos_no_api
         accesos_no_api.create_access_pass(pase)
     for campo in CAMPOS_REQUERIDOS:
         assert campo in str(error.value), f"El error no nombra '{campo}': {error.value}"
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_pase_de_web_con_telefono_mal_escrito_responde_un_error_claro(accesos_no_api, mocker):
+    """
+    TB-203: desde web el teléfono va con lada (+52 y 10 dígitos). Un teléfono
+    sin lada o con letras debe detenerse con el error de teléfono y no
+    guardar el pase. Si se guarda, el visitante no recibe el link por SMS.
+    """
+    guardar = crear_pase_simulado(accesos_no_api, mocker)
+
+    for telefono in (TELEFONO_SIN_LADA, TELEFONO_CON_LETRAS):
+        with pytest.raises(Exception, match="El telefono debe contener exactamente 10 digitos"):
+            accesos_no_api.create_access_pass(pase_nuevo(accesos_no_api, telefono=telefono))
     guardar.assert_not_called()
