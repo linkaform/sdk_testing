@@ -16,7 +16,23 @@ from ..data.turnos_data import (
     GEO_FALSOS,
     USUARIO_GUARDIA,
     EMPLEADO_GUARDIA,
+    LOCATION,
+    AREA,
 )
+
+
+def checkin_simulado(acceso_obj, mocker, caseta_abierta):
+    """
+    Simula lo que do_checkin consulta antes de guardar: la caseta, el usuario y
+    su empleado. Regresa los mocks de crear el turno y de sumarse al abierto.
+    """
+    mocker.patch.object(acceso_obj, "is_boot_available", return_value=caseta_abierta)
+    mocker.patch.object(acceso_obj, "get_open_checkin", return_value={})
+    mocker.patch.object(acceso_obj.lkf_api, "get_user_by_id", return_value=dict(USUARIO_GUARDIA))
+    mocker.patch.object(acceso_obj, "get_employee_data", return_value=dict(EMPLEADO_GUARDIA))
+    crear = mocker.patch.object(acceso_obj.lkf_api, "post_forms_answers")
+    sumar = mocker.patch.object(acceso_obj, "update_guards_checkin")
+    return crear, sumar
 
 
 @pytest.mark.unit
@@ -51,3 +67,20 @@ def test_sin_empleado_activo_no_se_puede_iniciar_turno(accesos_no_api, mocker):
 
     mocker.patch.object(acc, "get_employee_data", return_value=dict(EMPLEADO_GUARDIA))
     assert acc.require_active_employee(user_id, USUARIO_GUARDIA["name"]) == EMPLEADO_GUARDIA
+
+
+@pytest.mark.unit
+def test_guardia_sin_la_caseta_configurada_no_puede_iniciar_turno(accesos_no_api, mocker):
+    """
+    TB-271: con la caseta cerrada, un guardia que no tiene esa caseta en su
+    configuración debe detenerse con el error de que no puede hacer check-in
+    ahí, y no crear el turno. Si lo crea, abre una caseta que no le toca.
+    """
+    acc = accesos_no_api
+    crear, sumar = checkin_simulado(acc, mocker, caseta_abierta=False)
+    mocker.patch.object(acc, "get_users_by_location_area", return_value=[])
+
+    with pytest.raises(Exception, match="no puede hacer check-in en la caseta"):
+        acc.do_checkin(LOCATION, AREA, employee_list=[])
+    crear.assert_not_called()
+    sumar.assert_not_called()
