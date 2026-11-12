@@ -18,6 +18,8 @@ from ..data.concesionados_data import (
     EQUIPO_CONCESION,
     METADATA_CONCESION,
     GUARDADO_OK,
+    COMENTARIO_PRESTAMO,
+    FOTO_VALIDA,
 )
 
 
@@ -65,3 +67,24 @@ def test_concesion_nueva_nace_abierta_con_sus_equipos_abiertos(accesos_no_api, m
 
     otro = answers_guardados(accesos_no_api, mocker, {**CONCESION_OTRO, "equipos": [EQUIPO_CONCESION]})
     assert otro[campos["tipo_persona_solicita"]] == "otro"
+
+
+@pytest.mark.unit
+def test_foto_y_comentario_del_prestamo_se_guardan_en_los_campos_del_prestamo(accesos_no_api, mocker):
+    """
+    TB-238: el front manda la foto y el comentario del préstamo con los
+    nombres de Devoluciones (evidencia_entrega, comentario_entrega); deben
+    guardarse en los campos del préstamo, y lo que no es del grupo de
+    equipos (marca_equipo_concesion) debe descartarse. Si quedan en los de
+    Devoluciones, LinkaForm no los muestra en el préstamo.
+    """
+    campos = accesos_no_api.cons_f
+
+    answers = answers_guardados(accesos_no_api, mocker, {**CONCESION_EMPLEADO, "equipos": [EQUIPO_CONCESION]})
+
+    equipo = answers[campos["grupo_equipos"]][0]
+    assert equipo[campos["evidencia_prestamo"]] == FOTO_VALIDA
+    assert equipo[campos["comentario_prestamo"]] == COMENTARIO_PRESTAMO
+    assert campos["evidencia_entrega"] not in equipo, "La foto quedó en el campo de Devoluciones"
+    assert campos["comentario_entrega"] not in equipo, "El comentario quedó en el campo de Devoluciones"
+    assert campos["marca_equipo_concesion"] not in equipo, "Se guardó un campo que no es del grupo de equipos"
