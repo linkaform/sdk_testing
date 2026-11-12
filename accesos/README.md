@@ -15,7 +15,9 @@ Cada sección del módulo sigue esta estructura:
         ├── integration/
         └── e2e/
 
-Las secciones corresponden a las funcionalidades del módulo: `menus`, `turnos`, `rondines`, `passes`, etc.
+Las secciones corresponden a las del Mapa de Cobertura: `pases_entrada`, `nuevo_acceso`, `turnos`, `rondines`, etc. Una sola carpeta por sección.
+
+Lo que comparten todas (ubicación y caseta de pruebas, fotos válidas, el pase base y los helpers para crear o completar un pase) vive en Pases de Entrada: `from pases_entrada.data.datos_base import LOCATION` o `from pases_entrada.integration.helpers import crear_pase`.
 
 ---
 
