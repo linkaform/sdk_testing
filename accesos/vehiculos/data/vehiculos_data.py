@@ -59,3 +59,16 @@ VEHICULOS_CON_Y_SIN_TIPO = [
 # prioridad 'entrada'; desglosa los vehículos en el celular (TB-100).
 PRIORIDADES_APP_DENTRO = ["entrada"]
 VEHICULO_APP = dict(VEHICULO_VISITA, placas="QA-VEHICULOS-100")
+
+# Unitarios (vehiculos/unit). El mismo vehículo con las llaves largas que
+# también acepta el pase, y con las etiquetas de la lista (format_cr). El
+# renglón vacío es el que dejan los grupos repetitivos sin llenar.
+VEHICULO_LLAVES_LARGAS = {
+    "tipo_vehiculo": VEHICULO_VISITA["tipo"],
+    "marca_vehiculo": VEHICULO_VISITA["marca"],
+    "modelo_vehiculo": VEHICULO_VISITA["modelo"],
+    "nombre_estado": VEHICULO_VISITA["estado"],
+    "placas_vehiculo": VEHICULO_VISITA["placas"],
+    "color_vehiculo": VEHICULO_VISITA["color"],
+}
+RENGLON_VACIO = {}
