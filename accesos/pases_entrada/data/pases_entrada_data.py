@@ -192,3 +192,13 @@ HABILITAR_NO = "no"
 ANFITRION_PASE = "Anfitrión de prueba pases_entrada"
 AUTORIZADO_POR = "Guardia de prueba pases_entrada"
 SIN_REQUERIMIENTOS = []
+
+# Unitarios de las validaciones de create_access_pass (guardado simulado).
+# Desde web el teléfono va con lada (+52…); en auto registro, 10 dígitos sin
+# lada. VISITA_A_UNIT es a quién visita el pase de auto registro.
+TELEFONO_SIN_LADA = "8110000099"
+TELEFONO_CON_LETRAS = "+52811ABC0099"
+TELEFONO_CON_LADA = "+528110000099"
+VISITA_A_UNIT = ["Usuario Actual"]
+CAMPOS_REQUERIDOS = ("ubicaciones", "perfil_pase", "visita_a")
+PASE_GUARDADO = {"status_code": 201, "json": {"id": "000000000000000000000041"}}
