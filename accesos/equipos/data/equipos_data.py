@@ -60,3 +60,11 @@ EQUIPO_CONTADOR = dict(EQUIPO_VISITA, serie="QA-EQUIPOS-106")
 # Equipo con foto (TB-107): la foto es una imagen que ya existe en preprod
 # ({file_name, file_url}), la misma que usan los tests de Pases.
 EQUIPO_CON_FOTO = dict(EQUIPO_VISITA, serie="QA-EQUIPOS-107", foto_equipo=FOTO_VALIDA)
+
+# Unitarios (equipos/unit): tipos de equipo como llegan del catálogo de la
+# cuenta. Las opciones del radio de la bitácora son herramienta, computo,
+# tablet y otra; los sinónimos se convierten y lo demás queda como 'otra'.
+TIPO_SINONIMO_CON_ACENTO = "Computadora Portátil"
+TIPO_FUERA_DEL_RADIO = "Proyector"
+NOMBRE_PROYECTOR = "Proyector Epson"
+RENGLON_VACIO = {}
