@@ -18,6 +18,10 @@ from ..data.turnos_data import (
     EMPLEADO_GUARDIA,
     LOCATION,
     AREA,
+    ROL_GUARDIA,
+    ROL_ADMIN,
+    CHECKIN_ABIERTO,
+    GUARDADO_OK,
 )
 
 
@@ -103,3 +107,29 @@ def test_guardia_con_turno_abierto_en_otra_caseta_no_puede_entrar(accesos_no_api
         acc.do_checkin(LOCATION, AREA, employee_list=[])
     crear.assert_not_called()
     sumar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_con_la_caseta_abierta_el_guardia_se_suma_al_turno(accesos_no_api, mocker):
+    """
+    TB-273: con la caseta ya abierta, do_checkin debe sumar al guardia al
+    turno abierto y no crear otro. De los roles que manda el front, los de
+    administración que el usuario no tiene asignados se descartan y los
+    normales pasan tal cual. Si crea otro turno, la caseta queda con dos
+    abiertos; si deja pasar el rol de admin, el guardia ve menús que no le
+    tocan.
+    """
+    acc = accesos_no_api
+    crear, sumar = checkin_simulado(acc, mocker, caseta_abierta=True)
+    sumar.return_value = dict(GUARDADO_OK)
+    mocker.patch.object(acc, "last_check_in", dict(CHECKIN_ABIERTO), create=True)
+    mocker.patch.object(acc, "get_roles_usuario", return_value=[ROL_GUARDIA])
+    mocker.patch.object(acc, "assign_unassigned_rondines_on_checkin")
+
+    res = acc.do_checkin(LOCATION, AREA, employee_list=[], roles=[ROL_GUARDIA, ROL_ADMIN])
+
+    assert res == GUARDADO_OK
+    crear.assert_not_called()
+    sumar.assert_called_once()
+    assert sumar.call_args.args[1] == CHECKIN_ABIERTO["_id"], "Se sumó a otro turno"
+    assert sumar.call_args.args[7] == [ROL_GUARDIA], f"Roles que se mandaron: {sumar.call_args.args[7]}"
