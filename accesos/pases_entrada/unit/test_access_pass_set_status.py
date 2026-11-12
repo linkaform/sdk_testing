@@ -39,3 +39,19 @@ def test_pase_completo_sin_autorizar_queda_por_autorizar(accesos_no_api):
 
     estatus = accesos_no_api.access_pass_set_status(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
     assert estatus == "por_autorizar", f"El pase sin autorizar quedó {estatus!r}"
+
+
+@pytest.mark.unit
+def test_pase_sin_la_foto_que_pide_la_ubicacion_queda_en_proceso(accesos_no_api):
+    """
+    TB-199: con todo completo y autorizado pero sin foto, en una ubicación
+    que pide fotografía, el pase debe quedar en 'proceso' hasta que el
+    visitante la suba. Si queda activo, entra sin la foto que la ubicación
+    exige.
+    """
+    campos = campos_pase_completo(accesos_no_api, DIAS_VIGENTE)
+    campos.pop("walkin_fotografia")
+    answers = answers_pase(accesos_no_api, **campos)
+
+    estatus = accesos_no_api.access_pass_set_status(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
+    assert estatus == "proceso", f"El pase sin foto quedó {estatus!r}"
