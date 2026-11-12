@@ -160,3 +160,9 @@ CONCESION_BASE_OTRO = {
                     },
                 }
             }
+# Lista filtrada por caseta (TB-244): el front manda la caseta seleccionada en
+# el header (articulos/page.tsx) cuando no es "todas". La concesión se busca
+# por la persona, que lleva un sufijo único por corrida.
+NOMBRE_CONCESION_CASETA = "Concesión caseta QA"
+FACET_PERSONA = "persona_nombre_concesion"
+LIMITE_LISTA_CONCESIONES = 50
