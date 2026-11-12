@@ -1,0 +1,26 @@
+# coding: utf-8
+
+"""
+Estatus del pase (access_pass_set_status): activo, por autorizar, en proceso
+o vencido según lo que trae el pase y lo que pide la ubicación. Función
+directa, sin preprod.
+Notion: TB-197 a TB-201.
+"""
+
+import pytest
+
+from .helpers import answers_pase, campos_pase_completo
+from ..data.pases_entrada_data import DIAS_VIGENTE, REQUIERE_FOTO_E_IDENTIFICACION
+
+
+@pytest.mark.unit
+def test_pase_completo_y_autorizado_queda_activo(accesos_no_api):
+    """
+    TB-197: con nombre, foto e identificación válidas (la ubicación las
+    pide), fecha vigente, a quién visita y quién lo autorizó, el pase debe
+    quedar 'activo'. Si no, un pase listo se queda esperando sin razón.
+    """
+    answers = answers_pase(accesos_no_api, **campos_pase_completo(accesos_no_api, DIAS_VIGENTE))
+
+    estatus = accesos_no_api.access_pass_set_status(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
+    assert estatus == "activo", f"El pase completo y autorizado quedó {estatus!r}"
