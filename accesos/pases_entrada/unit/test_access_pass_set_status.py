@@ -10,7 +10,7 @@ Notion: TB-197 a TB-201.
 import pytest
 
 from .helpers import answers_pase, campos_pase_completo
-from ..data.pases_entrada_data import DIAS_VIGENTE, REQUIERE_FOTO_E_IDENTIFICACION
+from ..data.pases_entrada_data import DIAS_VIGENTE, REQUIERE_FOTO_E_IDENTIFICACION, SIN_REQUERIMIENTOS
 
 
 @pytest.mark.unit
@@ -55,3 +55,20 @@ def test_pase_sin_la_foto_que_pide_la_ubicacion_queda_en_proceso(accesos_no_api)
 
     estatus = accesos_no_api.access_pass_set_status(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
     assert estatus == "proceso", f"El pase sin foto quedó {estatus!r}"
+
+
+@pytest.mark.unit
+def test_ubicacion_sin_requerimientos_deja_activo_sin_foto_ni_identificacion(accesos_no_api):
+    """
+    TB-200: si la ubicación no pide foto ni identificación, un pase sin ellas
+    pero con nombre, fecha vigente, a quién visita y autorizado debe quedar
+    'activo'. Si queda en proceso, se queda ahí para siempre porque el link
+    no le pide nada al visitante.
+    """
+    campos = campos_pase_completo(accesos_no_api, DIAS_VIGENTE)
+    campos.pop("walkin_fotografia")
+    campos.pop("walkin_identificacion")
+    answers = answers_pase(accesos_no_api, **campos)
+
+    estatus = accesos_no_api.access_pass_set_status(answers, requerimientos=SIN_REQUERIMIENTOS)
+    assert estatus == "activo", f"El pase sin requisitos quedó {estatus!r}"
