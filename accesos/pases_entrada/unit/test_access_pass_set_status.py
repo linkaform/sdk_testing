@@ -10,7 +10,12 @@ Notion: TB-197 a TB-201.
 import pytest
 
 from .helpers import answers_pase, campos_pase_completo
-from ..data.pases_entrada_data import DIAS_VIGENTE, REQUIERE_FOTO_E_IDENTIFICACION, SIN_REQUERIMIENTOS
+from ..data.pases_entrada_data import (
+    DIAS_VIGENTE,
+    DIAS_VENCIDO,
+    REQUIERE_FOTO_E_IDENTIFICACION,
+    SIN_REQUERIMIENTOS,
+)
 
 
 @pytest.mark.unit
@@ -72,3 +77,16 @@ def test_ubicacion_sin_requerimientos_deja_activo_sin_foto_ni_identificacion(acc
 
     estatus = accesos_no_api.access_pass_set_status(answers, requerimientos=SIN_REQUERIMIENTOS)
     assert estatus == "activo", f"El pase sin requisitos quedó {estatus!r}"
+
+
+@pytest.mark.unit
+def test_pase_con_fecha_hasta_en_el_pasado_queda_vencido(accesos_no_api):
+    """
+    TB-201: con la fecha hasta antes de hoy, el pase debe quedar 'vencido'
+    aunque el resto esté completo. Si queda activo, entra alguien fuera de
+    la vigencia que le dieron.
+    """
+    answers = answers_pase(accesos_no_api, **campos_pase_completo(accesos_no_api, DIAS_VENCIDO))
+
+    estatus = accesos_no_api.access_pass_set_status(answers, requerimientos=REQUIERE_FOTO_E_IDENTIFICACION)
+    assert estatus == "vencido", f"El pase vencido quedó {estatus!r}"
