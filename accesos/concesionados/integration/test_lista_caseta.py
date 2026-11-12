@@ -21,7 +21,7 @@ def test_concesion_aparece_al_filtrar_por_su_caseta(accesos_api):
     """
     TB-244: una concesión creada en una caseta debe aparecer en la lista
     cuando el guardia selecciona esa caseta en el header, no solo con
-    "todas". Si no aparece, la lista de Concesionados se queda vacía en
+    'todas'. Si no aparece, la lista de Concesionados se queda vacía en
     cuanto se elige una caseta (ticket 2610-1564).
     """
     concesion = copy.deepcopy(CONCESION_BASE_OTRO["data_artilce"])
