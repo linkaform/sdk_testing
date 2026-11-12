@@ -15,13 +15,15 @@ from ..data.nuevo_acceso_data import (
 )
 
 
+@pytest.mark.unit
 @pytest.mark.bug(1482)
 def test_assets_access_pass_sin_configuracion_no_truena(accesos_no_api, mocker):
     """
     TB-079: si falla la configuración de la ubicación, assets_access_pass
     debe regresar las áreas y los anfitriones con perfiles, requerimientos y
-    envíos vacíos. Hoy el except asigna 'Perfiles' (con mayúscula) y el
-    return usa 'perfiles', lo que da UnboundLocalError y el modal no carga.
+    envíos vacíos. Antes el except asignaba 'Perfiles' (con mayúscula) y el
+    return usaba 'perfiles', lo que daba UnboundLocalError y el modal no cargaba.
+    Bug 2610-1482 corregido (addons #31).
     """
     mocker.patch.object(accesos_no_api, "get_areas_by_location", return_value=AREAS_SIMULADAS)
     mocker.patch.object(

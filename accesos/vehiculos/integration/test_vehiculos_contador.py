@@ -28,6 +28,7 @@ def test_contador_de_vehiculos_dentro_cuadra_con_la_lista(acceso_obj, pase_activ
     lista Vehículos → Dentro, para la misma ubicación y caseta. Si no, la
     tarjeta dice que hay más vehículos dentro de los que el guardia ve en la
     lista (ticket 2610-1484).
+    Bug 2610-1484 corregido (addons 7d2eef6).
     """
     res = acceso_obj.do_access(pase_activo, LOCATION, AREA, {"vehiculo": VEHICULOS_CON_Y_SIN_TIPO})
     assert res.get("status_code") in (200, 201, 202), f"No se pudo dar entrada con vehículos: {res}"
