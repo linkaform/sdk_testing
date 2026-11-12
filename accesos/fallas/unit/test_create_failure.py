@@ -8,7 +8,7 @@ Notion: TB-217 a TB-219.
 
 import pytest
 
-from ..data.fallas_data import LOCATION, AREA, FALLA_UNIT, METADATA_FALLAS, GUARDADO_OK
+from ..data.fallas_data import LOCATION, AREA, FALLA_UNIT, SEGUIMIENTO_UNIT, METADATA_FALLAS, GUARDADO_OK
 
 
 @pytest.mark.unit
@@ -57,3 +57,27 @@ def test_crear_falla_guarda_la_falla_quien_reporta_y_el_responsable(accesos_no_a
     assert answers[campos["falla_responsable_solucionar_catalog"]] == {
         campos["falla_responsable_solucionar_nombre"]: FALLA_UNIT["falla_responsable_solucionar_nombre"],
     }, f"El responsable quedó {answers[campos['falla_responsable_solucionar_catalog']]}"
+
+
+@pytest.mark.unit
+def test_crear_falla_con_seguimiento_lo_guarda_con_lo_que_manda_el_front(accesos_no_api, mocker):
+    """
+    TB-219: add-falla.tsx manda los seguimientos con las llaves
+    accion_correctiva_incidencia, fecha_inicio_seg y tiempo_transcurrido.
+    create_failure debe guardarlos en el grupo de seguimiento con la acción,
+    la fecha y el tiempo transcurrido. Si quedan vacíos, se pierde lo que ya
+    se hizo para resolver la falla.
+    """
+    acc = accesos_no_api
+    campos = acc.fallas_fields
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value=dict(METADATA_FALLAS))
+    guardar = mocker.patch.object(acc.lkf_api, "post_forms_answers", return_value=dict(GUARDADO_OK))
+
+    acc.create_failure({**FALLA_UNIT, "falla_grupo_seguimiento": [dict(SEGUIMIENTO_UNIT)]})
+
+    seguimientos = guardar.call_args.args[0]["answers"][campos["falla_grupo_seguimiento"]]
+    assert len(seguimientos) == 1, f"Se guardaron {len(seguimientos)} seguimientos, se mandó 1"
+    seguimiento = seguimientos[0]
+    assert seguimiento[campos["falla_accion_realizada"]] == SEGUIMIENTO_UNIT["accion_correctiva_incidencia"]
+    assert seguimiento[campos["falla_fecha_seguimiento"]] == SEGUIMIENTO_UNIT["fecha_inicio_seg"]
+    assert seguimiento[campos["falla_tiempo_transcurrido"]] == SEGUIMIENTO_UNIT["tiempo_transcurrido"]
