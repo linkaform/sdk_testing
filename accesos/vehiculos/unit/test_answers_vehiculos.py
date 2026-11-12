@@ -9,7 +9,7 @@ Notion: TB-254 a TB-256.
 
 import pytest
 
-from ..data.vehiculos_data import VEHICULO_VISITA, RENGLON_VACIO
+from ..data.vehiculos_data import VEHICULO_VISITA, VEHICULO_LLAVES_LARGAS, RENGLON_VACIO
 
 
 @pytest.mark.unit
@@ -36,3 +36,21 @@ def test_vehiculos_de_la_entrada_se_guardan_en_el_grupo_de_la_bitacora(accesos_n
     assert vehiculo[mf["placas_vehiculo"]] == VEHICULO_VISITA["placas"]
     assert vehiculo[mf["color_vehiculo"]] == VEHICULO_VISITA["color"]
     assert vehiculo[mf["foto_vehiculo"]] == []
+
+
+@pytest.mark.unit
+def test_vehiculos_del_pase_se_guardan_con_llaves_cortas_o_largas(accesos_no_api):
+    """
+    TB-255: el front manda los vehículos del pase con llaves cortas (tipo,
+    placas…) y otros flujos con las largas (tipo_vehiculo, placas_vehiculo…).
+    _answers_vehiculos_pase debe armar el mismo grupo con las dos. Si una
+    forma se pierde, el pase se guarda con el vehículo vacío.
+    """
+    acc = accesos_no_api
+
+    cortas = acc._answers_vehiculos_pase([VEHICULO_VISITA])
+    largas = acc._answers_vehiculos_pase([VEHICULO_LLAVES_LARGAS])
+
+    assert cortas == largas, f"Con llaves cortas quedó {cortas}, con largas {largas}"
+    assert cortas[0][acc.mf["placas_vehiculo"]] == VEHICULO_VISITA["placas"]
+    assert cortas[0][acc.TIPO_DE_VEHICULO_OBJ_ID][acc.mf["tipo_vehiculo"]] == VEHICULO_VISITA["tipo"]
