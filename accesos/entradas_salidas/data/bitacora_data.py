@@ -152,3 +152,26 @@ DURACION_CIERRE_GENERAL = "Cierre general"
 GAFETE_SIN_DEVOLVER = "asignado"
 # Ubicación de entrada distinta a la de la caseta donde se intenta salir.
 OTRA_UBICACION_ENTRADA = "Planta Durango"
+
+# Unitarios del filtro y la paginación de la bitácora (bitacora_base_match,
+# get_list_bitacora). Filtros como los manda el panel del front y un día de
+# consulta con rango (filterDate "range").
+FILTRO_ENTRADAS = [{"key": "status", "value": ["entrada"]}]
+FILTRO_SALIDAS = [{"key": "status", "value": ["salida"]}]
+FILTRO_RANGO = "range"
+DIA_CONSULTA = "2026-11-12"
+FIN_DIA_CONSULTA = "2026-11-12 23:59:59"
+PERFIL_PANEL = "Visita General"
+VISITA_A_PANEL = "Empleado de prueba QA"
+FILTROS_PANEL = [
+    {"key": "status", "value": ["entrada"]},
+    {"key": "perfil_visita", "value": [PERFIL_PANEL]},
+    {"key": "visita_a", "value": [VISITA_A_PANEL]},
+    {"key": "ubicacion", "value": [LOCATION, OTRA_LOCATION]},
+]
+FILTRO_DESCONOCIDO = [{"key": "llave_que_no_existe", "value": ["x"]}]
+# Paginación: 45 registros de 20 en 20 son 3 páginas; offset 20 es la 2.
+TOTAL_REGISTROS = 45
+POR_PAGINA = 20
+OFFSET_PAGINA_2 = 20
+PAGINAS_ESPERADAS = 3
