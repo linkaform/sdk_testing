@@ -1,8 +1,8 @@
 import pytest
  
-from .fixtures import *
+from .fixtures_api import *
 from .helpers import crear_pase
-from .data.do_access_data import FOTO_VALIDA, IDENTIFICACION_VALIDA
+from ..data.datos_base import FOTO_VALIDA, IDENTIFICACION_VALIDA
  
 VEHICULO_VALIDO = {
     "tipo_vehiculo": "Automovil",

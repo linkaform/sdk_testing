@@ -4,10 +4,10 @@
 Helpers para las pruebas de integración de Entradas & Salidas.
 Pegan contra la API/BD real (preprod) a través de `acceso_obj`.
 
-Para crear y activar pases se reutilizan los helpers de passes/integration.
+Para crear y activar pases se reutilizan los helpers de pases_entrada/integration.
 """
 
-from passes.integration.helpers import crear_pase, completar_pase_activo  # noqa: F401
+from pases_entrada.integration.helpers import crear_pase, completar_pase_activo  # noqa: F401
 
 
 def ultima_visita(acceso_obj, qr_code):

@@ -10,7 +10,7 @@ from entradas_salidas.data.bitacora_data import (  # noqa: F401
     AREA,
     LIMITE_LISTA,
 )
-from passes.integration.data.do_access_data import FOTO_VALIDA
+from pases_entrada.data.datos_base import FOTO_VALIDA
 
 DESGLOSE_EQUIPOS = "equipos"
 

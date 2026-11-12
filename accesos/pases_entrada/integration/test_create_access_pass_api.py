@@ -1,7 +1,7 @@
 import copy, pytest, simplejson
 from datetime import datetime, timedelta
 from pytz import timezone
-from passes.data.pase_entrada_data import PASE_ENTRADA
+from ..data.pase_entrada_base_data import PASE_ENTRADA
 
 def _hoy(tz_name='America/Monterrey'):
     return datetime.now().astimezone(timezone(tz_name)).strftime('%Y-%m-%d')

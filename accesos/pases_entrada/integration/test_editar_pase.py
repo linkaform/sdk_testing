@@ -9,7 +9,7 @@ Notion: TB-121, TB-158 y TB-159.
 import pytest
 
 from .fixtures import *
-from .helpers import pase_de_la_lista, payload_editar_pase
+from .helpers import pase_de_la_lista, payload_editar_pase, crear_pase, fecha_str, obtener_qr_hijos
 from ..data.pases_entrada_data import (
     EDICION_NOMBRE_SUFIJO,
     EDICION_EMPRESA,
@@ -18,7 +18,6 @@ from ..data.pases_entrada_data import (
     EDICION_HORA_HASTA,
     ACOMPANANTES_PASE,
 )
-from passes.integration.helpers import crear_pase, fecha_str, obtener_qr_hijos
 
 
 @pytest.mark.integration

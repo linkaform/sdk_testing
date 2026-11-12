@@ -7,7 +7,7 @@ pestañas Activos, Por autorizar, En Proceso y Todos de la lista de pases).
 
 import copy
 
-from passes.integration.data.do_access_data import (  # noqa: F401
+from .datos_base import (  # noqa: F401
     LOCATION,
     PASE_ACCESO_BASE,
     FOTO_VALIDA,

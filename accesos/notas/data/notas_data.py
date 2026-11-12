@@ -5,7 +5,7 @@ Datos de prueba para la sección Notas de Caseta (+ Nueva Nota, Pendientes,
 Cerradas y Todos; script notes.py).
 """
 
-from passes.integration.data.do_access_data import (  # noqa: F401
+from pases_entrada.data.datos_base import (  # noqa: F401
     LOCATION,
     AREA,
     FOTO_VALIDA,

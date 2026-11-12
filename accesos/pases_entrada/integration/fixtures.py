@@ -4,7 +4,7 @@ import copy
 import uuid
 import pytest
 
-from passes.integration.helpers import fecha_str, crear_pase
+from .helpers import fecha_str, crear_pase
 from ..data.pases_entrada_data import (
     PASE_NUEVO,
     PASE_AUTO_REGISTRO,

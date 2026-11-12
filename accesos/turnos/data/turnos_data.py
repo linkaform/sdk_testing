@@ -6,7 +6,7 @@ do_checkout, update_delete_suplente). Los datos viejos de las pruebas e2e
 siguen en turns_data.py.
 """
 
-from passes.integration.data.do_access_data import LOCATION, AREA  # noqa: F401
+from pases_entrada.data.datos_base import LOCATION, AREA  # noqa: F401
 
 # Ubicación del dispositivo como la mandan la web y la app: el mismo punto en
 # los tres formatos que acepta parse_geolocation.

@@ -1,10 +1,12 @@
 # coding: utf-8
 
 """
-Datos de prueba para la batería de integración de do_access (incluye pase
-grupal). El shape de `PASE_ACCESO_BASE` sigue el payload real que envía el
-front al crear un pase (POST /scripts/run/ con option="create_access_pass"),
-confirmado contra un curl real de Postman.
+Datos base de los pases que usan todas las secciones de accesos: ubicación y
+caseta de las pruebas, fotos válidas y el pase base. Nacieron con la batería
+de integración de do_access (incluye pase grupal). El shape de
+`PASE_ACCESO_BASE` sigue el payload real que envía el front al crear un pase
+(POST /scripts/run/ con option="create_access_pass"), confirmado contra un
+curl real de Postman.
 
 Nota: se omite deliberadamente `enviar_correo_pre_registro`/`enviar_sms_pre_registro`
 para que correr esta batería no dispare correos/SMS reales a los datos de

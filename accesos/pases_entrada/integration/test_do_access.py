@@ -5,8 +5,8 @@ import pytest
 from datetime import datetime
 from pytz import timezone
 
-from .fixtures import *
-from .data.do_access_data import DIAS_SEMANA, LIMITE_ACCESO_EXPLICITO
+from .fixtures_api import *
+from ..data.datos_base import DIAS_SEMANA, LIMITE_ACCESO_EXPLICITO
 from .helpers import (
     fecha_str,
     crear_pase,

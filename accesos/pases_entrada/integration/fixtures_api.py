@@ -9,8 +9,8 @@ from pytz import timezone
 ###
 from lkf_modules.accesos.items.scripts.Accesos.accesos_testing import Accesos
 from account_settings import settings
-from .data.pases_data import *
-from .data.do_access_data import (
+from ..data.pases_api_data import *
+from ..data.datos_base import (
     PASE_ACCESO_BASE,
     ACOMPANANTE_UNO,
     ACOMPANANTE_DOS,

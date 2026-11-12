@@ -2,7 +2,7 @@ import copy, re, pytest, simplejson
 from datetime import datetime, timedelta
 from pytz import timezone
 
-from passes.data.pase_entrada_data import PASE_ENTRADA
+from ..data.pase_entrada_base_data import PASE_ENTRADA
 
 FOTO_VALIDA = [{
     'file_name': 'fotografia.jpeg',

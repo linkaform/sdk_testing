@@ -5,7 +5,7 @@ from datetime import date, timedelta
 
 import pytest
 
-from passes.integration.helpers import fecha_str, crear_pase
+from pases_entrada.integration.helpers import fecha_str, crear_pase
 from entradas_salidas.integration.helpers import dar_entrada, salida_silenciosa
 from ..data.nuevo_acceso_data import (
     PASE_NUEVA_VISITA,

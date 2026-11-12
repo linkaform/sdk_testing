@@ -11,7 +11,7 @@ import pytest
 
 from .fixtures import *
 from ..data.nuevo_acceso_data import LOCATION, AREA
-from passes.integration.helpers import crear_pase, completar_pase_activo, obtener_qr_hijos
+from pases_entrada.integration.helpers import crear_pase, completar_pase_activo, obtener_qr_hijos
 from entradas_salidas.integration.helpers import ultima_visita, salida_silenciosa
 
 

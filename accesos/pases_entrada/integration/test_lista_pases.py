@@ -26,7 +26,7 @@ from ..data.pases_entrada_data import (
     LIMITE_PAGINA,
     PAGINAS_ESPERADAS,
 )
-from passes.integration.helpers import crear_pase
+from .helpers import crear_pase
 
 
 @pytest.mark.integration
