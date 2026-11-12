@@ -84,3 +84,22 @@ def test_guardia_sin_la_caseta_configurada_no_puede_iniciar_turno(accesos_no_api
         acc.do_checkin(LOCATION, AREA, employee_list=[])
     crear.assert_not_called()
     sumar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_guardia_con_turno_abierto_en_otra_caseta_no_puede_entrar(accesos_no_api, mocker):
+    """
+    TB-272: un guardia que ya tiene turno abierto ('in') en otra caseta debe
+    detenerse con el error de que está registrado en otra caseta, y no crear
+    el turno. Si entra, queda en dos casetas a la vez.
+    """
+    acc = accesos_no_api
+    user_id = acc.user["user_id"]
+    crear, sumar = checkin_simulado(acc, mocker, caseta_abierta=False)
+    mocker.patch.object(acc, "get_users_by_location_area", return_value=[{"user_id": user_id}])
+    mocker.patch.object(acc, "get_employee_checkin_status", return_value={user_id: {"status": "in"}})
+
+    with pytest.raises(Exception, match="registrados en otra caseta"):
+        acc.do_checkin(LOCATION, AREA, employee_list=[])
+    crear.assert_not_called()
+    sumar.assert_not_called()
