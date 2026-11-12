@@ -73,3 +73,27 @@ REGISTROS_FALLA = {
 }
 URL_REGISTRO = "/api/infosync/form_answer/{}/"
 BORRADO_OK = {"status_code": 202}
+
+# Unitarios de crear y editar (fallas/unit): la falla como la llena el guardia
+# en + Nueva Falla, con un seguimiento de add-falla.tsx. METADATA_FALLAS es lo
+# que regresa get_metadata (la forma no importa: se revisan los answers).
+FALLA_UNIT = {
+    **FALLA_NUEVA,
+    "falla": "Cámara",
+    "falla_objeto_afectado": "Lente",
+    "falla_reporta_nombre": "Guardia de prueba QA",
+    "falla_responsable_solucionar_nombre": "Mantenimiento de prueba QA",
+    "falla_comentarios": COMENTARIO_FALLA,
+    "falla_fecha_hora": "2026-11-11 10:00:00",
+}
+SEGUIMIENTO_UNIT = {
+    **SEGUIMIENTO_FALLA,
+    "fecha_inicio_seg": "2026-11-11 11:00:00",
+    "tiempo_transcurrido": TIEMPO_SEGUIMIENTO,
+}
+METADATA_FALLAS = {}
+GUARDADO_OK = {"status_code": 201}
+# update_failure: empleado del usuario (de ahí sale la zona de la fecha de
+# solución) y respuesta del patch cuando se guarda bien.
+EMPLEADO_FALLA = {"timezone": "America/Monterrey"}
+EDICION_OK = {"status_code": 202, "json": {}}
