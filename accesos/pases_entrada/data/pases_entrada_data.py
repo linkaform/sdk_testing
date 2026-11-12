@@ -185,3 +185,10 @@ REQUIERE_FOTO_E_IDENTIFICACION = ["fotografia", "identificacion"]
 REQUIERE_IDENTIFICACION = ["identificacion"]
 HABILITAR_SI = "sí"
 HABILITAR_NO = "no"
+
+# Unitarios de access_pass_set_status: a quién visita y quién autorizó el
+# pase completo; SIN_REQUERIMIENTOS = la ubicación no pide foto ni
+# identificación.
+ANFITRION_PASE = "Anfitrión de prueba pases_entrada"
+AUTORIZADO_POR = "Guardia de prueba pases_entrada"
+SIN_REQUERIMIENTOS = []
