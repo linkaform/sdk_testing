@@ -10,7 +10,15 @@ import copy
 
 import pytest
 
-from ..data.paqueteria_data import LOCATION, AREA, PAQUETE_UNIT, METADATA_PAQUETE, GUARDADO_OK
+from ..data.paqueteria_data import (
+    LOCATION,
+    AREA,
+    PAQUETE_UNIT,
+    PAQUETE_UNIT_OTRO,
+    DESTINATARIO_EXTERNO,
+    METADATA_PAQUETE,
+    GUARDADO_OK,
+)
 
 
 def guardar_paquete(acceso_obj, mocker, paquete, respuesta=GUARDADO_OK, notificacion=None):
@@ -37,3 +45,24 @@ def test_recibir_paquete_guarda_ubicacion_caseta_y_locker_en_sus_catalogos(acces
     assert answers[acc.UBICACIONES_CAT_OBJ_ID] == {acc.mf["ubicacion"]: LOCATION}
     assert answers[acc.AREAS_DE_LAS_UBICACIONES_CAT_OBJ_ID] == {acc.mf["nombre_area"]: AREA}
     assert answers[acc.LOCKERS_CAT_OBJ_ID] == {acc.mf["locker_id"]: PAQUETE_UNIT["guardado_en_paqueteria"]}
+
+
+@pytest.mark.unit
+def test_destinatario_se_guarda_como_empleado_o_como_otro(accesos_no_api, mocker):
+    """
+    TB-247: un destinatario empleado debe guardarse en el catálogo de
+    empleados; uno externo ("Otro") en el campo de texto quien_recibe_otro.
+    Si se cruzan, el aviso y la entrega no encuentran a quién va el paquete.
+    """
+    acc = accesos_no_api
+
+    _, guardar = guardar_paquete(acc, mocker, PAQUETE_UNIT)
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[acc.CONF_AREA_EMPLEADOS_CAT_OBJ_ID] == {
+        acc.mf["nombre_empleado"]: PAQUETE_UNIT["quien_recibe_paqueteria"],
+    }
+
+    _, guardar = guardar_paquete(acc, mocker, PAQUETE_UNIT_OTRO)
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[acc.paquetes_fields["quien_recibe_otro"]] == DESTINATARIO_EXTERNO
+    assert acc.CONF_AREA_EMPLEADOS_CAT_OBJ_ID not in answers, "El destinatario externo quedó en el catálogo de empleados"
