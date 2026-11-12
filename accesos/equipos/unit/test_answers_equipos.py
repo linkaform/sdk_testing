@@ -50,3 +50,26 @@ def test_equipos_del_pase_guardan_el_tipo_en_el_catalogo_de_tipos(accesos_no_api
     assert con_tipo[acc.TIPO_DE_EQUIPO_OBJ_ID] == {acc.mf["tipo_equipo_pase"]: EQUIPO_VISITA["tipo"]}
     assert acc.TIPO_DE_EQUIPO_OBJ_ID not in sin_tipo, f"Sin tipo quedó {sin_tipo[acc.TIPO_DE_EQUIPO_OBJ_ID]!r}"
     assert con_tipo[acc.mf["numero_serie"]] == EQUIPO_VISITA["serie"]
+
+
+@pytest.mark.unit
+def test_equipo_con_llaves_de_id_regresa_su_modelo_no_su_marca(accesos_no_api):
+    """
+    TB-263: un equipo que llega con los ids de los campos debe leerse con su
+    modelo en 'modelo' y su marca en 'marca'. format_equipos_simple lo usa
+    para la entrada de los acompañantes (_data_acompanante); si regresa la
+    marca como modelo, la bitácora guarda el equipo con datos cruzados.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+    con_ids = {
+        mf["nombre_articulo"]: EQUIPO_VISITA["nombre"],
+        mf["marca_articulo"]: EQUIPO_VISITA["marca"],
+        mf["modelo_articulo"]: EQUIPO_VISITA["modelo"],
+        mf["numero_serie"]: EQUIPO_VISITA["serie"],
+    }
+
+    leido = acc.format_equipos_simple([con_ids])[0]
+
+    assert leido["marca"] == EQUIPO_VISITA["marca"], f"La marca quedó {leido['marca']!r}"
+    assert leido["modelo"] == EQUIPO_VISITA["modelo"], f"El modelo quedó {leido['modelo']!r}"
