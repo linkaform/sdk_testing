@@ -7,10 +7,19 @@ y se revisa que el pase no se guarde cuando no debe.
 Notion: TB-202 a TB-206.
 """
 
+import copy
+
 import pytest
 
 from .helpers import crear_pase_simulado, pase_nuevo
-from ..data.pases_entrada_data import CAMPOS_REQUERIDOS, TELEFONO_SIN_LADA, TELEFONO_CON_LETRAS
+from ..data.pases_entrada_data import (
+    CAMPOS_REQUERIDOS,
+    TELEFONO_SIN_LADA,
+    TELEFONO_CON_LETRAS,
+    TELEFONO_CON_LADA,
+    PASE_AUTO_REGISTRO,
+    VISITA_A_UNIT,
+)
 
 
 @pytest.mark.unit
@@ -43,3 +52,21 @@ def test_pase_de_web_con_telefono_mal_escrito_responde_un_error_claro(accesos_no
         with pytest.raises(Exception, match="El telefono debe contener exactamente 10 digitos"):
             accesos_no_api.create_access_pass(pase_nuevo(accesos_no_api, telefono=telefono))
     guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_en_auto_registro_el_telefono_va_sin_lada(accesos_no_api, mocker):
+    """
+    TB-204: en auto registro el visitante escribe su teléfono de 10 dígitos
+    sin lada; con lada (+52…) debe detenerse con el error de teléfono y no
+    guardar el pase. Con 10 dígitos sí pasa la validación.
+    """
+    guardar = crear_pase_simulado(accesos_no_api, mocker)
+    auto_registro = {**copy.deepcopy(PASE_AUTO_REGISTRO), "visita_a": VISITA_A_UNIT}
+
+    with pytest.raises(Exception, match="El telefono debe contener exactamente 10 digitos"):
+        accesos_no_api.create_access_pass({**auto_registro, "telefono": TELEFONO_CON_LADA})
+    guardar.assert_not_called()
+
+    accesos_no_api.create_access_pass(auto_registro)
+    guardar.assert_called_once()
