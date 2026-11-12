@@ -65,3 +65,16 @@ ESTATUS_TODOS = ""
 # escrito va con exact False ("contiene").
 FACET_NOMBRE = "articulo_perdido"
 LIMITE_LISTA = 50
+
+# Unitarios del filtro y el borrado (articulos_perdidos/unit). OTRA_UBICACION
+# es la segunda ubicación del selector del header; FOLIOS_ARTICULO son los que
+# se mandan a borrar y REGISTROS_ARTICULO el _id de cada uno.
+OTRA_UBICACION = "Planta Durango"
+FOLIO_ARTICULO = "1-PERDIDO"
+FOLIOS_ARTICULO = ["1-PERDIDO", "2-PERDIDO"]
+REGISTROS_ARTICULO = {
+    "1-PERDIDO": "000000000000000000000021",
+    "2-PERDIDO": "000000000000000000000022",
+}
+URL_REGISTRO = "/api/infosync/form_answer/{}/"
+BORRADO_OK = {"status_code": 202}
