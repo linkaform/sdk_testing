@@ -20,6 +20,7 @@ from ..data.pases_entrada_data import (
     PASE_AUTO_REGISTRO,
     VISITA_A_UNIT,
     DIAS_VENCIDO,
+    ACOMPANANTES_PASE,
 )
 
 
@@ -84,4 +85,20 @@ def test_no_se_puede_crear_un_pase_con_fecha_de_visita_en_el_pasado(accesos_no_a
 
     with pytest.raises(Exception, match="No se puede crear un pase con fecha de visita en el pasado"):
         accesos_no_api.create_access_pass(pase_nuevo(accesos_no_api, dias_desde=DIAS_VENCIDO))
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_no_se_puede_crear_un_pase_con_mas_acompanantes_de_los_permitidos(accesos_no_api, mocker):
+    """
+    TB-206: un pase que permite 1 acompañante pero trae 2 en la lista debe
+    detenerse con el error de que la lista excede los acompañantes
+    permitidos, y no guardarse. Si se guarda, entra más gente de la que el
+    anfitrión autorizó.
+    """
+    guardar = crear_pase_simulado(accesos_no_api, mocker)
+    pase = pase_nuevo(accesos_no_api, acompanantes=1, acompanantes_grupo=copy.deepcopy(ACOMPANANTES_PASE))
+
+    with pytest.raises(Exception, match="excede el permitido para este pase"):
+        accesos_no_api.create_access_pass(pase)
     guardar.assert_not_called()
