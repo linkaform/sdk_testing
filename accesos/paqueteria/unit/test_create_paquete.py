@@ -18,6 +18,10 @@ from ..data.paqueteria_data import (
     DESTINATARIO_EXTERNO,
     METADATA_PAQUETE,
     GUARDADO_OK,
+    GUARDADO_FALLIDO,
+    CANALES_CORREO,
+    AVISO_CORREO,
+    AVISO_ENVIADO,
 )
 
 
@@ -66,3 +70,30 @@ def test_destinatario_se_guarda_como_empleado_o_como_otro(accesos_no_api, mocker
     answers = guardar.call_args.args[0]["answers"]
     assert answers[acc.paquetes_fields["quien_recibe_otro"]] == DESTINATARIO_EXTERNO
     assert acc.CONF_AREA_EMPLEADOS_CAT_OBJ_ID not in answers, "El destinatario externo quedó en el catálogo de empleados"
+
+
+@pytest.mark.unit
+def test_aviso_solo_se_manda_si_el_paquete_se_guardo(accesos_no_api, mocker):
+    """
+    TB-248: create_paquete debe avisar al destinatario solo si el paquete se
+    guardó; si el guardado falla, no avisa. La llave anterior
+    notificacion_paqueteria no es campo de la forma: no se guarda y se usa
+    como canales del aviso. Si se avisa sin guardar, el destinatario va por
+    un paquete que no está registrado.
+    """
+    acc = accesos_no_api
+    avisar = mocker.patch.object(acc, "_notificar_paquete_recibido", return_value=dict(AVISO_ENVIADO))
+
+    res, _ = guardar_paquete(acc, mocker, PAQUETE_UNIT, notificacion=AVISO_CORREO)
+    avisar.assert_called_once()
+    assert res["notificaciones"] == AVISO_ENVIADO
+
+    avisar.reset_mock()
+    guardar_paquete(acc, mocker, PAQUETE_UNIT, respuesta=GUARDADO_FALLIDO, notificacion=AVISO_CORREO)
+    avisar.assert_not_called()
+
+    avisar.reset_mock()
+    _, guardar = guardar_paquete(acc, mocker, {**PAQUETE_UNIT, "notificacion_paqueteria": CANALES_CORREO})
+    avisar.assert_called_once()
+    assert avisar.call_args.args[1] == {"canales": CANALES_CORREO}
+    assert "notificacion_paqueteria" not in guardar.call_args.args[0]["answers"]
