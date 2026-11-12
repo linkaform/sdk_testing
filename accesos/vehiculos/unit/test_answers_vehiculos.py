@@ -54,3 +54,27 @@ def test_vehiculos_del_pase_se_guardan_con_llaves_cortas_o_largas(accesos_no_api
     assert cortas == largas, f"Con llaves cortas quedó {cortas}, con largas {largas}"
     assert cortas[0][acc.mf["placas_vehiculo"]] == VEHICULO_VISITA["placas"]
     assert cortas[0][acc.TIPO_DE_VEHICULO_OBJ_ID][acc.mf["tipo_vehiculo"]] == VEHICULO_VISITA["tipo"]
+
+
+@pytest.mark.unit
+def test_vehiculos_se_leen_igual_en_cualquiera_de_sus_formatos(accesos_no_api):
+    """
+    TB-256: un vehículo puede llegar con las etiquetas de la lista
+    (placas_vehiculo), con las llaves cortas del front (placas) o con los ids
+    de los campos. format_vehiculos_simple debe regresar las mismas placas,
+    tipo y color en los tres casos. Si no, el acompañante entra sin los datos
+    de su vehículo.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+    con_ids = {
+        mf["placas_vehiculo"]: VEHICULO_VISITA["placas"],
+        mf["tipo_vehiculo"]: VEHICULO_VISITA["tipo"],
+        mf["color_vehiculo"]: VEHICULO_VISITA["color"],
+    }
+
+    for formato in (VEHICULO_LLAVES_LARGAS, VEHICULO_VISITA, con_ids):
+        leido = acc.format_vehiculos_simple([formato])[0]
+        assert leido["placas"] == VEHICULO_VISITA["placas"], f"Placas {leido['placas']!r} desde {formato}"
+        assert leido["tipo"] == VEHICULO_VISITA["tipo"], f"Tipo {leido['tipo']!r} desde {formato}"
+        assert leido["color"] == VEHICULO_VISITA["color"], f"Color {leido['color']!r} desde {formato}"
