@@ -19,6 +19,7 @@ from ..data.pases_entrada_data import (
     TELEFONO_CON_LADA,
     PASE_AUTO_REGISTRO,
     VISITA_A_UNIT,
+    DIAS_VENCIDO,
 )
 
 
@@ -70,3 +71,17 @@ def test_en_auto_registro_el_telefono_va_sin_lada(accesos_no_api, mocker):
 
     accesos_no_api.create_access_pass(auto_registro)
     guardar.assert_called_once()
+
+
+@pytest.mark.unit
+def test_no_se_puede_crear_un_pase_con_fecha_de_visita_en_el_pasado(accesos_no_api, mocker):
+    """
+    TB-205: un pase con la fecha de visita de ayer debe detenerse con el
+    error "No se puede crear un pase con fecha de visita en el pasado." y no
+    guardarse. Si se guarda, nace un pase que ya no sirve.
+    """
+    guardar = crear_pase_simulado(accesos_no_api, mocker)
+
+    with pytest.raises(Exception, match="No se puede crear un pase con fecha de visita en el pasado"):
+        accesos_no_api.create_access_pass(pase_nuevo(accesos_no_api, dias_desde=DIAS_VENCIDO))
+    guardar.assert_not_called()
