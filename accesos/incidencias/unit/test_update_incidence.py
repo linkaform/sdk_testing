@@ -4,7 +4,7 @@
 Editar una incidencia (update_incidence) y el tiempo transcurrido al cierre
 (_tiempo_cierre_answers) sin tocar la cuenta: se simulan la incidencia como
 estaba, el guardia de la sesión y el guardado.
-Notion: TB-284 a TB-288 (pendientes de dar de alta).
+Notion: TB-284 a TB-288.
 """
 
 import pytest

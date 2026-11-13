@@ -4,7 +4,7 @@
 Iniciar (reclamar) un rondín asignado a varios guardias: claim_rondin y
 claim_group_rondin. Solo uno se lo debe quedar. Se simulan Mongo (self.cr),
 LinkaForm y el inbox; se revisa qué se bloquea, qué se guarda y qué se quita.
-Notion: TB-289 a TB-293 (pendientes de dar de alta).
+Notion: TB-289 a TB-293.
 """
 
 from types import SimpleNamespace

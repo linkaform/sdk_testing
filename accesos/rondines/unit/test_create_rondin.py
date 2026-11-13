@@ -4,7 +4,7 @@
 Crear un rondín (create_recorrido_rondin) con su asignación, a quién se le
 asigna (rondin_asignado_a) y pausar/reanudar (pause_or_play_rondin), sin tocar
 la cuenta: se simulan la ubicación, las áreas, el empleado y el guardado.
-Notion: TB-294 a TB-298 (pendientes de dar de alta).
+Notion: TB-294 a TB-298.
 """
 
 import pytest

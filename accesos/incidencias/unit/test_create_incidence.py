@@ -4,7 +4,7 @@
 Crear una incidencia (create_incidence) sin tocar la cuenta: se simulan la
 metadata de la forma, el guardia de la sesión y el guardado, y se revisa lo
 que create_incidence manda a guardar.
-Notion: TB-279 a TB-283 (pendientes de dar de alta).
+Notion: TB-279 a TB-283.
 """
 
 import pytest
