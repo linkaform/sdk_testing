@@ -8,6 +8,7 @@ otros archivos de unit/ y se corren a mano.
 
 import copy
 import pytest
+from lkf_back import de
 from ..data.paqueteria_data import (
     LOCATION,
     AREA,
@@ -70,14 +71,14 @@ def test_destinatario_se_guarda_como_empleado_o_como_otro(accesos_no_api, mocker
 
     _, guardar = guardar_paquete(acc, mocker, PAQUETE_UNIT)
     answers = guardar.call_args.args[0]["answers"]
-    assert answers[acc.CONF_AREA_EMPLEADOS_CAT_OBJ_ID] == {
+    assert answers[de(acc, "CONF_AREA_EMPLEADOS_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_CAT_OBJ_ID] == {
         acc.mf["nombre_empleado"]: PAQUETE_UNIT["quien_recibe_paqueteria"],
     }
 
     _, guardar = guardar_paquete(acc, mocker, PAQUETE_UNIT_OTRO)
     answers = guardar.call_args.args[0]["answers"]
     assert answers[acc.paquetes_fields["quien_recibe_otro"]] == DESTINATARIO_EXTERNO
-    assert acc.CONF_AREA_EMPLEADOS_CAT_OBJ_ID not in answers, "El destinatario externo quedó en el catálogo de empleados"
+    assert de(acc, "CONF_AREA_EMPLEADOS_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_CAT_OBJ_ID not in answers, "El destinatario externo quedó en el catálogo de empleados"
 
 
 @pytest.mark.unit

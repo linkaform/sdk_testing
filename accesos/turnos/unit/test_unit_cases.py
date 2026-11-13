@@ -7,6 +7,7 @@ otros archivos de unit/ y se corren a mano.
 """
 
 import pytest
+from lkf_back import de
 from ..data.turnos_data import (
     PUNTO_ESPERADO,
     GEO_LAT_LONG,
@@ -38,7 +39,7 @@ def checkin_simulado(acceso_obj, mocker, caseta_abierta):
     mocker.patch.object(acceso_obj, "is_boot_available", return_value=caseta_abierta)
     mocker.patch.object(acceso_obj, "get_open_checkin", return_value={})
     mocker.patch.object(acceso_obj.lkf_api, "get_user_by_id", return_value=dict(USUARIO_GUARDIA))
-    mocker.patch.object(acceso_obj, "get_employee_data", return_value=dict(EMPLEADO_GUARDIA))
+    mocker.patch.object(de(acceso_obj, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_GUARDIA))
     crear = mocker.patch.object(acceso_obj.lkf_api, "post_forms_answers")
     sumar = mocker.patch.object(acceso_obj, "update_guards_checkin")
     return crear, sumar
@@ -71,11 +72,11 @@ def test_sin_empleado_activo_no_se_puede_iniciar_turno(accesos_no_api, mocker):
     acc = accesos_no_api
     user_id = acc.user["user_id"]
 
-    mocker.patch.object(acc, "get_employee_data", return_value={})
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value={})
     with pytest.raises(Exception, match="no tiene un empleado activo"):
         acc.require_active_employee(user_id, USUARIO_GUARDIA["name"])
 
-    mocker.patch.object(acc, "get_employee_data", return_value=dict(EMPLEADO_GUARDIA))
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_GUARDIA))
     assert acc.require_active_employee(user_id, USUARIO_GUARDIA["name"]) == EMPLEADO_GUARDIA
 
 

@@ -22,7 +22,11 @@ import copy
 import pytest
 
 # marker target + --target= para ./lkf test (ver ../lkf_target.py)
-pytest_plugins = ["lkf_target"]
+# --back=addons|sanic: misma suite contra la clase de addons o la de Sanic
+# (ver ../lkf_back.py); activar() va antes de importar Accesos.
+import lkf_back
+lkf_back.activar("accesos")
+pytest_plugins = ["lkf_target", "lkf_back"]
 from lkf_modules.accesos.items.scripts.Accesos.accesos_utils import Accesos
 from account_settings import settings
 

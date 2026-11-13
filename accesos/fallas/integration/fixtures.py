@@ -6,6 +6,7 @@ from datetime import datetime
 
 import pytest
 import pytz
+from lkf_back import de
 
 from ..data.fallas_data import (
     LOCATION,
@@ -35,7 +36,7 @@ def mock_falla_nueva(acceso_obj):
     ]
     if not existentes:
         pytest.skip(f"No hay fallas en {LOCATION} de donde tomar el tipo de falla y el objeto afectado")
-    empleado = acceso_obj.get_employee_data(email=acceso_obj.user.get("email"), get_one=True)
+    empleado = de(acceso_obj, "get_employee_data").get_employee_data(email=acceso_obj.user.get("email"), get_one=True)
     nombre = empleado.get("worker_name")
     if not nombre:
         pytest.skip("El usuario de la cuenta no tiene empleado para reportar la falla")

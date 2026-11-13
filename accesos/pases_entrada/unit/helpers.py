@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from datetime import timedelta
+from lkf_back import de
 
 from ..data.pases_entrada_data import (
     NOMBRE_PASE_UNIT,
@@ -36,7 +37,7 @@ def campos_pase_completo(acceso_obj, dias_vigencia):
         "walkin_identificacion": IDENTIFICACION_VALIDA,
         "fecha_desde_hasta": fecha_hasta(acceso_obj, dias_vigencia),
         "grupo_visitados": [
-            {acceso_obj.CONF_AREA_EMPLEADOS_CAT_OBJ_ID: {acceso_obj.mf["nombre_empleado"]: ANFITRION_PASE}}
+            {de(acceso_obj, "CONF_AREA_EMPLEADOS_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_CAT_OBJ_ID: {acceso_obj.mf["nombre_empleado"]: ANFITRION_PASE}}
         ],
         "catalago_autorizado_por": {acceso_obj.pase_entrada_fields["autorizado_por"]: AUTORIZADO_POR},
     }

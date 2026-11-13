@@ -42,6 +42,20 @@ La ruta es obligatoria: la configuración de cada módulo (`pytest.ini`, con el
 pytest solo la lee si el comando apunta ahí. Un `pytest -m unit` sin ruta
 desde `sdk_testing` falla al recolectar los tests.
 
+### Contra Sanic
+
+La misma suite corre contra la clase de Sanic (`accesos_service.Accesos` de
+sdk-modules-sanic) con `LKF_BACK=sanic` o `--back=sanic`; el default es
+addons. No se corre a mano: `./lkf test` (en addons o en lkf-sanic-apps) lo
+hace solo cuando el cambio toca Sanic, en la imagen `linkaform/sanic-app:test`
+(`cd lkf-sanic-apps && ./lkf build test`). Un test que usa un método que
+Sanic no tiene sale SKIPPED "falta en sanic: <método>"; ver `lkf_back.py`.
+
+- Lo que en addons es herencia (Employee, Location, Vehiculo) en Sanic es
+  composición: para mockearlo usa `de(acc, "get_employee_data")`.
+- Una sección que en prod sirve solo Sanic (p. ej. `incidencias`) lleva
+  `pytestmark = pytest.mark.back("sanic")`: en addons sale SKIPPED.
+
 ## Estructura de un módulo
 
 Cada módulo sigue esta estructura:

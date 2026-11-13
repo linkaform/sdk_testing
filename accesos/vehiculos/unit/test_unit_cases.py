@@ -7,6 +7,7 @@ otros archivos de unit/ y se corren a mano.
 """
 
 import pytest
+from lkf_back import de
 from ..data.vehiculos_data import (
     VEHICULO_VISITA,
     VEHICULO_LLAVES_LARGAS,
@@ -43,7 +44,7 @@ def test_vehiculos_de_la_entrada_se_guardan_en_el_grupo_de_la_bitacora(accesos_n
 
     assert len(grupo) == 1, f"Se armaron {len(grupo)} vehículos, se mandó 1 con datos"
     vehiculo = grupo[0]
-    assert vehiculo[acc.TIPO_DE_VEHICULO_OBJ_ID] == {
+    assert vehiculo[de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID] == {
         mf["tipo_vehiculo"]: VEHICULO_VISITA["tipo"],
         mf["marca_vehiculo"]: VEHICULO_VISITA["marca"],
         mf["modelo_vehiculo"]: VEHICULO_VISITA["modelo"],
@@ -69,7 +70,7 @@ def test_vehiculos_del_pase_se_guardan_con_llaves_cortas_o_largas(accesos_no_api
 
     assert cortas == largas, f"Con llaves cortas quedó {cortas}, con largas {largas}"
     assert cortas[0][acc.mf["placas_vehiculo"]] == VEHICULO_VISITA["placas"]
-    assert cortas[0][acc.TIPO_DE_VEHICULO_OBJ_ID][acc.mf["tipo_vehiculo"]] == VEHICULO_VISITA["tipo"]
+    assert cortas[0][de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID][acc.mf["tipo_vehiculo"]] == VEHICULO_VISITA["tipo"]
 
 
 @pytest.mark.unit
@@ -107,7 +108,7 @@ def test_pestana_vehiculos_muestra_una_fila_por_vehiculo_sin_los_que_no_tienen_t
     """
     acc = accesos_no_api
     grupo = acc.mf["grupo_vehiculos"]
-    tipo = f"answers.{grupo}.{acc.TIPO_DE_VEHICULO_OBJ_ID}.{acc.mf['tipo_vehiculo']}"
+    tipo = f"answers.{grupo}.{de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID}.{acc.mf['tipo_vehiculo']}"
     cr = mocker.MagicMock()
     cr.aggregate.return_value = []
     mocker.patch.object(acc, "cr", cr, create=True)
@@ -133,7 +134,7 @@ def test_contador_de_vehiculos_dentro_no_cuenta_los_que_no_tienen_tipo(accesos_n
     lista (ticket 2610-1484).
     """
     acc = accesos_no_api
-    tipo = f"$$v.{acc.TIPO_DE_VEHICULO_OBJ_ID}.{acc.mf['tipo_vehiculo']}"
+    tipo = f"$$v.{de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID}.{acc.mf['tipo_vehiculo']}"
 
     expresion = acc._size_vehiculos_con_tipo("$vehiculos")
 

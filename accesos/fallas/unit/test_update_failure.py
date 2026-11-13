@@ -8,6 +8,7 @@ Notion: TB-220 y TB-221.
 """
 
 import pytest
+from lkf_back import de
 
 from ..data.fallas_data import (
     FALLA_UNIT,
@@ -30,7 +31,7 @@ def test_cerrar_falla_la_deja_resuelta_con_fecha_de_solucion(accesos_no_api, moc
     cierra.
     """
     acc = accesos_no_api
-    mocker.patch.object(acc, "get_employee_data", return_value=dict(EMPLEADO_FALLA))
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_FALLA))
     guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value={**EDICION_OK, "json": {}})
 
     res = acc.update_failure(dict(CERRAR_FALLA), FOLIO_FALLA)

@@ -8,6 +8,7 @@ Notion: TB-163 a TB-167.
 """
 
 import pytest
+from lkf_back import de
 
 from ..data.notas_data import (
     EMPLEADO_NOTA,
@@ -26,7 +27,7 @@ def test_cerrar_nota_guarda_quien_la_cerro_donde_la_lista_lo_lee(accesos_no_api,
     catálogo del que get_list_notes lee note_guard_close. Si se guarda en otro
     lado, la lista de Cerradas no dice quién cerró la nota (ticket 2610-1515).
     """
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value=dict(EMPLEADO_NOTA))
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_NOTA))
     mocker.patch.object(accesos_no_api, "today_str", return_value=FECHA_SERVIDOR)
     guardar = mocker.patch.object(accesos_no_api.lkf_api, "patch_multi_record", return_value={"status_code": 202})
 

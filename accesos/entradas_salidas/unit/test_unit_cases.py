@@ -40,6 +40,7 @@ from ..data.bitacora_data import (
     PAGINAS_ESPERADAS,
 )
 from datetime import datetime
+from lkf_back import de
 
 C10_TRIGGERS = [
     "bitacora_base_match",
@@ -120,7 +121,7 @@ def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
     entrada = (ahora_empleado - ENTRADA_HACE_10_MIN).strftime("%Y-%m-%d %H:%M:%S")
 
     accesos_no_api.user["timezone"] = ZONA_EMPLEADO_OTRA
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
     mocker.patch.object(
         accesos_no_api, "get_last_user_move", return_value={**VISITA_ABIERTA_DURACION, "checkin_date": entrada}
     )
@@ -229,7 +230,7 @@ def test_force_quit_guarda_cierre_general_y_hora_del_empleado(accesos_no_api, mo
     ahora_empleado = datetime.now(pytz.timezone(ZONA_EMPLEADO_OTRA)).replace(tzinfo=None)
 
     accesos_no_api.user["timezone"] = ZONA_EMPLEADO_OTRA
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
     mocker.patch.object(accesos_no_api.cr, "aggregate", return_value=VISITAS_ABIERTAS_UBICACION)
     guardar = mocker.patch.object(
         accesos_no_api.lkf_api, "patch_multi_record", return_value={"status_code": 202, "json": {}}
