@@ -11,7 +11,7 @@ distingan en la bitácora de preprod.
 import copy
 from datetime import timedelta
 
-from passes.integration.data.do_access_data import (
+from pases_entrada.data.datos_base import (
     PASE_ACCESO_BASE,
     LOCATION,
     AREA,

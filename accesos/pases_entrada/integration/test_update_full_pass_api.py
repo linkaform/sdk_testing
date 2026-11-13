@@ -2,7 +2,7 @@ import copy, pytest, simplejson
 from datetime import datetime, timedelta
 from pytz import timezone
 
-from passes.data.pase_entrada_data import PASE_ENTRADA
+from ..data.pase_entrada_base_data import PASE_ENTRADA
 from account_settings import settings
 
 # TB-027: el bug de 'generar_qr' no definido en create_qr.py (ver Notion)

@@ -8,7 +8,7 @@ Usa la misma caseta que el resto de las pruebas de Accesos.
 
 import copy
 
-from passes.integration.data.do_access_data import (  # noqa: F401
+from pases_entrada.data.datos_base import (  # noqa: F401
     LOCATION,
     AREA,
     FOTO_VALIDA,

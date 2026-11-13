@@ -5,7 +5,7 @@ import sys
 import pytest
 
 from account_settings import settings
-from passes.integration.helpers import fecha_str
+from pases_entrada.integration.helpers import fecha_str
 from ..data.control_patio_data import (
     PASE_TRANSPORTISTA,
     LLEGADA_SIN_PASE,

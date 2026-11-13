@@ -3,7 +3,7 @@
 import copy
 import pytest
 
-from passes.integration.helpers import fecha_str
+from pases_entrada.integration.helpers import fecha_str
 from ..data.bitacora_data import (
     PASE_BITACORA, LOCATION, AREA, PASE_BITACORA_OTRA_UBICACION, OTRA_LOCATION, OTRA_AREA,
 )

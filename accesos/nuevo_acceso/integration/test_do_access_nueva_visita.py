@@ -19,7 +19,7 @@ from ..data.nuevo_acceso_data import (
     COMENTARIO_PASE_NUEVA_VISITA,
     LIMITE_VARIAS_ENTRADAS,
 )
-from passes.integration.helpers import crear_pase
+from pases_entrada.integration.helpers import crear_pase
 from entradas_salidas.integration.helpers import ultima_visita, salida_silenciosa, dar_entrada
 
 

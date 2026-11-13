@@ -21,7 +21,7 @@ from ..data.pases_entrada_data import (
     REQUERIMIENTOS_VALIDOS,
     VALORES_SI_NO,
 )
-from passes.integration.helpers import crear_pase
+from .helpers import crear_pase
 
 
 @pytest.mark.integration

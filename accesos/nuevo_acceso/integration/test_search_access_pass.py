@@ -11,7 +11,7 @@ import pytest
 
 from .fixtures import *
 from ..data.nuevo_acceso_data import LOCATION, QR_INVALIDO
-from passes.integration.helpers import crear_pase
+from pases_entrada.integration.helpers import crear_pase
 
 
 @pytest.mark.integration
