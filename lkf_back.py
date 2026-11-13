@@ -79,6 +79,24 @@ def activar(suite):
     sys.modules[mod_addons] = sanic
 
 
+# En addons, AccesosModel HEREDA de Employee, Location y Vehiculo; en Sanic los
+# COMPONE (self.Employee, self.Location, self.AF) y llama, p. ej.,
+# self.Employee.get_employee_data. Un test que mockea o lee algo de esas clases
+# lo pide con de():  mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", ...)
+COMPONENTES = ("Employee", "Location", "AF")
+
+
+def de(obj, nombre):
+    """El objeto donde vive `nombre`: obj (addons) o su componente (Sanic)."""
+    if hasattr(obj, nombre):
+        return obj
+    for comp in COMPONENTES:
+        sub = getattr(obj, comp, None)
+        if sub is not None and hasattr(sub, nombre):
+            return sub
+    return obj
+
+
 def _paquete(nombre, path):
     m = types.ModuleType(nombre)
     m.__path__ = path

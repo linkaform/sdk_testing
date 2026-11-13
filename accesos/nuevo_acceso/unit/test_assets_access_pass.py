@@ -7,6 +7,7 @@ Notion: TB-079.
 """
 
 import pytest
+from lkf_back import de
 
 from ..data.nuevo_acceso_data import (
     LOCATION,
@@ -25,7 +26,7 @@ def test_assets_access_pass_sin_configuracion_no_truena(accesos_no_api, mocker):
     return usaba 'perfiles', lo que daba UnboundLocalError y el modal no cargaba.
     Bug 2610-1482 corregido (addons #31).
     """
-    mocker.patch.object(accesos_no_api, "get_areas_by_location", return_value=AREAS_SIMULADAS)
+    mocker.patch.object(de(accesos_no_api, "get_areas_by_location"), "get_areas_by_location", return_value=AREAS_SIMULADAS)
     mocker.patch.object(
         accesos_no_api.Employee, "get_users_by_location_area", return_value=ANFITRIONES_SIMULADOS
     )

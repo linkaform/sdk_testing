@@ -8,6 +8,7 @@ Notion: TB-163 a TB-167.
 """
 
 import pytest
+from lkf_back import de
 
 from ..data.notas_data import (
     EMPLEADO_NOTA,
@@ -26,7 +27,7 @@ def test_cerrar_nota_guarda_estatus_y_fecha_de_cierre(accesos_no_api, mocker):
     nota como 'cerrado' con la fecha de cierre en la zona del empleado, sobre
     el folio de esa nota. Si no, la nota sigue en Pendientes o sin fecha.
     """
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value=dict(EMPLEADO_NOTA))
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_NOTA))
     fecha = mocker.patch.object(accesos_no_api, "today_str", return_value=FECHA_SERVIDOR)
     guardar = mocker.patch.object(accesos_no_api.lkf_api, "patch_multi_record", return_value={"status_code": 202})
 
@@ -50,7 +51,7 @@ def test_cerrar_nota_guarda_quien_la_cerro_donde_la_lista_lo_lee(accesos_no_api,
     catálogo del que get_list_notes lee note_guard_close. Si se guarda en otro
     lado, la lista de Cerradas no dice quién cerró la nota (ticket 2610-1515).
     """
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value=dict(EMPLEADO_NOTA))
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_NOTA))
     mocker.patch.object(accesos_no_api, "today_str", return_value=FECHA_SERVIDOR)
     guardar = mocker.patch.object(accesos_no_api.lkf_api, "patch_multi_record", return_value={"status_code": 202})
 
@@ -91,7 +92,7 @@ def test_editar_nota_no_la_cierra(accesos_no_api, mocker):
     de cierre ni quién la cerró, ni consultar al empleado. Si lo hace, una
     nota abierta aparece como cerrada por alguien que solo la editó.
     """
-    empleado = mocker.patch.object(accesos_no_api, "get_employee_data", return_value=dict(EMPLEADO_NOTA))
+    empleado = mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_NOTA))
     guardar = mocker.patch.object(accesos_no_api.lkf_api, "patch_multi_record", return_value={"status_code": 202})
 
     accesos_no_api.update_notes(dict(NOTA_EDITADA), FOLIO_NOTA)

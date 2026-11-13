@@ -9,6 +9,7 @@ Notion: TB-257 y TB-258.
 """
 
 import pytest
+from lkf_back import de
 
 from ..data.vehiculos_data import LOCATION, AREA, DESGLOSE_VEHICULOS, FILTRO_DENTRO, LIMITE_LISTA
 
@@ -23,7 +24,7 @@ def test_pestana_vehiculos_muestra_una_fila_por_vehiculo_sin_los_que_no_tienen_t
     """
     acc = accesos_no_api
     grupo = acc.mf["grupo_vehiculos"]
-    tipo = f"answers.{grupo}.{acc.TIPO_DE_VEHICULO_OBJ_ID}.{acc.mf['tipo_vehiculo']}"
+    tipo = f"answers.{grupo}.{de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID}.{acc.mf['tipo_vehiculo']}"
     cr = mocker.MagicMock()
     cr.aggregate.return_value = []
     mocker.patch.object(acc, "cr", cr, create=True)
@@ -49,7 +50,7 @@ def test_contador_de_vehiculos_dentro_no_cuenta_los_que_no_tienen_tipo(accesos_n
     lista (ticket 2610-1484).
     """
     acc = accesos_no_api
-    tipo = f"$$v.{acc.TIPO_DE_VEHICULO_OBJ_ID}.{acc.mf['tipo_vehiculo']}"
+    tipo = f"$$v.{de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID}.{acc.mf['tipo_vehiculo']}"
 
     expresion = acc._size_vehiculos_con_tipo("$vehiculos")
 

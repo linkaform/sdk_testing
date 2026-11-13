@@ -8,6 +8,7 @@ Notion: TB-254 a TB-256.
 """
 
 import pytest
+from lkf_back import de
 
 from ..data.vehiculos_data import VEHICULO_VISITA, VEHICULO_LLAVES_LARGAS, RENGLON_VACIO
 
@@ -27,7 +28,7 @@ def test_vehiculos_de_la_entrada_se_guardan_en_el_grupo_de_la_bitacora(accesos_n
 
     assert len(grupo) == 1, f"Se armaron {len(grupo)} vehículos, se mandó 1 con datos"
     vehiculo = grupo[0]
-    assert vehiculo[acc.TIPO_DE_VEHICULO_OBJ_ID] == {
+    assert vehiculo[de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID] == {
         mf["tipo_vehiculo"]: VEHICULO_VISITA["tipo"],
         mf["marca_vehiculo"]: VEHICULO_VISITA["marca"],
         mf["modelo_vehiculo"]: VEHICULO_VISITA["modelo"],
@@ -53,7 +54,7 @@ def test_vehiculos_del_pase_se_guardan_con_llaves_cortas_o_largas(accesos_no_api
 
     assert cortas == largas, f"Con llaves cortas quedó {cortas}, con largas {largas}"
     assert cortas[0][acc.mf["placas_vehiculo"]] == VEHICULO_VISITA["placas"]
-    assert cortas[0][acc.TIPO_DE_VEHICULO_OBJ_ID][acc.mf["tipo_vehiculo"]] == VEHICULO_VISITA["tipo"]
+    assert cortas[0][de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID][acc.mf["tipo_vehiculo"]] == VEHICULO_VISITA["tipo"]
 
 
 @pytest.mark.unit

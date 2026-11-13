@@ -11,6 +11,7 @@ from datetime import datetime
 
 import pytest
 import pytz
+from lkf_back import de
 
 from ..data.bitacora_data import (
     LOCATION,
@@ -41,7 +42,7 @@ def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
     entrada = (ahora_empleado - ENTRADA_HACE_10_MIN).strftime("%Y-%m-%d %H:%M:%S")
 
     accesos_no_api.user["timezone"] = ZONA_EMPLEADO_OTRA
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
     mocker.patch.object(
         accesos_no_api, "get_last_user_move", return_value={**VISITA_ABIERTA_DURACION, "checkin_date": entrada}
     )
@@ -75,7 +76,7 @@ def test_do_out_duracion_de_mas_de_un_dia_es_legible(accesos_no_api, mocker):
     entrada = (ahora_empleado - ENTRADA_HACE_MAS_DE_UN_DIA).strftime("%Y-%m-%d %H:%M:%S")
 
     accesos_no_api.user["timezone"] = ZONA_EMPLEADO_CDMX
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_CDMX})
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_CDMX})
     mocker.patch.object(
         accesos_no_api, "get_last_user_move", return_value={**VISITA_ABIERTA_DURACION, "checkin_date": entrada}
     )

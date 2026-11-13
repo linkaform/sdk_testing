@@ -8,6 +8,7 @@ Notion: TB-264 a TB-266.
 """
 
 import pytest
+from lkf_back import de
 
 from ..data.bitacora_data import (
     LOCATION,
@@ -86,7 +87,7 @@ def test_filtros_del_panel_entran_al_filtro_y_los_desconocidos_se_ignoran(acceso
 
     assert filtro[f"answers.{mf['tipo_registro']}"] == {"$in": ["entrada"]}
     assert filtro[f"answers.{acc.PASE_ENTRADA_OBJ_ID}.{mf['nombre_perfil']}"] == {"$in": [PERFIL_PANEL]}
-    visita_a = f"answers.{mf['grupo_visitados']}.{acc.CONF_AREA_EMPLEADOS_CAT_OBJ_ID}.{mf['nombre_empleado']}"
+    visita_a = f"answers.{mf['grupo_visitados']}.{de(acc, "CONF_AREA_EMPLEADOS_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_CAT_OBJ_ID}.{mf['nombre_empleado']}"
     assert filtro[visita_a] == {"$in": [VISITA_A_PANEL]}
     ubicacion = f"answers.{acc.AREAS_DE_LAS_UBICACIONES_CAT_OBJ_ID}.{mf['ubicacion']}"
     assert filtro[ubicacion] == {"$in": [LOCATION, OTRA_LOCATION]}

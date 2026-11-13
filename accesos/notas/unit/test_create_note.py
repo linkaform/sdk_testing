@@ -8,6 +8,7 @@ Notion: TB-161 y TB-162.
 """
 
 import pytest
+from lkf_back import de
 
 from ..data.notas_data import (
     LOCATION,
@@ -28,7 +29,7 @@ def test_create_note_guarda_nota_abierta_con_ubicacion_caseta_guardia_y_fecha(ac
     nota no sale en la caseta correcta o no se sabe quién la dejó.
     """
     mocker.patch.object(accesos_no_api.lkf_api, "get_metadata", return_value={})
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value=dict(EMPLEADO_NOTA))
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_NOTA))
     fecha = mocker.patch.object(accesos_no_api, "today_str", return_value=FECHA_SERVIDOR)
     guardar = mocker.patch.object(accesos_no_api.lkf_api, "post_forms_answers", return_value={"status_code": 201})
 
@@ -41,7 +42,7 @@ def test_create_note_guarda_nota_abierta_con_ubicacion_caseta_guardia_y_fecha(ac
     area = answers[accesos_no_api.AREAS_DE_LAS_UBICACIONES_CAT_OBJ_ID]
     assert area[accesos_no_api.f["location"]] == LOCATION
     assert area[accesos_no_api.f["area"]] == AREA
-    guardia = answers[accesos_no_api.CONF_AREA_EMPLEADOS_CAT_OBJ_ID]
+    guardia = answers[de(accesos_no_api, "CONF_AREA_EMPLEADOS_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_CAT_OBJ_ID]
     assert guardia[accesos_no_api.f["worker_name"]] == EMPLEADO_NOTA["worker_name"]
     fecha.assert_called_once_with(EMPLEADO_NOTA["timezone"], date_format="datetime")
     assert answers[nf["note_open_date"]] == FECHA_SERVIDOR
@@ -55,7 +56,7 @@ def test_create_note_guarda_cada_comentario_en_su_renglon(accesos_no_api, mocker
     su texto. Si se juntan o se pierde uno, el siguiente turno no lee todo.
     """
     mocker.patch.object(accesos_no_api.lkf_api, "get_metadata", return_value={})
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value=dict(EMPLEADO_NOTA))
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_NOTA))
     mocker.patch.object(accesos_no_api, "today_str", return_value=FECHA_SERVIDOR)
     guardar = mocker.patch.object(accesos_no_api.lkf_api, "post_forms_answers", return_value={"status_code": 201})
 

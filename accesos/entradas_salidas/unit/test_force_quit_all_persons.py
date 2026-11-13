@@ -11,6 +11,7 @@ from datetime import datetime
 
 import pytest
 import pytz
+from lkf_back import de
 
 from ..data.bitacora_data import (
     LOCATION,
@@ -58,7 +59,7 @@ def test_force_quit_guarda_cierre_general_y_hora_del_empleado(accesos_no_api, mo
     ahora_empleado = datetime.now(pytz.timezone(ZONA_EMPLEADO_OTRA)).replace(tzinfo=None)
 
     accesos_no_api.user["timezone"] = ZONA_EMPLEADO_OTRA
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
+    mocker.patch.object(de(accesos_no_api, "get_employee_data"), "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
     mocker.patch.object(accesos_no_api.cr, "aggregate", return_value=VISITAS_ABIERTAS_UBICACION)
     guardar = mocker.patch.object(
         accesos_no_api.lkf_api, "patch_multi_record", return_value={"status_code": 202, "json": {}}
