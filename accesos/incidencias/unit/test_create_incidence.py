@@ -4,7 +4,7 @@
 Crear una incidencia (create_incidence) sin tocar la cuenta: se simulan la
 metadata de la forma, el guardia de la sesión y el guardado, y se revisa lo
 que create_incidence manda a guardar.
-Notion: TB-274 a TB-278 (pendientes de dar de alta).
+Notion: TB-279 a TB-283 (pendientes de dar de alta).
 """
 
 import pytest
@@ -40,7 +40,7 @@ def crear_simulado(acc, mocker, guardado=GUARDADO_OK):
 @pytest.mark.target("create_incidence", "_reporta_sesion")
 def test_incidencia_nueva_nace_abierta_con_catalogo_ubicacion_prioridad_y_quien_reporta(accesos_no_api, mocker):
     """
-    TB-274: con el payload de Nueva incidencia, create_incidence debe guardar
+    TB-279: con el payload de Nueva incidencia, create_incidence debe guardar
     la incidencia 'abierto', la categoría y el tipo en su catálogo, la
     ubicación y la caseta, la prioridad en minúsculas (la opción de la forma)
     y como "Reporta" al guardia de la sesión cuando el front lo manda vacío.
@@ -67,7 +67,7 @@ def test_incidencia_nueva_nace_abierta_con_catalogo_ubicacion_prioridad_y_quien_
 @pytest.mark.target("create_incidence")
 def test_subcategoria_vacia_y_llaves_que_la_forma_no_conoce_no_rompen_la_incidencia(accesos_no_api, mocker):
     """
-    TB-275: el catálogo ya no tiene subcategoría y el front puede mandar
+    TB-280: el catálogo ya no tiene subcategoría y el front puede mandar
     llaves de más. Una subcategoría vacía no se debe escribir y una llave que
     la forma no conoce se ignora: antes tronaban con KeyError y la incidencia
     completa no se creaba.
@@ -87,7 +87,7 @@ def test_subcategoria_vacia_y_llaves_que_la_forma_no_conoce_no_rompen_la_inciden
 @pytest.mark.target("create_incidence")
 def test_afectacion_sin_monto_no_manda_el_monto(accesos_no_api, mocker):
     """
-    TB-276: el monto estimado de la afectación patrimonial es decimal y
+    TB-281: el monto estimado de la afectación patrimonial es decimal y
     opcional. Si viene vacío no se manda (un '' en un campo decimal hace que
     LinkaForm rechace el registro); si viene con valor, se guarda.
     """
@@ -107,7 +107,7 @@ def test_afectacion_sin_monto_no_manda_el_monto(accesos_no_api, mocker):
 @pytest.mark.target("create_incidence", "_url_registro_lkf")
 def test_reportar_como_falla_liga_la_incidencia_con_su_falla(accesos_no_api, mocker):
     """
-    TB-277: con "Reportar como falla", la incidencia y la falla deben nacer
+    TB-282: con "Reportar como falla", la incidencia y la falla deben nacer
     ligadas: la incidencia guarda la liga a la falla (con un id que ya trae)
     y la falla se crea con el id de la incidencia. Si se crean por separado,
     nadie llega de una a la otra.
@@ -131,7 +131,7 @@ def test_reportar_como_falla_liga_la_incidencia_con_su_falla(accesos_no_api, moc
 @pytest.mark.target("create_incidence")
 def test_si_la_incidencia_no_se_guarda_no_crea_falla_ni_historial(accesos_no_api, mocker):
     """
-    TB-278: si LinkaForm rechaza la incidencia, no se debe crear la falla
+    TB-283: si LinkaForm rechaza la incidencia, no se debe crear la falla
     ligada ni el registro de historial ni el tipo en el catálogo: quedarían
     huérfanos apuntando a una incidencia que no existe.
     """

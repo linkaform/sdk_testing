@@ -4,7 +4,7 @@
 Editar una incidencia (update_incidence) y el tiempo transcurrido al cierre
 (_tiempo_cierre_answers) sin tocar la cuenta: se simulan la incidencia como
 estaba, el guardia de la sesión y el guardado.
-Notion: TB-279 a TB-283 (pendientes de dar de alta).
+Notion: TB-284 a TB-288 (pendientes de dar de alta).
 """
 
 import pytest
@@ -39,7 +39,7 @@ def editar_simulado(acc, mocker, antes=INCIDENCIA_ANTES, editado=EDITADO_OK):
 @pytest.mark.target("update_incidence", "_reporta_sesion")
 def test_seguimiento_nuevo_lo_registra_el_guardia_de_la_sesion_y_el_existente_conserva_el_suyo(accesos_no_api, mocker):
     """
-    TB-279: al editar, el front manda todos los seguimientos. El que ya
+    TB-284: al editar, el front manda todos los seguimientos. El que ya
     existía conserva a quien lo registró y el nuevo (sin la llave) toma al
     guardia de la sesión. Si no, cada edición cambia el autor de todo el historial.
     """
@@ -59,7 +59,7 @@ def test_seguimiento_nuevo_lo_registra_el_guardia_de_la_sesion_y_el_existente_co
 @pytest.mark.target("update_incidence")
 def test_editar_registra_el_historial_con_la_version_de_antes(accesos_no_api, mocker):
     """
-    TB-280: después de guardar la edición se registra el cambio en el
+    TB-285: después de guardar la edición se registra el cambio en el
     historial con la incidencia como estaba antes, sobre su folio. Es lo que
     muestra "Historial" en el detalle de la incidencia.
     """
@@ -75,7 +75,7 @@ def test_editar_registra_el_historial_con_la_version_de_antes(accesos_no_api, mo
 @pytest.mark.target("update_incidence")
 def test_si_la_edicion_no_se_guarda_no_registra_historial(accesos_no_api, mocker):
     """
-    TB-281: si LinkaForm rechaza la edición, el historial no debe decir que
+    TB-286: si LinkaForm rechaza la edición, el historial no debe decir que
     la incidencia cambió.
     """
     acc = accesos_no_api
@@ -90,7 +90,7 @@ def test_si_la_edicion_no_se_guarda_no_registra_historial(accesos_no_api, mocker
 @pytest.mark.target("_tiempo_cierre_answers")
 def test_reabrir_una_incidencia_cerrada_limpia_el_tiempo_al_cierre(accesos_no_api):
     """
-    TB-282: si una incidencia cerrada se reabre, "Tiempo transcurrido al
+    TB-287: si una incidencia cerrada se reabre, "Tiempo transcurrido al
     cierre" se limpia; se vuelve a calcular cuando se cierre otra vez.
     """
     acc = accesos_no_api
@@ -105,7 +105,7 @@ def test_reabrir_una_incidencia_cerrada_limpia_el_tiempo_al_cierre(accesos_no_ap
 @pytest.mark.target("_tiempo_cierre_answers")
 def test_editar_una_incidencia_cerrada_conserva_su_tiempo_al_cierre(accesos_no_api, mocker):
     """
-    TB-283: editar una incidencia que sigue cerrada vuelve a mandar el tiempo
+    TB-288: editar una incidencia que sigue cerrada vuelve a mandar el tiempo
     que ya tenía, sin recalcularlo (el PATCH reemplaza las respuestas
     completas: si no se manda, se pierde).
     """

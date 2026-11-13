@@ -4,7 +4,7 @@
 Iniciar (reclamar) un rondín asignado a varios guardias: claim_rondin y
 claim_group_rondin. Solo uno se lo debe quedar. Se simulan Mongo (self.cr),
 LinkaForm y el inbox; se revisa qué se bloquea, qué se guarda y qué se quita.
-Notion: TB-284 a TB-288 (pendientes de dar de alta).
+Notion: TB-289 a TB-293 (pendientes de dar de alta).
 """
 
 from types import SimpleNamespace
@@ -48,7 +48,7 @@ def reclamo_simulado(acc, mocker, bloqueados=1, guardado=PATCH_OK):
 @pytest.mark.target("claim_group_rondin")
 def test_quien_inicia_un_rondin_de_grupo_se_lo_queda_y_sale_del_inbox_de_los_demas(accesos_no_api, mocker):
     """
-    TB-284: el guardia que inicia un rondín de grupo queda en "Asignado a",
+    TB-289: el guardia que inicia un rondín de grupo queda en "Asignado a",
     el rondín pasa a 'en_proceso' y se quita del inbox de los demás guardias
     del grupo (pero no del suyo). El bloqueo solo toma el rondín si sigue
     'programado' y sin usuario.
@@ -72,7 +72,7 @@ def test_quien_inicia_un_rondin_de_grupo_se_lo_queda_y_sale_del_inbox_de_los_dem
 @pytest.mark.target("claim_group_rondin")
 def test_si_otro_guardia_ya_lo_inicio_su_trabajo_se_guarda_aparte(accesos_no_api, mocker):
     """
-    TB-285: si otro guardia ganó el rondín (el bloqueo no encuentra el
+    TB-290: si otro guardia ganó el rondín (el bloqueo no encuentra el
     registro 'programado'), no se le quita: el recorrido de este guardia va a
     una bitácora aparte (split_group_rondin) y no se toca el registro ganado.
     """
@@ -90,7 +90,7 @@ def test_si_otro_guardia_ya_lo_inicio_su_trabajo_se_guarda_aparte(accesos_no_api
 @pytest.mark.target("claim_group_rondin")
 def test_si_no_se_puede_guardar_el_reclamo_el_rondin_vuelve_a_programado(accesos_no_api, mocker):
     """
-    TB-286: si LinkaForm rechaza la asignación, el rondín debe regresar a
+    TB-291: si LinkaForm rechaza la asignación, el rondín debe regresar a
     'programado' (si se queda 'reclamado', nadie más lo puede iniciar) y
     seguir en el inbox de todos.
     """
@@ -109,7 +109,7 @@ def test_si_no_se_puede_guardar_el_reclamo_el_rondin_vuelve_a_programado(accesos
 @pytest.mark.target("claim_rondin")
 def test_rondin_de_grupo_sin_padre_se_reclama_como_grupo(accesos_no_api, mocker):
     """
-    TB-287: claim_rondin recibe el record_id que inicia la app; si el rondín
+    TB-292: claim_rondin recibe el record_id que inicia la app; si el rondín
     es de grupo y no tiene padre, debe ir por el flujo de grupo
     (claim_group_rondin) con el usuario que lo inicia.
     """
@@ -127,7 +127,7 @@ def test_rondin_de_grupo_sin_padre_se_reclama_como_grupo(accesos_no_api, mocker)
 @pytest.mark.target("claim_rondin")
 def test_si_un_rondin_hermano_ya_no_esta_programado_no_se_reclama_nada(accesos_no_api, mocker):
     """
-    TB-288: un rondín repartido en registros padre/hijos solo se puede
+    TB-293: un rondín repartido en registros padre/hijos solo se puede
     reclamar si todos siguen 'programado'. Si otro guardia ya inició uno, se
     responde "ya fue reclamado" y no se cambia ningún registro.
     """

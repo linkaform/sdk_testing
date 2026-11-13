@@ -4,7 +4,7 @@
 Crear un rondín (create_recorrido_rondin) con su asignación, a quién se le
 asigna (rondin_asignado_a) y pausar/reanudar (pause_or_play_rondin), sin tocar
 la cuenta: se simulan la ubicación, las áreas, el empleado y el guardado.
-Notion: TB-289 a TB-293 (pendientes de dar de alta).
+Notion: TB-294 a TB-298 (pendientes de dar de alta).
 """
 
 import pytest
@@ -32,7 +32,7 @@ def crear_simulado(acc, mocker):
 @pytest.mark.target("create_recorrido_rondin")
 def test_rondin_asignado_a_un_grupo_guarda_el_grupo_y_no_una_persona(accesos_no_api, mocker):
     """
-    TB-289: un rondín asignado a un grupo guarda el grupo en su catálogo y no
+    TB-294: un rondín asignado a un grupo guarda el grupo en su catálogo y no
     llena "Asignado a": queda sin usuario hasta que un guardia del grupo lo
     inicia (si se asigna a una persona, al resto no le aparece).
     """
@@ -53,7 +53,7 @@ def test_rondin_asignado_a_un_grupo_guarda_el_grupo_y_no_una_persona(accesos_no_
 @pytest.mark.target("create_recorrido_rondin")
 def test_rondin_por_rol_guarda_cada_rol_en_su_renglon(accesos_no_api, mocker):
     """
-    TB-290: con roles, el rondín guarda un renglón por rol con el rol en su
+    TB-295: con roles, el rondín guarda un renglón por rol con el rol en su
     catálogo. Es lo que usa la bandeja para mostrarlo a los guardias de esos roles.
     """
     acc = accesos_no_api
@@ -69,7 +69,7 @@ def test_rondin_por_rol_guarda_cada_rol_en_su_renglon(accesos_no_api, mocker):
 @pytest.mark.target("create_recorrido_rondin", "rondin_asignado_a")
 def test_rondin_para_una_persona_la_guarda_en_asignado_a(accesos_no_api, mocker):
     """
-    TB-291: asignado a una persona específica, el rondín guarda a esa persona
+    TB-296: asignado a una persona específica, el rondín guarda a esa persona
     (como la arma rondin_asignado_a) en "Asignado a".
     """
     acc = accesos_no_api
@@ -87,7 +87,7 @@ def test_rondin_para_una_persona_la_guarda_en_asignado_a(accesos_no_api, mocker)
 @pytest.mark.target("rondin_asignado_a")
 def test_persona_que_no_esta_en_empleados_se_asigna_por_nombre(accesos_no_api, mocker):
     """
-    TB-292: si la persona no aparece en el catálogo de empleados, el rondín
+    TB-297: si la persona no aparece en el catálogo de empleados, el rondín
     no se queda sin asignar: se guarda su nombre en el catálogo de empleados.
     """
     acc = accesos_no_api
@@ -103,7 +103,7 @@ def test_persona_que_no_esta_en_empleados_se_asigna_por_nombre(accesos_no_api, m
 @pytest.mark.target("pause_or_play_rondin")
 def test_pausar_y_reanudar_cambian_la_accion_de_la_recurrencia(accesos_no_api, mocker):
     """
-    TB-293: pausar guarda la acción 'pausar' y reanudar 'programar' sobre el
+    TB-298: pausar guarda la acción 'pausar' y reanudar 'programar' sobre el
     rondín; si LinkaForm lo rechaza, se responde error (no "pausado con éxito").
     """
     acc = accesos_no_api
