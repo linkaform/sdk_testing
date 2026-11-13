@@ -18,6 +18,7 @@ Fixtures disponibles:
 3. `accesos_api_15864`: Contexto de usuario específico (Juan Escutia) usando API Key.
 """
 
+import copy
 import pytest
 
 # marker target + --target= para ./lkf test (ver ../lkf_target.py)
@@ -98,24 +99,39 @@ def _usuario_cuenta_activa():
         'email': username,
     }
 
+@pytest.fixture(scope='session')
+def _accesos_no_api_base():
+    """Crear Accesos tarda ~1.3 s; se crea una sola vez por corrida."""
+    return Accesos(settings, use_api=False)
+
+@pytest.fixture(scope='session')
+def _accesos_api_base():
+    """Igual que _accesos_no_api_base, autenticado por API Key."""
+    return Accesos(settings, use_api=True)
+
 @pytest.fixture
-def accesos_no_api():
-    """Retorna una instancia de Accesos configurada para autenticarse vía JWT (use_api=False), con el usuario de la cuenta activa."""
-    acc = Accesos(settings, use_api=False)
+def accesos_no_api(_accesos_no_api_base):
+    """Retorna una instancia de Accesos configurada para autenticarse vía JWT (use_api=False), con el usuario de la cuenta activa.
+
+    Es una copia de la instancia de la corrida: lo que el test asigne
+    (acc.user, acc.use_api) no pasa al siguiente. Mockear siempre con
+    mocker, que se deshace al terminar el test.
+    """
+    acc = copy.copy(_accesos_no_api_base)
     acc.user = _usuario_cuenta_activa()
     return acc
 
 @pytest.fixture
-def accesos_api():
-    """Retorna una instancia de Accesos configurada para autenticarse vía API Key (use_api=True), con el usuario de la cuenta activa."""
-    acc = Accesos(settings, use_api=True)
+def accesos_api(_accesos_api_base):
+    """Retorna una instancia de Accesos configurada para autenticarse vía API Key (use_api=True), con el usuario de la cuenta activa (copia, ver accesos_no_api)."""
+    acc = copy.copy(_accesos_api_base)
     acc.user = _usuario_cuenta_activa()
     return acc
 
 @pytest.fixture
-def accesos_api_15864():
-    """Retorna una instancia de Accesos configurada para autenticarse vía API Key bajo el contexto de Juan Escutia (ID 15864)."""
-    acc = Accesos(settings, use_api=True)
+def accesos_api_15864(_accesos_api_base):
+    """Retorna una instancia de Accesos configurada para autenticarse vía API Key bajo el contexto de Juan Escutia (ID 15864) (copia, ver accesos_no_api)."""
+    acc = copy.copy(_accesos_api_base)
     acc.user = {
         'username': 'juan.escutia@linkaform.com', 
         'parent_id': 10, 
