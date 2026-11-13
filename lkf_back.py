@@ -108,6 +108,20 @@ def pytest_addoption(parser):
                      help="Clase contra la que corren los tests (default addons; tambien LKF_BACK).")
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "back(*backs): el test solo aplica a esos backs (p. ej. back('sanic') en incidencias, "
+        "que en prod sirve Sanic y cuya copia en addons esta atrasada); en otro back sale SKIPPED",
+    )
+
+
+def pytest_runtest_setup(item):
+    backs = {b for m in item.iter_markers("back") for b in m.args}
+    if backs and back() not in backs:
+        pytest.skip(f"solo {', '.join(sorted(backs))}: en prod lo sirve ese back")
+
+
 def pytest_report_header(config):
     return f"lkf back: {back()}"
 

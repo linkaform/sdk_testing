@@ -51,6 +51,11 @@ hace solo cuando el cambio toca Sanic, en la imagen `linkaform/sanic-app:test`
 (`cd lkf-sanic-apps && ./lkf build test`). Un test que usa un método que
 Sanic no tiene sale SKIPPED "falta en sanic: <método>"; ver `lkf_back.py`.
 
+- Lo que en addons es herencia (Employee, Location, Vehiculo) en Sanic es
+  composición: para mockearlo usa `de(acc, "get_employee_data")`.
+- Una sección que en prod sirve solo Sanic (p. ej. `incidencias`) lleva
+  `pytestmark = pytest.mark.back("sanic")`: en addons sale SKIPPED.
+
 ## Estructura de un módulo
 
 Cada módulo sigue esta estructura:
