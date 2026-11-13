@@ -1,13 +1,12 @@
-# coding: utf-8
+"""Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS.
 
-"""
-Iniciar turno en la caseta (do_checkin) y sus validaciones, sin tocar
-preprod: se simulan la caseta, el empleado y el guardado.
-Notion: TB-269 a TB-273.
+./lkf test corre SOLO este archivo cuando cambia alguna funcion de
+C10_TRIGGERS. Aqui van los casos principales de cada funcion y las
+validaciones mas importantes; los demas unitarios de la seccion viven en
+otros archivos de unit/ y se corren a mano.
 """
 
 import pytest
-
 from ..data.turnos_data import (
     PUNTO_ESPERADO,
     GEO_LAT_LONG,
@@ -24,6 +23,12 @@ from ..data.turnos_data import (
     GUARDADO_OK,
 )
 
+C10_TRIGGERS = [
+    "do_checkin",
+    "parse_geolocation",
+    "require_active_employee",
+]
+
 
 def checkin_simulado(acceso_obj, mocker, caseta_abierta):
     """
@@ -39,6 +44,7 @@ def checkin_simulado(acceso_obj, mocker, caseta_abierta):
     return crear, sumar
 
 
+# --- checkin validaciones ---
 @pytest.mark.unit
 def test_geolocalizacion_se_normaliza_y_descarta_puntos_falsos(accesos_no_api):
     """

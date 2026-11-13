@@ -1,5 +1,20 @@
-import pytest, logging
+"""Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS.
 
+./lkf test corre SOLO este archivo cuando cambia alguna funcion de
+C10_TRIGGERS. Aqui van los casos principales de cada funcion y las
+validaciones mas importantes; los demas unitarios de la seccion viven en
+otros archivos de unit/ y se corren a mano.
+"""
+
+import pytest
+import logging
+
+C10_TRIGGERS = [
+    "get_config_accesos",
+]
+
+
+# --- get config accesos ---
 @pytest.mark.unit
 def test_instancia_accesos_no_api(accesos_no_api):
     """
@@ -7,6 +22,7 @@ def test_instancia_accesos_no_api(accesos_no_api):
     Si este test falla, ningún otro test unitario tiene sentido.
     """
     assert accesos_no_api is not None
+
 
 @pytest.mark.unit
 @pytest.mark.target("get_config_accesos")
@@ -33,6 +49,7 @@ def test_get_config_accesos_retorna_dict(accesos_no_api, mocker):
     assert isinstance(resultado, dict)
     assert "menus" in resultado
     assert "Turnos" in resultado["menus"]
+
 
 @pytest.mark.unit
 @pytest.mark.target("get_config_accesos")

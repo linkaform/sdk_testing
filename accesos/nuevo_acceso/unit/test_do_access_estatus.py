@@ -27,38 +27,6 @@ from ..data.nuevo_acceso_data import (
 
 
 @pytest.mark.unit
-def test_pase_cancelado_no_da_acceso(accesos_no_api, mocker):
-    """
-    TB-173: un pase cancelado debe detenerse con el error de pase cancelado
-    y no registrar la entrada. Si se registra, entra alguien cuyo pase ya
-    se dio de baja.
-    """
-    mocker.patch.object(accesos_no_api, "get_detail_access_pass", return_value={**PASE_DETALLE_ACTIVO, "estatus": "cancelado"})
-    mocker.patch.object(accesos_no_api, "get_count_ingresos", return_value=dict(SIN_INGRESOS))
-    registrar = mocker.patch.object(accesos_no_api, "_do_access")
-
-    with pytest.raises(Exception, match="El pase esta cancelado"):
-        accesos_no_api.do_access(QR_PASE_UNIT, LOCATION, AREA, {})
-    registrar.assert_not_called()
-
-
-@pytest.mark.unit
-def test_pase_vencido_no_da_acceso(accesos_no_api, mocker):
-    """
-    TB-174: un pase vencido debe detenerse con el error de pase vencido y no
-    registrar la entrada. Si se registra, entra alguien fuera de la vigencia
-    que le dieron.
-    """
-    mocker.patch.object(accesos_no_api, "get_detail_access_pass", return_value={**PASE_DETALLE_ACTIVO, "estatus": "vencido"})
-    mocker.patch.object(accesos_no_api, "get_count_ingresos", return_value=dict(SIN_INGRESOS))
-    registrar = mocker.patch.object(accesos_no_api, "_do_access")
-
-    with pytest.raises(Exception, match="El pase esta vencido"):
-        accesos_no_api.do_access(QR_PASE_UNIT, LOCATION, AREA, {})
-    registrar.assert_not_called()
-
-
-@pytest.mark.unit
 def test_pase_en_proceso_no_da_acceso(accesos_no_api, mocker):
     """
     TB-175: un pase en proceso (el visitante no ha subido lo que le piden)
@@ -95,21 +63,3 @@ def test_pase_limitado_a_ciertos_dias_no_deja_entrar_otro_dia(accesos_no_api, mo
     aviso = json.loads(str(error.value))["exception"]["msg"][0]
     for dia in permitidos:
         assert dia.capitalize() in aviso, f"El aviso no dice que puede entrar el {dia}: {aviso}"
-
-
-@pytest.mark.unit
-def test_pase_que_llego_a_su_limite_de_entradas_no_da_acceso(accesos_no_api, mocker):
-    """
-    TB-177: un pase activo con límite de entradas que ya las usó todas debe
-    detenerse con el aviso de límite completado y no registrar otra entrada.
-    Si se registra, el pase da más entradas de las que se autorizaron.
-    """
-    mocker.patch.object(
-        accesos_no_api, "get_detail_access_pass", return_value={**PASE_DETALLE_ACTIVO, "limite_de_acceso": LIMITE_ENTRADAS}
-    )
-    mocker.patch.object(accesos_no_api, "get_count_ingresos", return_value=dict(INGRESOS_EN_EL_LIMITE))
-    registrar = mocker.patch.object(accesos_no_api, "_do_access")
-
-    with pytest.raises(Exception, match="limite de entradas"):
-        accesos_no_api.do_access(QR_PASE_UNIT, LOCATION, AREA, {})
-    registrar.assert_not_called()

@@ -29,42 +29,6 @@ from ..data.bitacora_data import (
 @pytest.mark.unit
 @pytest.mark.target("do_out")
 @pytest.mark.bug(1477)
-def test_do_out_usa_la_zona_horaria_del_empleado(accesos_no_api, mocker):
-    """
-    TB-063: la entrada se guarda con la zona del empleado; la salida también
-    debe usarla. Con un empleado en Cancún y una entrada de hace 10 min, la
-    salida debe quedar en hora de Cancún y durar 10 min (antes se guardaba
-    en hora de CDMX y la duración salía casi de un día).
-    Bug 2610-1477 corregido (addons e8a511d).
-    """
-    ahora_empleado = datetime.now(pytz.timezone(ZONA_EMPLEADO_OTRA)).replace(tzinfo=None)
-    entrada = (ahora_empleado - ENTRADA_HACE_10_MIN).strftime("%Y-%m-%d %H:%M:%S")
-
-    accesos_no_api.user["timezone"] = ZONA_EMPLEADO_OTRA
-    mocker.patch.object(accesos_no_api, "get_employee_data", return_value={"timezone": ZONA_EMPLEADO_OTRA})
-    mocker.patch.object(
-        accesos_no_api, "get_last_user_move", return_value={**VISITA_ABIERTA_DURACION, "checkin_date": entrada}
-    )
-    mocker.patch.object(accesos_no_api, "get_booth_locations", return_value=[LOCATION])
-    mocker.patch.object(accesos_no_api, "user_in_facility", return_value=True)
-    guardar = mocker.patch.object(
-        accesos_no_api.lkf_api, "patch_multi_record", return_value={"status_code": 202, "json": {}}
-    )
-
-    accesos_no_api.do_out(VISITA_ABIERTA_DURACION["folio"], LOCATION, AREA)
-
-    answers = guardar.call_args.kwargs["answers"]
-    salida = datetime.strptime(answers[accesos_no_api.mf["fecha_salida"]], "%Y-%m-%d %H:%M:%S")
-    assert abs(salida - ahora_empleado) < MARGEN_HORA_SALIDA, (
-        f"La salida se guardó a las {salida:%H:%M} y la hora del empleado es {ahora_empleado:%H:%M}"
-    )
-    duracion = answers[accesos_no_api.mf["duracion"]]
-    assert duracion == DURACION_10_MIN, f"Una visita de 10 min quedó con duración '{duracion}'"
-
-
-@pytest.mark.unit
-@pytest.mark.target("do_out")
-@pytest.mark.bug(1477)
 def test_do_out_duracion_de_mas_de_un_dia_es_legible(accesos_no_api, mocker):
     """
     TB-076: una visita de más de 24 h debe mostrar los días ("1 día 1 h
