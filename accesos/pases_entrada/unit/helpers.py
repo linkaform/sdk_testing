@@ -2,6 +2,7 @@
 
 import copy
 from datetime import timedelta
+
 from lkf_back import de
 
 from ..data.pases_entrada_data import (
@@ -60,7 +61,8 @@ def crear_pase_simulado(acceso_obj, mocker):
     """
     Simula lo que create_access_pass consulta fuera de la función (forma,
     usuario, QR, ubicaciones, anfitriones, invitación) para revisar solo sus
-    validaciones. Regresa el mock del guardado.
+    validaciones; con de() el mock cae donde vive el método, en addons o en
+    Sanic. Regresa el mock del guardado.
     """
     mocker.patch.object(acceso_obj.lkf_api, "get_metadata", return_value={})
     mocker.patch.object(acceso_obj.lkf_api, "get_user_by_id", return_value={"timezone": acceso_obj.user["timezone"]})
@@ -74,5 +76,5 @@ def crear_pase_simulado(acceso_obj, mocker):
         ("access_pass_create_ics", {}),
         ("autorizar_pase_acceso", {}),
     ):
-        mocker.patch.object(acceso_obj, metodo, return_value=valor)
+        mocker.patch.object(de(acceso_obj, metodo), metodo, return_value=valor)
     return mocker.patch.object(acceso_obj.lkf_api, "post_forms_answers", return_value=dict(PASE_GUARDADO))
