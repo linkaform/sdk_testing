@@ -116,10 +116,13 @@ def pytest_configure(config):
     )
 
 
-def pytest_runtest_setup(item):
-    backs = {b for m in item.iter_markers("back") for b in m.args}
-    if backs and back() not in backs:
-        pytest.skip(f"solo {', '.join(sorted(backs))}: en prod lo sirve ese back")
+def pytest_collection_modifyitems(config, items):
+    # Marker skip (no pytest.skip en setup): asi el SKIPPED apunta al test y
+    # ./lkf test lo cuenta en su seccion.
+    for item in items:
+        backs = {b for m in item.iter_markers("back") for b in m.args}
+        if backs and back() not in backs:
+            item.add_marker(pytest.mark.skip(reason=f"solo {', '.join(sorted(backs))}: en prod lo sirve ese back"))
 
 
 def pytest_report_header(config):

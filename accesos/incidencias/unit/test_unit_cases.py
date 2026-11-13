@@ -1,10 +1,13 @@
 # coding: utf-8
 
-"""
-Crear una incidencia (create_incidence) sin tocar la cuenta: se simulan la
-metadata de la forma, el guardia de la sesión y el guardado, y se revisa lo
-que create_incidence manda a guardar.
-Notion: TB-279 a TB-283.
+"""Incidencias: crear (create_incidence), editar (update_incidence) y tiempo
+transcurrido al cierre (_tiempo_cierre_answers), sin tocar la cuenta.
+Notion: TB-279 a TB-288.
+
+Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
+./lkf test corre este archivo cuando cambia alguna funcion de C10_TRIGGERS.
+La seccion la sirve Sanic en prod: los tests llevan back("sanic") y en addons
+salen SKIPPED.
 """
 
 import pytest
@@ -19,9 +22,17 @@ from ..data.incidencias_data import (
     REPORTAR_FALLA,
     AFECTACION_SIN_MONTO,
     AFECTACION_CON_MONTO,
+    EDITADO_OK,
+    FOLIO_INCIDENCIA,
+    INCIDENCIA_ANTES,
+    SEGUIMIENTO_EXISTENTE,
+    SEGUIMIENTO_NUEVO,
+    TIEMPO_CIERRE_GUARDADO,
 )
 
 pytestmark = pytest.mark.back("sanic")
+
+C10_TRIGGERS = ["_crear_falla_de_incidencia", "_reporta_sesion", "_tiempo_cierre_answers", "_url_registro_lkf", "create_incidence", "update_incidence"]
 
 
 def crear_simulado(acc, mocker, guardado=GUARDADO_OK):
@@ -143,3 +154,99 @@ def test_si_la_incidencia_no_se_guarda_no_crea_falla_ni_historial(accesos_no_api
     assert not mocks["falla"].called, "Creó la falla de una incidencia que no se guardó"
     assert not mocks["historial"].called
     assert not mocks["catalogo"].called
+
+
+def editar_simulado(acc, mocker, antes=INCIDENCIA_ANTES, editado=EDITADO_OK):
+    mocker.patch.object(acc, "_incidencia_formateada", return_value=dict(antes))
+    mocker.patch.object(acc, "_reporta_sesion", return_value=GUARDIA_SESION)
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    mocker.patch.object(acc, "get_record_by_folio", return_value={"_id": INCIDENCIA_ANTES["_id"]})
+    mocker.patch.object(acc, "agregar_tipo_al_catalogo")
+    return {
+        "guardar": mocker.patch.object(acc.net, "patch_forms_answers", return_value=dict(editado)),
+        "historial": mocker.patch.object(acc, "registrar_cambios_incidencia"),
+    }
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_incidence", "_reporta_sesion")
+def test_seguimiento_nuevo_lo_registra_el_guardia_de_la_sesion_y_el_existente_conserva_el_suyo(accesos_no_api, mocker):
+    """
+    TB-284: al editar, el front manda todos los seguimientos. El que ya
+    existía conserva a quien lo registró y el nuevo (sin la llave) toma al
+    guardia de la sesión. Si no, cada edición cambia el autor de todo el historial.
+    """
+    acc = accesos_no_api
+    mocks = editar_simulado(acc, mocker)
+
+    acc.update_incidence({"seguimientos_incidencia": [dict(SEGUIMIENTO_EXISTENTE), dict(SEGUIMIENTO_NUEVO)]},
+                         FOLIO_INCIDENCIA)
+
+    f = acc.incidence_fields
+    existente, nuevo = mocks["guardar"].call_args.args[0]["answers"][f["seguimientos_incidencia"]]
+    assert existente[f["registrado_por_seguimiento"]] == SEGUIMIENTO_EXISTENTE["registrado_por"]
+    assert nuevo[f["registrado_por_seguimiento"]] == GUARDIA_SESION
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_incidence")
+def test_editar_registra_el_historial_con_la_version_de_antes(accesos_no_api, mocker):
+    """
+    TB-285: después de guardar la edición se registra el cambio en el
+    historial con la incidencia como estaba antes, sobre su folio. Es lo que
+    muestra "Historial" en el detalle de la incidencia.
+    """
+    acc = accesos_no_api
+    mocks = editar_simulado(acc, mocker)
+
+    acc.update_incidence({"comentario_incidencia": "Comentario editado QA"}, FOLIO_INCIDENCIA)
+
+    mocks["historial"].assert_called_once_with(INCIDENCIA_ANTES, folio=FOLIO_INCIDENCIA)
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_incidence")
+def test_si_la_edicion_no_se_guarda_no_registra_historial(accesos_no_api, mocker):
+    """
+    TB-286: si LinkaForm rechaza la edición, el historial no debe decir que
+    la incidencia cambió.
+    """
+    acc = accesos_no_api
+    mocks = editar_simulado(acc, mocker, editado=GUARDADO_ERROR)
+
+    acc.update_incidence({"comentario_incidencia": "Comentario editado QA"}, FOLIO_INCIDENCIA)
+
+    assert not mocks["historial"].called, "Registró en el historial una edición que no se guardó"
+
+
+@pytest.mark.unit
+@pytest.mark.target("_tiempo_cierre_answers")
+def test_reabrir_una_incidencia_cerrada_limpia_el_tiempo_al_cierre(accesos_no_api):
+    """
+    TB-287: si una incidencia cerrada se reabre, "Tiempo transcurrido al
+    cierre" se limpia; se vuelve a calcular cuando se cierre otra vez.
+    """
+    acc = accesos_no_api
+    antes = {**INCIDENCIA_ANTES, "estatus": "cerrado", "tiempo_transcurrido_cierre": TIEMPO_CIERRE_GUARDADO}
+
+    res = acc._tiempo_cierre_answers(antes, "abierto")
+
+    assert res == {acc.incidence_fields["tiempo_transcurrido_cierre"]: ""}
+
+
+@pytest.mark.unit
+@pytest.mark.target("_tiempo_cierre_answers")
+def test_editar_una_incidencia_cerrada_conserva_su_tiempo_al_cierre(accesos_no_api, mocker):
+    """
+    TB-288: editar una incidencia que sigue cerrada vuelve a mandar el tiempo
+    que ya tenía, sin recalcularlo (el PATCH reemplaza las respuestas
+    completas: si no se manda, se pierde).
+    """
+    acc = accesos_no_api
+    creada = mocker.patch.object(acc, "_incidencia_creada_en")
+    antes = {**INCIDENCIA_ANTES, "estatus": "cerrado", "tiempo_transcurrido_cierre": TIEMPO_CIERRE_GUARDADO}
+
+    res = acc._tiempo_cierre_answers(antes, None)
+
+    assert res == {acc.incidence_fields["tiempo_transcurrido_cierre"]: TIEMPO_CIERRE_GUARDADO}
+    assert not creada.called, "Recalculó el tiempo de una incidencia que ya estaba cerrada"

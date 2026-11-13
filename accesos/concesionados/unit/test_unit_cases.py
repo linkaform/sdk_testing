@@ -1,18 +1,18 @@
-# coding: utf-8
+"""Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS.
 
+./lkf test corre SOLO este archivo cuando cambia alguna funcion de
+C10_TRIGGERS. Aqui van los casos principales de cada funcion y las
+validaciones mas importantes; los demas unitarios de la seccion viven en
+otros archivos de unit/ y se corren a mano.
 """
-Crear una concesión (create_article_concessioned, + Nueva Concesión) sin
-tocar preprod: se simula el guardado y se revisan los answers que se mandan
-a la forma.
-Notion: TB-236 a TB-238.
-"""
-
-import copy
 
 import pytest
-from bson import ObjectId
-
+import copy
 from ..data.concesionados_data import (
+    LOCATION,
+    OTRA_UBICACION,
+    ESTADO_ABIERTO,
+    ESTADO_TODOS,
     CONCESION_EMPLEADO,
     CONCESION_OTRO,
     EQUIPO_CONCESION,
@@ -20,9 +20,53 @@ from ..data.concesionados_data import (
     GUARDADO_OK,
     COMENTARIO_PRESTAMO,
     FOTO_VALIDA,
+    FOLIO_CONCESION,
 )
+from bson import ObjectId
+
+C10_TRIGGERS = [
+    "concesionados_base_match",
+    "create_article_concessioned",
+    "delete_article_concessioned",
+]
 
 
+def answers_guardados(acceso_obj, mocker, concesion):
+    """Crea la concesión con el guardado simulado y regresa los answers que se mandaron."""
+    mocker.patch.object(acceso_obj.lkf_api, "get_metadata", return_value=dict(METADATA_CONCESION))
+    guardar = mocker.patch.object(acceso_obj.lkf_api, "post_forms_answers", return_value=dict(GUARDADO_OK))
+    acceso_obj.create_article_concessioned(copy.deepcopy(concesion))
+    return guardar.call_args.args[0]["answers"]
+
+
+# --- concesionados base match ---
+@pytest.mark.unit
+def test_filtro_usa_la_ubicacion_y_el_estado_de_la_pestana(accesos_no_api):
+    """
+    TB-234: una ubicación en texto debe filtrar exacto por ella y la lista de
+    ubicaciones del header con $in, ganando sobre la de texto. Pendientes
+    manda el estado 'abierto' y debe entrar al filtro; Todos no filtra por
+    estado. Si no, la lista mezcla concesiones de otras plantas o ya
+    devueltas.
+    """
+    acc = accesos_no_api
+    ubicacion = f"answers.{acc.AREAS_DE_LAS_UBICACIONES_CAT_OBJ_ID}.{acc.mf['ubicacion']}"
+    estado = f"answers.{acc.cons_f['status_concesion']}"
+
+    filtro = acc.concesionados_base_match(location=LOCATION, status=ESTADO_ABIERTO)
+    assert filtro["form_id"] == acc.CONCESSIONED_ARTICULOS
+    assert filtro["deleted_at"] == {"$exists": False}
+    assert filtro[ubicacion] == LOCATION
+    assert filtro[estado] == ESTADO_ABIERTO
+
+    varias = acc.concesionados_base_match(location=LOCATION, locations=[LOCATION, OTRA_UBICACION])
+    assert varias[ubicacion] == {"$in": [LOCATION, OTRA_UBICACION]}, f"Filtró {varias[ubicacion]!r}"
+
+    todos = acc.concesionados_base_match(location=LOCATION, status=ESTADO_TODOS)
+    assert estado not in todos, f"Todos filtró por estado {todos[estado]!r}"
+
+
+# --- create article concessioned ---
 @pytest.mark.unit
 def test_crear_concesion_sin_equipos_da_error_y_no_la_guarda(accesos_no_api, mocker):
     """
@@ -35,14 +79,6 @@ def test_crear_concesion_sin_equipos_da_error_y_no_la_guarda(accesos_no_api, moc
     with pytest.raises(Exception, match="Se requiere enviar lista de equipos concesionados"):
         accesos_no_api.create_article_concessioned(dict(CONCESION_EMPLEADO))
     guardar.assert_not_called()
-
-
-def answers_guardados(acceso_obj, mocker, concesion):
-    """Crea la concesión con el guardado simulado y regresa los answers que se mandaron."""
-    mocker.patch.object(acceso_obj.lkf_api, "get_metadata", return_value=dict(METADATA_CONCESION))
-    guardar = mocker.patch.object(acceso_obj.lkf_api, "post_forms_answers", return_value=dict(GUARDADO_OK))
-    acceso_obj.create_article_concessioned(copy.deepcopy(concesion))
-    return guardar.call_args.args[0]["answers"]
 
 
 @pytest.mark.unit
@@ -88,3 +124,20 @@ def test_foto_y_comentario_del_prestamo_se_guardan_en_los_campos_del_prestamo(ac
     assert campos["evidencia_entrega"] not in equipo, "La foto quedó en el campo de Devoluciones"
     assert campos["comentario_entrega"] not in equipo, "El comentario quedó en el campo de Devoluciones"
     assert campos["marca_equipo_concesion"] not in equipo, "Se guardó un campo que no es del grupo de equipos"
+
+
+# --- delete article concessioned ---
+@pytest.mark.unit
+def test_folio_que_no_existe_da_error_y_no_borra(accesos_no_api, mocker):
+    """
+    TB-235: si el folio no se encuentra, delete_article_concessioned debe
+    detenerse con el error de folio no encontrado y no mandar a borrar nada.
+    Si borra, el guardia no se entera de que la concesión que quería quitar
+    no existía.
+    """
+    mocker.patch.object(accesos_no_api, "get_record_by_folio", return_value={})
+    borrar = mocker.patch.object(accesos_no_api.lkf_api, "patch_record_list")
+
+    with pytest.raises(Exception, match="No se encontro el folio correspondiente"):
+        accesos_no_api.delete_article_concessioned([FOLIO_CONCESION])
+    borrar.assert_not_called()
