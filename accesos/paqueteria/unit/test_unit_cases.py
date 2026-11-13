@@ -1,15 +1,13 @@
-# coding: utf-8
+"""Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS.
 
-"""
-Recibir un paquete (create_paquete, + Nuevo Paquete) sin tocar preprod: se
-simula el guardado y se revisan los answers que se mandan a la forma.
-Notion: TB-246 a TB-248.
+./lkf test corre SOLO este archivo cuando cambia alguna funcion de
+C10_TRIGGERS. Aqui van los casos principales de cada funcion y las
+validaciones mas importantes; los demas unitarios de la seccion viven en
+otros archivos de unit/ y se corren a mano.
 """
 
 import copy
-
 import pytest
-
 from ..data.paqueteria_data import (
     LOCATION,
     AREA,
@@ -22,7 +20,16 @@ from ..data.paqueteria_data import (
     CANALES_CORREO,
     AVISO_CORREO,
     AVISO_ENVIADO,
+    AVISO_SIN_EMAIL,
+    OTRA_UBICACION,
+    ESTATUS_GUARDADO,
+    ESTATUS_TODOS,
 )
+
+C10_TRIGGERS = [
+    "create_paquete",
+    "paqueteria_base_match",
+]
 
 
 def guardar_paquete(acceso_obj, mocker, paquete, respuesta=GUARDADO_OK, notificacion=None):
@@ -33,6 +40,7 @@ def guardar_paquete(acceso_obj, mocker, paquete, respuesta=GUARDADO_OK, notifica
     return res, guardar
 
 
+# --- create paquete ---
 @pytest.mark.unit
 def test_recibir_paquete_guarda_ubicacion_caseta_y_locker_en_sus_catalogos(accesos_no_api, mocker):
     """
@@ -97,3 +105,49 @@ def test_aviso_solo_se_manda_si_el_paquete_se_guardo(accesos_no_api, mocker):
     avisar.assert_called_once()
     assert avisar.call_args.args[1] == {"canales": CANALES_CORREO}
     assert "notificacion_paqueteria" not in guardar.call_args.args[0]["answers"]
+
+
+# --- notificar paquete ---
+@pytest.mark.unit
+def test_aviso_por_correo_sin_email_reporta_el_error_y_no_se_envia(accesos_no_api, mocker):
+    """
+    TB-249: con el canal correo y sin email del destinatario, el aviso debe
+    reportar "Sin email del destinatario" para el correo y no intentar
+    enviarlo. Si intenta enviarlo, truena o el guardia cree que se avisó.
+    """
+    enviar = mocker.patch.object(accesos_no_api, "send_email_notification")
+
+    resultado = accesos_no_api._notificar_paquete_recibido(dict(PAQUETE_UNIT), dict(AVISO_SIN_EMAIL))
+
+    assert resultado["correo"] == {"ok": False, "error": "Sin email del destinatario"}
+    enviar.assert_not_called()
+
+
+# --- paqueteria base match ---
+@pytest.mark.unit
+def test_filtro_usa_la_ubicacion_la_caseta_y_el_estatus_de_la_pestana(accesos_no_api):
+    """
+    TB-245: una ubicación en texto debe filtrar exacto y la lista de
+    ubicaciones del header con $in, ganando sobre la de texto. Pendientes
+    manda el estatus 'guardado' y la caseta; los dos deben entrar al filtro.
+    Todos no filtra por estatus. Si no, la lista mezcla paquetes de otras
+    casetas o ya entregados.
+    """
+    acc = accesos_no_api
+    campos = acc.paquetes_fields
+    ubicacion = f"answers.{campos['ubicacion_paqueteria']}"
+    caseta = f"answers.{campos['area_paqueteria']}"
+    estatus = f"answers.{campos['estatus_paqueteria']}"
+
+    filtro = acc.paqueteria_base_match(location=LOCATION, area=AREA, status=ESTATUS_GUARDADO)
+    assert filtro["form_id"] == acc.PAQUETERIA
+    assert filtro["deleted_at"] == {"$exists": False}
+    assert filtro[ubicacion] == LOCATION
+    assert filtro[caseta] == AREA
+    assert filtro[estatus] == ESTATUS_GUARDADO
+
+    varias = acc.paqueteria_base_match(location=LOCATION, locations=[LOCATION, OTRA_UBICACION])
+    assert varias[ubicacion] == {"$in": [LOCATION, OTRA_UBICACION]}, f"Filtró {varias[ubicacion]!r}"
+
+    todos = acc.paqueteria_base_match(location=LOCATION, status=ESTATUS_TODOS)
+    assert estatus not in todos, f"Todos filtró por estatus {todos[estatus]!r}"
