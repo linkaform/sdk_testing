@@ -56,17 +56,24 @@ def test_get_config_accesos_retorna_dict(accesos_no_api, mocker):
 def test_get_config_accesos_sin_datos_retorna_dict_vacio(accesos_no_api, mocker):
     """
     Cuando MongoDB no encuentra configuración para el usuario,
-    get_config_accesos() debe retornar un dict vacío, no None.
+    get_config_accesos() debe retornar un dict (no None) con solo el
+    username de Empleados (new_user_username), que el header y Mi perfil
+    necesitan aunque el usuario no tenga Configuración Accesos.
 
-    Mockea solo cr.aggregate para que la función real corra completa.
+    Mockea cr.aggregate y la lectura de Empleados para que la función real
+    corra completa sin tocar la base.
     """
     mocker.patch.object(
         accesos_no_api.cr,
         "aggregate",
         return_value=[]
     )
+    if hasattr(accesos_no_api, "_get_my_username"):
+        mocker.patch.object(accesos_no_api, "_get_my_username", return_value="usuario.prueba")
 
     resultado = accesos_no_api.get_config_accesos()
 
     assert isinstance(resultado, dict)
-    assert resultado == {}
+    assert {k: v for k, v in resultado.items() if k != "new_user_username"} == {}
+    if hasattr(accesos_no_api, "_get_my_username"):
+        assert resultado["new_user_username"] == "usuario.prueba"
