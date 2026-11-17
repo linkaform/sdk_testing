@@ -194,3 +194,29 @@ def test_agregar_vehiculo_sin_record_id_ni_folio_da_error(accesos_no_api, mocker
     with pytest.raises(Exception, match="Se requiere el folio o el id"):
         acc.update_bitacora_entrada({"vehiculo": dict(VEHICULO_AGREGADO)})
     guardar.assert_not_called()
+
+
+# --- vehiculo del pase a la bitacora ---
+@pytest.mark.unit
+def test_vehiculo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
+    """
+    TB-312: al registrar la entrada, el vehículo del pase (con las etiquetas
+    de la lista) pasa por format_vehiculos_simple y luego por
+    _answers_vehiculos; debe llegar a la bitácora con tipo, marca, modelo,
+    estado, placas y color. Si se pierde uno, la pestaña Vehículos muestra el
+    vehículo incompleto.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+
+    simple = acc.format_vehiculos_simple([dict(VEHICULO_LLAVES_LARGAS)])
+    vehiculo = acc._answers_vehiculos(simple)[0]
+
+    assert vehiculo[de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID] == {
+        mf["tipo_vehiculo"]: VEHICULO_VISITA["tipo"],
+        mf["marca_vehiculo"]: VEHICULO_VISITA["marca"],
+        mf["modelo_vehiculo"]: VEHICULO_VISITA["modelo"],
+    }
+    assert vehiculo[acc.ESTADO_OBJ_ID] == {mf["nombre_estado"]: VEHICULO_VISITA["estado"]}
+    assert vehiculo[mf["placas_vehiculo"]] == VEHICULO_VISITA["placas"]
+    assert vehiculo[mf["color_vehiculo"]] == VEHICULO_VISITA["color"]
