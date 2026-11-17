@@ -19,7 +19,7 @@ from ..data.areas_data import (
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["get_catalog_areas_formatted"]
+C10_TRIGGERS = ["get_area_by_id", "get_catalog_areas_formatted"]
 
 
 @pytest.mark.unit
@@ -60,3 +60,22 @@ def test_catalogo_de_areas_trae_primero_las_mas_recientes_y_pagina(accesos_no_ap
     assert (pagina_1["total_records"], pagina_1["total_pages"]) == (3, 2)
     assert (pagina_1["actual_page"], pagina_1["records_on_page"]) == (1, 2)
     assert (pagina_2["actual_page"], pagina_2["records_on_page"]) == (2, 1)
+
+
+@pytest.mark.unit
+@pytest.mark.target("get_area_by_id")
+def test_detalle_de_area_sin_record_id_marca_error(accesos_no_api, mocker):
+    """
+    TB-301: el detalle de un área (pantalla a la que llega el QR físico) se
+    pide por record_id; sin él, get_area_by_id debe marcar error sin
+    consultar la base.
+    """
+    acc = accesos_no_api
+    cr = mocker.Mock()
+    mocker.patch.object(acc, "cr", cr, create=True)
+
+    with pytest.raises(Exception, match="Record ID is required"):
+        acc.get_area_by_id("")
+
+    cr.aggregate.assert_not_called()
+
