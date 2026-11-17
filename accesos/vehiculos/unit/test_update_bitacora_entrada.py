@@ -7,18 +7,22 @@ se manda a guardar en el registro de la bitácora.
 Notion: TB-310.
 """
 
+import pytest
+
 from ..data.vehiculos_data import (
     VEHICULO_AGREGADO_CON_FOTO,
     REGISTRO_BITACORA,
 )
 
 
+@pytest.mark.bug(1578)
 def test_agregar_vehiculo_a_una_entrada_guarda_su_foto(accesos_no_api, mocker):
     """
     TB-310: el modal Nuevo Vehículo manda la foto del vehículo
     (foto_vehiculo); update_bitacora_entrada debe guardarla en el renglón
     nuevo, igual que al registrar la entrada. Si no, el vehículo agregado
-    queda sin foto aunque el guardia la haya tomado.
+    queda sin foto aunque el guardia la haya tomado. Ticket 2610-1578: el
+    renglón se arma sin la foto.
     """
     acc = accesos_no_api
     mf = acc.mf
