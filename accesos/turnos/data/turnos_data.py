@@ -38,3 +38,7 @@ ZONA_TURNO = "America/Monterrey"
 ESTATUS_ENTRADA = "entrada"
 ESTATUS_SALIDA = "salida"
 ASISTENCIA_OK = "Correcto"
+# Quitar el suplente (update_delete_suplente): folio del turno abierto del
+# usuario y lo que manda el front al borrar el nombre.
+FOLIO_TURNO = "1-TURNO"
+SUPLENTE_VACIO = ""
