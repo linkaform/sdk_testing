@@ -34,6 +34,7 @@ C10_TRIGGERS = [
     "delete_failure",
     "fallas_base_match",
     "update_failure",
+    "update_failure_seguimiento",
 ]
 
 
@@ -229,3 +230,25 @@ def test_editar_falla_sin_cerrarla_la_deja_abierta_y_sin_fecha_de_solucion(acces
     assert res["json"]["falla_fecha_hora_solucion"] == "", (
         f"La falla abierta quedó con fecha de solución {res['json']['falla_fecha_hora_solucion']!r}"
     )
+
+
+# --- update failure seguimiento ---
+@pytest.mark.unit
+def test_seguimiento_a_folio_que_no_existe_da_error_y_no_guarda(accesos_no_api, mocker):
+    """
+    TB-223: si el folio no está en la lista de fallas,
+    update_failure_seguimiento debe detenerse con "No hay una falla
+    registrada." y no guardar nada. Si sigue, intenta guardar el seguimiento
+    sobre un registro que no existe.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_FALLA))
+    mocker.patch.object(acc, "get_list_fallas", return_value=[])
+    guardar = mocker.patch.object(acc.net, "patch_forms_answers", return_value=dict(EDICION_OK))
+
+    with pytest.raises(Exception, match="No hay una falla registrada"):
+        acc.update_failure_seguimiento(
+            location="", area="", status=ESTATUS_ABIERTO, folio=FOLIO_FALLA, falla_grupo_seguimiento=dict(SEGUIMIENTO_UNIT)
+        )
+
+    guardar.assert_not_called()
