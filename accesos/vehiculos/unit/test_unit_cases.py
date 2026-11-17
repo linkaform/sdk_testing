@@ -17,6 +17,8 @@ from ..data.vehiculos_data import (
     DESGLOSE_VEHICULOS,
     FILTRO_DENTRO,
     LIMITE_LISTA,
+    VEHICULO_AGREGADO,
+    REGISTRO_BITACORA,
 )
 
 C10_TRIGGERS = [
@@ -25,6 +27,7 @@ C10_TRIGGERS = [
     "_size_vehiculos_con_tipo",
     "format_vehiculos_simple",
     "get_list_bitacora",
+    "update_bitacora_entrada",
 ]
 
 
@@ -144,3 +147,35 @@ def test_contador_de_vehiculos_dentro_no_cuenta_los_que_no_tienen_tipo(accesos_n
     assert filtro["cond"] == {"$not": [{"$in": [{"$ifNull": [tipo, None]}, ["", None]]}]}, (
         f"La condición del contador es {filtro['cond']}"
     )
+
+
+# --- update bitacora entrada ---
+@pytest.mark.unit
+def test_agregar_vehiculo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_api, mocker):
+    """
+    TB-309: con el vehículo del modal Nuevo Vehículo (add-local-vehicule),
+    update_bitacora_entrada debe agregarlo como renglón nuevo del grupo de
+    vehículos de la entrada, con tipo, marca y modelo en el catálogo de
+    vehículos, el estado en su catálogo y placas y color en sus campos. Si un
+    dato cae fuera de su campo, la pestaña Vehículos no lo muestra.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value={"status_code": 202})
+
+    acc.update_bitacora_entrada({"vehiculo": dict(VEHICULO_AGREGADO)}, record_id=REGISTRO_BITACORA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [REGISTRO_BITACORA]
+    assert guardar.call_args.kwargs["form_id"] == acc.BITACORA_ACCESOS
+    renglones = guardar.call_args.kwargs["answers"][mf["grupo_vehiculos"]]
+    assert list(renglones) == [-1], f"El vehículo no se agregó como renglón nuevo: {list(renglones)}"
+    vehiculo = renglones[-1]
+    assert vehiculo[de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID] == {
+        mf["tipo_vehiculo"]: VEHICULO_AGREGADO["tipo"],
+        mf["marca_vehiculo"]: VEHICULO_AGREGADO["marca"],
+        mf["modelo_vehiculo"]: VEHICULO_AGREGADO["modelo"],
+    }
+    assert vehiculo[acc.ESTADO_OBJ_ID] == {mf["nombre_estado"]: VEHICULO_AGREGADO["estado"]}
+    assert vehiculo[mf["placas_vehiculo"]] == VEHICULO_AGREGADO["placas"]
+    assert vehiculo[mf["color_vehiculo"]] == VEHICULO_AGREGADO["color"]

@@ -72,3 +72,7 @@ VEHICULO_LLAVES_LARGAS = {
     "color_vehiculo": VEHICULO_VISITA["color"],
 }
 RENGLON_VACIO = {}
+
+# Agregar un vehículo a una entrada ya registrada (update_bitacora_entrada):
+# _id del registro de la bitácora.
+REGISTRO_BITACORA = "000000000000000000000051"
