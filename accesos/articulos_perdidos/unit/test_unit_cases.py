@@ -207,3 +207,25 @@ def test_entregar_articulo_lo_deja_entregado_con_fecha_y_quien_lo_recibe(accesos
     assert answers[f["date_entrega_perdido"]] == fecha_entrega
     assert answers[f["recibe_perdido"]] == DEVOLUCION["recibe_perdido"]
     assert answers[f["telefono_recibe_perdido"]] == DEVOLUCION["telefono_recibe_perdido"]
+
+
+@pytest.mark.unit
+def test_editar_articulo_sin_entregarlo_lo_deja_pendiente_y_sin_fecha_de_entrega(accesos_no_api, mocker):
+    """
+    TB-233: con el payload de editar-article-modal (estatus 'pendiente'),
+    update_article_lost debe guardar 'pendiente' en el folio del artículo y
+    no ponerle fecha de entrega. Si le pone fecha, el artículo parece
+    entregado aunque siga en Pendientes.
+    """
+    acc = accesos_no_api
+    guardar = editar_simulado(acc, mocker)
+
+    res = acc.update_article_lost(dict(ARTICULO_UNIT), FOLIO_ARTICULO)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["folios"] == [FOLIO_ARTICULO]
+    f = acc.perdidos_fields
+    answers = guardar.call_args.kwargs["answers"]
+    assert answers[f["estatus_perdido"]] == ESTATUS_PENDIENTE
+    assert f["date_entrega_perdido"] not in answers, "El artículo pendiente se guardó con fecha de entrega"
+    assert res["json"]["date_entrega_perdido"] == ""
