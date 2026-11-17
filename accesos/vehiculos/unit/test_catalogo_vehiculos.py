@@ -27,3 +27,21 @@ def test_marcas_de_un_tipo_de_vehiculo_se_piden_al_catalogo_por_ese_tipo(accesos
     opciones = consultar.call_args.args[2]
     assert opciones["startkey"] == [VEHICULO_VISITA["tipo"]]
     assert opciones["group_level"] == 2
+
+
+def test_modelos_de_una_marca_se_piden_al_catalogo_por_tipo_y_marca(accesos_no_api, mocker):
+    """
+    TB-315: vehiculo_modelo debe pedir al catálogo de vehículos solo los
+    modelos del tipo y la marca elegidos (startkey con los dos, group_level
+    3). Si truena o pide otra cosa, el selector de modelo sale vacío o con
+    modelos de otras marcas.
+    """
+    acc = accesos_no_api
+    consultar = mocker.patch.object(acc.lkf_api, "catalog_view", return_value=[])
+
+    acc.vehiculo_modelo(VEHICULO_VISITA["tipo"], VEHICULO_VISITA["marca"])
+
+    consultar.assert_called_once()
+    opciones = consultar.call_args.args[2]
+    assert opciones["startkey"] == [VEHICULO_VISITA["tipo"], VEHICULO_VISITA["marca"]]
+    assert opciones["group_level"] == 3
