@@ -58,6 +58,23 @@ def mongo_simulado(acceso_obj, mocker, respuestas):
     return cr
 
 
+def es_conteo(consulta):
+    """La consulta del total (termina en $count), no la de la lista."""
+    return any("$count" in etapa for etapa in consulta)
+
+
+def mongo_con_total(acceso_obj, mocker, total):
+    """
+    Mongo simulado que regresa el total a la consulta de conteo y una lista
+    vacía a la de registros, sin importar en qué orden las haga cada back
+    (addons pide primero el total; Sanic, primero la lista).
+    """
+    cr = mocker.MagicMock()
+    cr.aggregate.side_effect = lambda consulta, *a, **k: [{"total": total}] if es_conteo(consulta) else []
+    mocker.patch.object(acceso_obj, "cr", cr, create=True)
+    return cr
+
+
 # --- bitacora base match ---
 @pytest.mark.unit
 def test_filtro_usa_la_ubicacion_en_texto_o_en_lista_y_la_caseta(accesos_no_api):
@@ -272,12 +289,12 @@ def test_lista_calcula_el_total_y_las_paginas(accesos_no_api, mocker):
     saltar 20 y traer 20. Si el cálculo falla, el paginador del front se
     salta registros o muestra páginas vacías.
     """
-    cr = mongo_simulado(accesos_no_api, mocker, [[{"total": TOTAL_REGISTROS}], []])
+    cr = mongo_con_total(accesos_no_api, mocker, TOTAL_REGISTROS)
 
     res = accesos_no_api.get_list_bitacora(LOCATION, AREA, limit=POR_PAGINA, offset=OFFSET_PAGINA_2)
 
     assert res["total_records"] == TOTAL_REGISTROS
     assert res["total_pages"] == PAGINAS_ESPERADAS
     assert res["actual_page"] == 2
-    consulta = cr.aggregate.call_args_list[1].args[0]
+    consulta = next(c.args[0] for c in cr.aggregate.call_args_list if not es_conteo(c.args[0]))
     assert consulta[-2:] == [{"$skip": OFFSET_PAGINA_2}, {"$limit": POR_PAGINA}], f"Pidió {consulta[-2:]}"
