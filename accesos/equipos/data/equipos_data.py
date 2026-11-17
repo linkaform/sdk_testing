@@ -72,3 +72,5 @@ RENGLON_VACIO = {}
 # Agregar un equipo a una entrada ya registrada (update_bitacora_entrada):
 # _id del registro de la bitácora.
 REGISTRO_BITACORA = "000000000000000000000061"
+# El mismo equipo con la foto que sube el guardia en el modal.
+EQUIPO_AGREGADO_CON_FOTO = dict(EQUIPO_AGREGADO, foto_equipo=FOTO_VALIDA)
