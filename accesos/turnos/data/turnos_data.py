@@ -30,3 +30,11 @@ ROL_ADMIN = "Administrador"
 # Turno abierto de la caseta y respuesta del guardado cuando sale bien.
 CHECKIN_ABIERTO = {"_id": "000000000000000000000031"}
 GUARDADO_OK = {"status_code": 202}
+
+# Cerrar turno (do_checkout): id del guardia que sigue dentro del turno y la
+# zona con la que se creó el registro.
+GUARDIA_ID = 1001
+ZONA_TURNO = "America/Monterrey"
+ESTATUS_ENTRADA = "entrada"
+ESTATUS_SALIDA = "salida"
+ASISTENCIA_OK = "Correcto"

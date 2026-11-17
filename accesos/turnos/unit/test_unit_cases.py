@@ -22,10 +22,15 @@ from ..data.turnos_data import (
     ROL_ADMIN,
     CHECKIN_ABIERTO,
     GUARDADO_OK,
+    GUARDIA_ID,
+    ZONA_TURNO,
+    ESTATUS_ENTRADA,
+    ASISTENCIA_OK,
 )
 
 C10_TRIGGERS = [
     "do_checkin",
+    "do_checkout",
     "parse_geolocation",
     "require_active_employee",
 ]
@@ -140,3 +145,52 @@ def test_con_la_caseta_abierta_el_guardia_se_suma_al_turno(accesos_no_api, mocke
     sumar.assert_called_once()
     assert sumar.call_args.args[1] == CHECKIN_ABIERTO["_id"], "Se sumó a otro turno"
     assert sumar.call_args.args[7] == [ROL_GUARDIA], f"Roles que se mandaron: {sumar.call_args.args[7]}"
+
+
+# --- checkout ---
+def turno_guardado(acceso_obj):
+    """Registro del turno abierto en la caseta con un guardia que sigue dentro."""
+    f = acceso_obj.checkin_fields
+    empleados = de(acceso_obj, "CONF_AREA_EMPLEADOS_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_CAT_OBJ_ID
+    apoyo = de(acceso_obj, "CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID
+    return {
+        "_id": CHECKIN_ABIERTO["_id"],
+        "folio": "1-TURNO",
+        "timezone": ZONA_TURNO,
+        "answers": {
+            empleados: {acceso_obj.f["location"]: LOCATION, acceso_obj.f["area"]: AREA},
+            f["guard_group"]: [{
+                apoyo: {acceso_obj.mf["id_usuario"]: [GUARDIA_ID]},
+                f["checkin_status"]: ESTATUS_ENTRADA,
+            }],
+        },
+    }
+
+
+def checkout_simulado(acceso_obj, mocker, caseta_abierta=True):
+    """
+    Simula lo que do_checkout consulta antes de guardar: el usuario, la caseta
+    y el turno. Regresa los mocks del guardado y de cerrar la asistencia.
+    """
+    mocker.patch.object(acceso_obj.lkf_api, "get_user_by_id", return_value=dict(USUARIO_GUARDIA))
+    mocker.patch.object(acceso_obj, "is_boot_available", return_value=caseta_abierta)
+    mocker.patch.object(acceso_obj, "get_record_by_id", return_value=turno_guardado(acceso_obj))
+    mocker.patch.object(acceso_obj.lkf_api, "get_metadata", return_value={})
+    guardar = mocker.patch.object(acceso_obj.lkf_api, "patch_record", return_value=dict(GUARDADO_OK))
+    asistencia = mocker.patch.object(acceso_obj, "close_guards_attendance", return_value=ASISTENCIA_OK)
+    return guardar, asistencia
+
+
+@pytest.mark.unit
+def test_cerrar_turno_sin_el_id_del_turno_da_error(accesos_no_api, mocker):
+    """
+    TB-274: sin checkin_id, do_checkout debe detenerse con el error de que no
+    encontró un turno válido y no guardar nada. Si sigue, cierra un turno que
+    no se sabe cuál es.
+    """
+    acc = accesos_no_api
+    guardar, _ = checkout_simulado(acc, mocker)
+
+    with pytest.raises(Exception, match="No encontramos un checking valido"):
+        acc.do_checkout(checkin_id=None, location=LOCATION, area=AREA)
+    guardar.assert_not_called()
