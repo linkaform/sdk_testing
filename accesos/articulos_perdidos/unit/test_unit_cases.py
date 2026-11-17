@@ -22,6 +22,8 @@ from ..data.perdidos_data import (
     ARTICULO_UNIT,
     EMPLEADO_PERDIDOS,
     GUARDADO_OK,
+    TIPO_ARTICULO,
+    ARTICULO_SELECCION,
 )
 
 C10_TRIGGERS = [
@@ -149,3 +151,23 @@ def test_registrar_articulo_guarda_la_ubicacion_y_la_caseta_juntas(accesos_no_ap
     f = acc.perdidos_fields
     answers = guardar.call_args.args[0]["answers"]
     assert answers[f["ubicacion_catalog"]] == {f["ubicacion_perdido"]: LOCATION, f["area_perdido"]: AREA}
+
+
+@pytest.mark.unit
+def test_registrar_articulo_guarda_la_categoria_y_el_articulo_juntos(accesos_no_api, mocker):
+    """
+    TB-230: con categoría y artículo del catálogo, create_article_lost debe
+    guardar los dos en el catálogo de tipos de artículo. Si se pierde uno, el
+    buscador no lo encuentra por categoría o por artículo.
+    """
+    acc = accesos_no_api
+    guardar = registrar_simulado(acc, mocker)
+
+    acc.create_article_lost(dict(ARTICULO_UNIT))
+
+    f = acc.perdidos_fields
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["tipo_articulo_catalog"]] == {
+        f["tipo_articulo_perdido"]: TIPO_ARTICULO,
+        f["articulo_seleccion"]: ARTICULO_SELECCION,
+    }
