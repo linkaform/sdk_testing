@@ -54,3 +54,17 @@ def test_editar_destinatario_empleado_lo_guarda_en_el_catalogo_de_empleados(acce
     destinatario = answers.get(acc.CONF_AREA_EMPLEADOS_CAT_OBJ_ID)
     esperado = {acc.mf["nombre_empleado"]: EDICION_PAQUETE["quien_recibe_paqueteria"]}
     assert destinatario == esperado, f"El destinatario quedó {destinatario!r} en el catálogo de empleados"
+
+
+def test_editar_ubicacion_del_paquete_la_guarda_en_el_catalogo_de_ubicaciones(accesos_no_api, mocker):
+    """
+    TB-253: al editar un paquete, update_paquete debe guardar la ubicación en
+    el catálogo de ubicaciones, igual que create_paquete. Si la guarda con
+    otra llave, el paquete editado deja de salir al filtrar por su ubicación.
+    """
+    acc = accesos_no_api
+
+    answers = answers_editados(acc, mocker)
+
+    ubicacion = answers.get(acc.UBICACIONES_CAT_OBJ_ID)
+    assert ubicacion == {acc.mf["ubicacion"]: LOCATION}, f"La ubicación quedó {ubicacion!r}"
