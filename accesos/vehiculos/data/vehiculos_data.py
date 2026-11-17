@@ -10,6 +10,7 @@ from entradas_salidas.data.bitacora_data import (  # noqa: F401
     AREA,
     LIMITE_LISTA,
 )
+from pases_entrada.data.datos_base import FOTO_VALIDA
 
 DESGLOSE_VEHICULOS = "vehiculos"
 
@@ -76,3 +77,5 @@ RENGLON_VACIO = {}
 # Agregar un vehículo a una entrada ya registrada (update_bitacora_entrada):
 # _id del registro de la bitácora.
 REGISTRO_BITACORA = "000000000000000000000051"
+# El mismo vehículo con la foto que sube el guardia en el modal.
+VEHICULO_AGREGADO_CON_FOTO = dict(VEHICULO_AGREGADO, foto_vehiculo=FOTO_VALIDA)
