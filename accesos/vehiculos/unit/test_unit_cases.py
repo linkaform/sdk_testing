@@ -25,6 +25,7 @@ C10_TRIGGERS = [
     "_answers_vehiculos",
     "_answers_vehiculos_pase",
     "_size_vehiculos_con_tipo",
+    "catalogo_vehiculos",
     "format_vehiculos_simple",
     "get_list_bitacora",
     "update_bitacora_entrada",
@@ -220,3 +221,21 @@ def test_vehiculo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
     assert vehiculo[acc.ESTADO_OBJ_ID] == {mf["nombre_estado"]: VEHICULO_VISITA["estado"]}
     assert vehiculo[mf["placas_vehiculo"]] == VEHICULO_VISITA["placas"]
     assert vehiculo[mf["color_vehiculo"]] == VEHICULO_VISITA["color"]
+
+
+# --- catalogo vehiculos ---
+@pytest.mark.unit
+def test_catalogo_de_vehiculos_sale_del_catalogo_de_tipos_de_vehiculo(accesos_no_api, mocker):
+    """
+    TB-313: el front y la app piden el catálogo de vehículos del pase
+    (catalago_vehiculo); catalogo_vehiculos debe pedirlo al catálogo de tipos
+    de vehículo de la forma Pase de entrada. Si pide otro, los selectores de
+    tipo, marca y modelo salen vacíos o con otras opciones.
+    """
+    acc = accesos_no_api
+    consultar = mocker.patch.object(acc.lkf_api, "catalog_view", return_value=[])
+
+    acc.catalogo_vehiculos()
+
+    consultar.assert_called_once()
+    assert consultar.call_args.args[:2] == (acc.TIPO_VEHICULOS_CAT_ID, acc.PASE_ENTRADA)
