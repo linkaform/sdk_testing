@@ -258,3 +258,18 @@ def test_devolver_parte_de_un_equipo_deja_la_concesion_parcial_con_el_pendiente_
     assert equipo[f["cantidad_equipo_devuelto"]] == 1
     assert equipo[f["cantidad_equipo_pendiente"]] == CANTIDAD_PRESTADA - 1
     assert answers[f["grupo_equipos_devolucion"]][0][f["cantidad_devolucion"]] == 1
+
+
+@pytest.mark.unit
+def test_devolver_mas_de_lo_que_falta_da_error_y_no_guarda(accesos_no_api, mocker):
+    """
+    TB-243: si se devuelven más equipos de los que faltan (4 de 3 prestados),
+    update_article_concessioned debe detenerse con el aviso de devolución
+    negativa y no guardar nada. Si guarda, el pendiente queda en negativo.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc))
+
+    with pytest.raises(Exception, match="negativa de: -1"):
+        acc.update_article_concessioned(devolucion_parcial(CANTIDAD_PRESTADA + 1), REGISTRO_CONCESION)
+    guardar.assert_not_called()
