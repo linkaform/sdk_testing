@@ -58,3 +58,15 @@ CANTIDAD_PRESTADA = 3
 ESTADO_DEVUELTO = "devuelto"
 ESTADO_PARCIAL = "parcial"
 QUIEN_ENTREGA = "Empleado de prueba QA"
+# Lo que manda concesionados-nueva-devolucion.tsx al devolver todo (state:
+# complete | damage | lost).
+DEVOLUCION_TOTAL = {
+    "record_id": REGISTRO_CONCESION,
+    "status": "total",
+    "state": "complete",
+    "entregado_por": "empleado",
+    "quien_entrega": QUIEN_ENTREGA,
+    "company": "",
+    "comentario_entrega": "Devolución de prueba QA",
+    "evidencia": FOTO_VALIDA,
+}

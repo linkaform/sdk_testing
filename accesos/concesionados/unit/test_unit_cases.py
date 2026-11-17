@@ -25,6 +25,7 @@ from ..data.concesionados_data import (
     MOVIMIENTO_EQUIPO,
     CANTIDAD_PRESTADA,
     ESTADO_DEVUELTO,
+    DEVOLUCION_TOTAL,
 )
 from bson import ObjectId
 
@@ -188,4 +189,20 @@ def test_concesion_ya_devuelta_no_se_vuelve_a_devolver(accesos_no_api, mocker):
 
     with pytest.raises(Exception, match="ya se encuentra devuelta"):
         acc.update_article_concessioned({"status": "total", "state": "complete"}, REGISTRO_CONCESION)
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_devolucion_total_sin_el_estado_del_equipo_da_error(accesos_no_api, mocker):
+    """
+    TB-240: una devolución total sin state (completo, dañado o perdido) debe
+    detenerse con el error de que hay que indicar el estado y no guardar
+    nada. Si guarda, no queda registro de en qué condición regresó el equipo.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc))
+    sin_estado = {k: v for k, v in DEVOLUCION_TOTAL.items() if k != "state"}
+
+    with pytest.raises(Exception, match="hay que indicar el Estado"):
+        acc.update_article_concessioned(sin_estado, REGISTRO_CONCESION)
     guardar.assert_not_called()
