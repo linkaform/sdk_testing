@@ -68,3 +68,7 @@ TIPO_SINONIMO_CON_ACENTO = "Computadora Portátil"
 TIPO_FUERA_DEL_RADIO = "Proyector"
 NOMBRE_PROYECTOR = "Proyector Epson"
 RENGLON_VACIO = {}
+
+# Agregar un equipo a una entrada ya registrada (update_bitacora_entrada):
+# _id del registro de la bitácora.
+REGISTRO_BITACORA = "000000000000000000000061"

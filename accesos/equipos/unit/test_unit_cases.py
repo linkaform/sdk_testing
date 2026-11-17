@@ -15,6 +15,7 @@ from ..data.equipos_data import (
     TIPO_SINONIMO_CON_ACENTO,
     TIPO_FUERA_DEL_RADIO,
     NOMBRE_PROYECTOR,
+    REGISTRO_BITACORA,
 )
 
 C10_TRIGGERS = [
@@ -22,6 +23,7 @@ C10_TRIGGERS = [
     "_answers_equipos_pase",
     "_tipo_equipo_bitacora",
     "format_equipos_simple",
+    "update_bitacora_entrada",
 ]
 
 
@@ -95,3 +97,32 @@ def test_tipo_que_no_existe_en_la_bitacora_queda_como_otra(accesos_no_api):
 
     assert acc._tipo_equipo_bitacora(TIPO_FUERA_DEL_RADIO, "") == ("otra", TIPO_FUERA_DEL_RADIO)
     assert acc._tipo_equipo_bitacora(TIPO_FUERA_DEL_RADIO, NOMBRE_PROYECTOR) == ("otra", NOMBRE_PROYECTOR)
+
+
+# --- update bitacora entrada ---
+@pytest.mark.unit
+def test_agregar_equipo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_api, mocker):
+    """
+    TB-316: con el equipo del modal de agregar equipo (add-local-equipo),
+    update_bitacora_entrada debe agregarlo como renglón nuevo del grupo de
+    equipos de la entrada, con tipo, nombre, marca, modelo, color y serie en
+    sus campos. Si un dato cae fuera de su campo, la pestaña Equipos no lo
+    muestra.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value={"status_code": 202})
+
+    acc.update_bitacora_entrada({"equipo": dict(EQUIPO_AGREGADO)}, record_id=REGISTRO_BITACORA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [REGISTRO_BITACORA]
+    renglones = guardar.call_args.kwargs["answers"][mf["grupo_equipos"]]
+    assert list(renglones) == [-1], f"El equipo no se agregó como renglón nuevo: {list(renglones)}"
+    equipo = renglones[-1]
+    assert equipo[mf["tipo_equipo"]] == "herramienta", f"El tipo quedó {equipo[mf['tipo_equipo']]!r}"
+    assert equipo[mf["nombre_articulo"]] == EQUIPO_AGREGADO["nombre"]
+    assert equipo[mf["marca_articulo"]] == EQUIPO_AGREGADO["marca"]
+    assert equipo[mf["modelo_articulo"]] == EQUIPO_AGREGADO["modelo"]
+    assert equipo[mf["color_articulo"]] == EQUIPO_AGREGADO["color"]
+    assert equipo[mf["numero_serie"]] == EQUIPO_AGREGADO["serie"]
