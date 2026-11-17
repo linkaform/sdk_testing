@@ -206,3 +206,30 @@ def test_devolucion_total_sin_el_estado_del_equipo_da_error(accesos_no_api, mock
     with pytest.raises(Exception, match="hay que indicar el Estado"):
         acc.update_article_concessioned(sin_estado, REGISTRO_CONCESION)
     guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_devolucion_total_deja_la_concesion_devuelta_con_fecha_de_cierre(accesos_no_api, mocker):
+    """
+    TB-241: con la devolución total de concesionados-nueva-devolucion,
+    update_article_concessioned debe dejar cada equipo 'devuelto' con todo lo
+    prestado devuelto y pendiente 0, poner la fecha de cierre y la concesión
+    en 'devuelto'. Si queda algo pendiente, la concesión sigue en Pendientes.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc))
+
+    acc.update_article_concessioned(dict(DEVOLUCION_TOTAL), REGISTRO_CONCESION)
+
+    guardar.assert_called_once()
+    f = acc.cons_f
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["status_concesion"]] == ESTADO_DEVUELTO
+    assert answers.get(f["fecha_cierre_concesion"]), "La concesión devuelta no tiene fecha de cierre"
+    equipo = answers[f["grupo_equipos"]][0]
+    assert equipo[f["status_concesion_equipo"]] == ESTADO_DEVUELTO
+    assert equipo[f["cantidad_equipo_devuelto"]] == CANTIDAD_PRESTADA
+    assert equipo[f["cantidad_equipo_pendiente"]] == 0
+    devolucion = answers[f["grupo_equipos_devolucion"]][0]
+    assert devolucion[f["id_movimiento_devolucion"]] == MOVIMIENTO_EQUIPO
+    assert devolucion[f["cantidad_devolucion"]] == CANTIDAD_PRESTADA
