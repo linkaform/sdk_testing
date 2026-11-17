@@ -18,6 +18,9 @@ from ..data.guardias_apoyo_data import (
     GUARDIA_APOYO_ID,
     ESTATUS_ENTRADA,
     GUARDADO_OK,
+    GUARDIA_PRINCIPAL_ID,
+    ESTATUS_SALIDA,
+    ASISTENCIA_OK,
 )
 
 
@@ -49,3 +52,51 @@ def test_agregar_guardia_de_apoyo_lo_suma_al_turno_sin_crear_otro(accesos_no_api
     assert guardia[apoyo][acc.f["worker_name_b"]] == GUARDIA_APOYO["name"]
     assert guardia[acc.checkin_fields["checkin_position"]] == acc.support_guard
     assert guardia[acc.checkin_fields["checkin_status"]] == ESTATUS_ENTRADA
+
+
+def turno_con_apoyo(acceso_obj):
+    """Registro del turno abierto con el guardia principal y uno de apoyo, los dos dentro."""
+    f = acceso_obj.checkin_fields
+    empleados = de(acceso_obj, "CONF_AREA_EMPLEADOS_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_CAT_OBJ_ID
+    apoyo = de(acceso_obj, "CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID
+    return {
+        "_id": TURNO_ID,
+        "folio": "1-TURNO",
+        "timezone": ZONA_TURNO,
+        "answers": {
+            empleados: {acceso_obj.f["location"]: LOCATION, acceso_obj.f["area"]: AREA},
+            f["guard_group"]: [
+                {apoyo: {acceso_obj.mf["id_usuario"]: [GUARDIA_PRINCIPAL_ID]}, f["checkin_status"]: ESTATUS_ENTRADA},
+                {apoyo: {acceso_obj.mf["id_usuario"]: [GUARDIA_APOYO_ID]}, f["checkin_status"]: ESTATUS_ENTRADA},
+            ],
+        },
+    }
+
+
+def test_dar_salida_a_un_guardia_de_apoyo_deja_el_turno_abierto(accesos_no_api, mocker):
+    """
+    TB-126: con el payload de la tabla de guardias de apoyo (guards con su id,
+    guard_id y checkin_id), do_checkout debe marcar la salida solo de ese
+    guardia, cerrarle su asistencia y dejar el turno abierto con el guardia
+    principal dentro. Si cierra la caseta, el guardia principal se queda sin
+    turno.
+    """
+    acc = accesos_no_api
+    f = acc.checkin_fields
+    mocker.patch.object(acc.lkf_api, "get_user_by_id", return_value={"name": GUARDIA_APOYO["name"]})
+    mocker.patch.object(acc, "is_boot_available", return_value=True)
+    mocker.patch.object(acc, "get_record_by_id", return_value=turno_con_apoyo(acc))
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    guardar = mocker.patch.object(acc.lkf_api, "patch_record", return_value=dict(GUARDADO_OK))
+    asistencia = mocker.patch.object(acc, "close_guards_attendance", return_value=ASISTENCIA_OK)
+
+    acc.do_checkout(checkin_id=TURNO_ID, location=LOCATION, area=AREA, guards=[GUARDIA_APOYO_ID], guard_id=GUARDIA_APOYO_ID)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == TURNO_ID
+    answers = guardar.call_args.kwargs["data"]["answers"]
+    principal, apoyo = answers[f["guard_group"]]
+    assert apoyo[f["checkin_status"]] == ESTATUS_SALIDA, f"El guardia de apoyo quedó {apoyo[f['checkin_status']]!r}"
+    assert principal[f["checkin_status"]] == ESTATUS_ENTRADA, "El guardia principal también salió del turno"
+    assert answers.get(f["checkin_type"]) != "cerrada", "La caseta se cerró al dar salida al guardia de apoyo"
+    assert asistencia.call_args.args[0] == [GUARDIA_APOYO_ID], f"Se cerró la asistencia de {asistencia.call_args.args[0]}"
