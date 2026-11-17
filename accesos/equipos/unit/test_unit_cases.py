@@ -16,6 +16,7 @@ from ..data.equipos_data import (
     TIPO_FUERA_DEL_RADIO,
     NOMBRE_PROYECTOR,
     REGISTRO_BITACORA,
+    EQUIPO_PASE_ETIQUETAS,
 )
 
 C10_TRIGGERS = [
@@ -126,3 +127,28 @@ def test_agregar_equipo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_ap
     assert equipo[mf["modelo_articulo"]] == EQUIPO_AGREGADO["modelo"]
     assert equipo[mf["color_articulo"]] == EQUIPO_AGREGADO["color"]
     assert equipo[mf["numero_serie"]] == EQUIPO_AGREGADO["serie"]
+
+
+# --- equipo del pase a la bitacora ---
+@pytest.mark.unit
+def test_equipo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
+    """
+    TB-319: al registrar la entrada, el equipo del pase (con las etiquetas
+    del detalle del pase) pasa por format_equipos_simple y luego por
+    _answers_equipos; debe llegar a la bitácora con el tipo del catálogo
+    convertido a la opción del radio ('Laptop' a 'computo') y con nombre,
+    marca, modelo, serie y color. Si se pierde uno, la pestaña Equipos
+    muestra el equipo incompleto.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+
+    simple = acc.format_equipos_simple([dict(EQUIPO_PASE_ETIQUETAS)])
+    equipo = acc._answers_equipos(simple)[0]
+
+    assert equipo[mf["tipo_equipo"]] == "computo", f"El tipo quedó {equipo[mf['tipo_equipo']]!r}"
+    assert equipo[mf["nombre_articulo"]] == EQUIPO_PASE_ETIQUETAS["nombre_articulo"]
+    assert equipo[mf["marca_articulo"]] == EQUIPO_PASE_ETIQUETAS["marca_articulo"]
+    assert equipo[mf["modelo_articulo"]] == EQUIPO_PASE_ETIQUETAS["modelo_articulo"]
+    assert equipo[mf["numero_serie"]] == EQUIPO_PASE_ETIQUETAS["numero_serie"]
+    assert equipo[mf["color_articulo"]] == EQUIPO_PASE_ETIQUETAS["color_articulo"]
