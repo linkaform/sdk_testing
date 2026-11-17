@@ -7,6 +7,7 @@ otros archivos de unit/ y se corren a mano.
 """
 
 import pytest
+from lkf_back import de
 from ..data.perdidos_data import (
     FOLIO_ARTICULO,
     FOLIOS_ARTICULO,
@@ -18,9 +19,13 @@ from ..data.perdidos_data import (
     OTRA_UBICACION,
     ESTATUS_PENDIENTE,
     ESTATUS_TODOS,
+    ARTICULO_UNIT,
+    EMPLEADO_PERDIDOS,
+    GUARDADO_OK,
 )
 
 C10_TRIGGERS = [
+    "create_article_lost",
     "delete_article_lost",
     "perdidos_base_match",
 ]
@@ -119,3 +124,28 @@ def test_filtro_usa_el_estatus_de_la_pestana_y_la_caseta(accesos_no_api):
 
     todos = acc.perdidos_base_match(location=LOCATION, status=ESTATUS_TODOS)
     assert estatus not in todos, f"Todos filtró por estatus {todos[estatus]!r}"
+
+
+# --- create article lost ---
+def registrar_simulado(acc, mocker):
+    """Simula el empleado y el guardado; regresa el mock de post_forms_answers."""
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_PERDIDOS))
+    return mocker.patch.object(acc.lkf_api, "post_forms_answers", return_value=dict(GUARDADO_OK))
+
+
+@pytest.mark.unit
+def test_registrar_articulo_guarda_la_ubicacion_y_la_caseta_juntas(accesos_no_api, mocker):
+    """
+    TB-229: con ubicación y caseta, create_article_lost debe guardar las dos
+    en el catálogo de ubicaciones del artículo. Si se pierde una, el artículo
+    no aparece al filtrar por ella.
+    """
+    acc = accesos_no_api
+    guardar = registrar_simulado(acc, mocker)
+
+    acc.create_article_lost(dict(ARTICULO_UNIT))
+
+    f = acc.perdidos_fields
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["ubicacion_catalog"]] == {f["ubicacion_perdido"]: LOCATION, f["area_perdido"]: AREA}
