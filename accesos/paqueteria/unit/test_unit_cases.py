@@ -25,11 +25,15 @@ from ..data.paqueteria_data import (
     OTRA_UBICACION,
     ESTATUS_GUARDADO,
     ESTATUS_TODOS,
+    FOLIO_PAQUETE,
+    EDICION_OK,
+    ENTREGA_PAQUETE,
 )
 
 C10_TRIGGERS = [
     "create_paquete",
     "paqueteria_base_match",
+    "update_paquete",
 ]
 
 
@@ -152,3 +156,27 @@ def test_filtro_usa_la_ubicacion_la_caseta_y_el_estatus_de_la_pestana(accesos_no
 
     todos = acc.paqueteria_base_match(location=LOCATION, status=ESTATUS_TODOS)
     assert estatus not in todos, f"Todos filtró por estatus {todos[estatus]!r}"
+
+
+# --- update paquete ---
+@pytest.mark.unit
+def test_entregar_paquete_guarda_el_estatus_la_fecha_y_a_quien_se_entrego(accesos_no_api, mocker):
+    """
+    TB-250: con el payload de entregar-paqueteria, update_paquete debe guardar
+    el estatus 'entregado', la fecha de entrega y a quién se entregó en el
+    folio del paquete. Si falta uno, el paquete sigue en Pendientes o no se
+    sabe quién lo recogió.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(EDICION_OK))
+
+    acc.update_paquete(dict(ENTREGA_PAQUETE), FOLIO_PAQUETE)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["folios"] == [FOLIO_PAQUETE]
+    assert guardar.call_args.kwargs["form_id"] == acc.PAQUETERIA
+    f = acc.paquetes_fields
+    answers = guardar.call_args.kwargs["answers"]
+    assert answers[f["estatus_paqueteria"]] == ENTREGA_PAQUETE["estatus_paqueteria"]
+    assert answers[f["fecha_entregado_paqueteria"]] == ENTREGA_PAQUETE["fecha_entregado_paqueteria"]
+    assert answers[f["entregado_a_paqueteria"]] == ENTREGA_PAQUETE["entregado_a_paqueteria"]
