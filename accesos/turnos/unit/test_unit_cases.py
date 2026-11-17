@@ -235,3 +235,23 @@ def test_cierre_normal_deja_la_caseta_cerrada_y_cierra_la_asistencia(accesos_no_
     assert answers[f["guard_group"]][0][f["checkin_status"]] == ESTATUS_SALIDA
     assert asistencia.call_args.args[0] == [GUARDIA_ID], f"Se cerró la asistencia de {asistencia.call_args.args[0]}"
     assert res["registro_de_asistencia"] == ASISTENCIA_OK
+
+
+@pytest.mark.unit
+def test_cierre_forzado_se_guarda_como_forzado_con_quien_lo_cerro(accesos_no_api, mocker):
+    """
+    TB-277: con forzar, do_checkout debe guardar el tipo de cierre 'forzar' y
+    en el comentario "Cerrado por: <nombre del usuario>". Si no, un cierre
+    forzado no se distingue de uno normal ni se sabe quién lo hizo.
+    """
+    acc = accesos_no_api
+    guardar, _ = checkout_simulado(acc, mocker)
+
+    acc.do_checkout(checkin_id=CHECKIN_ABIERTO["_id"], location=LOCATION, area=AREA, forzar=True)
+
+    guardar.assert_called_once()
+    f = acc.checkin_fields
+    answers = guardar.call_args.kwargs["data"]["answers"]
+    assert answers[f["forzar_cierre"]] == "forzar"
+    comentario = answers[f["commentario_checkin_caseta"]]
+    assert f"Cerrado por: {USUARIO_GUARDIA['name']}" in comentario, f"El comentario quedó {comentario!r}"
