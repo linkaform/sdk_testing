@@ -26,12 +26,13 @@ def answers_editados(acceso_obj, mocker):
     return guardar.call_args.kwargs["answers"]
 
 
+@pytest.mark.bug(1576)
 def test_editar_caseta_del_paquete_la_guarda_donde_la_guarda_la_creacion(accesos_no_api, mocker):
     """
     TB-251: al editar un paquete, update_paquete debe guardar la caseta en el
     catálogo de áreas con el campo nombre_area, igual que create_paquete. Si
     la guarda en otro campo, el paquete editado deja de salir al filtrar por
-    su caseta.
+    su caseta. Ticket 2610-1576: la guarda con nombre_area_salida.
     """
     acc = accesos_no_api
 
@@ -41,11 +42,13 @@ def test_editar_caseta_del_paquete_la_guarda_donde_la_guarda_la_creacion(accesos
     assert caseta == {acc.mf["nombre_area"]: AREA}, f"La caseta quedó {caseta!r}"
 
 
+@pytest.mark.bug(1576)
 def test_editar_destinatario_empleado_lo_guarda_en_el_catalogo_de_empleados(accesos_no_api, mocker):
     """
     TB-252: al editar un paquete con destinatario empleado, update_paquete
     debe guardarlo en el catálogo de empleados, igual que create_paquete. Si
-    lo guarda suelto, el paquete pierde a su destinatario.
+    lo guarda suelto, el paquete pierde a su destinatario. Ticket 2610-1576:
+    lo guarda fuera del catálogo.
     """
     acc = accesos_no_api
 
@@ -56,11 +59,13 @@ def test_editar_destinatario_empleado_lo_guarda_en_el_catalogo_de_empleados(acce
     assert destinatario == esperado, f"El destinatario quedó {destinatario!r} en el catálogo de empleados"
 
 
+@pytest.mark.bug(1576)
 def test_editar_ubicacion_del_paquete_la_guarda_en_el_catalogo_de_ubicaciones(accesos_no_api, mocker):
     """
     TB-253: al editar un paquete, update_paquete debe guardar la ubicación en
     el catálogo de ubicaciones, igual que create_paquete. Si la guarda con
     otra llave, el paquete editado deja de salir al filtrar por su ubicación.
+    Ticket 2610-1576: la guarda con la llave literal "catálogo.campo".
     """
     acc = accesos_no_api
 
