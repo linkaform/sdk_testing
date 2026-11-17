@@ -39,3 +39,18 @@ def test_editar_caseta_del_paquete_la_guarda_donde_la_guarda_la_creacion(accesos
 
     caseta = answers.get(acc.AREAS_DE_LAS_UBICACIONES_CAT_OBJ_ID)
     assert caseta == {acc.mf["nombre_area"]: AREA}, f"La caseta quedó {caseta!r}"
+
+
+def test_editar_destinatario_empleado_lo_guarda_en_el_catalogo_de_empleados(accesos_no_api, mocker):
+    """
+    TB-252: al editar un paquete con destinatario empleado, update_paquete
+    debe guardarlo en el catálogo de empleados, igual que create_paquete. Si
+    lo guarda suelto, el paquete pierde a su destinatario.
+    """
+    acc = accesos_no_api
+
+    answers = answers_editados(acc, mocker)
+
+    destinatario = answers.get(acc.CONF_AREA_EMPLEADOS_CAT_OBJ_ID)
+    esperado = {acc.mf["nombre_empleado"]: EDICION_PAQUETE["quien_recibe_paqueteria"]}
+    assert destinatario == esperado, f"El destinatario quedó {destinatario!r} en el catálogo de empleados"
