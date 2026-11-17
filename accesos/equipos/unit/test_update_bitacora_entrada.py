@@ -41,12 +41,14 @@ def test_agregar_equipo_con_tipo_del_catalogo_lo_guarda_con_tipo_valido(accesos_
     assert tipo == "computo", f"Con tipo '{EQUIPO_TIPO_CATALOGO['tipo']}' el equipo quedó como {tipo!r}"
 
 
+@pytest.mark.bug(1578)
 def test_agregar_equipo_a_una_entrada_guarda_su_foto(accesos_no_api, mocker):
     """
     TB-318: el modal de agregar equipo manda la foto del equipo
     (foto_equipo); update_bitacora_entrada debe guardarla en el renglón nuevo,
     igual que al registrar la entrada. Si no, el equipo agregado queda sin
-    foto y el guardia no puede compararlo a la salida.
+    foto y el guardia no puede compararlo a la salida. Ticket 2610-1578: el
+    renglón se arma sin la foto.
     """
     acc = accesos_no_api
 
