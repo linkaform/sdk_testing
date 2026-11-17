@@ -23,6 +23,7 @@ C10_TRIGGERS = [
     "_answers_equipos",
     "_answers_equipos_pase",
     "_tipo_equipo_bitacora",
+    "catalogo_tipo_equipo",
     "format_equipos_simple",
     "update_bitacora_entrada",
 ]
@@ -152,3 +153,21 @@ def test_equipo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
     assert equipo[mf["modelo_articulo"]] == EQUIPO_PASE_ETIQUETAS["modelo_articulo"]
     assert equipo[mf["numero_serie"]] == EQUIPO_PASE_ETIQUETAS["numero_serie"]
     assert equipo[mf["color_articulo"]] == EQUIPO_PASE_ETIQUETAS["color_articulo"]
+
+
+# --- catalogo tipo equipo ---
+@pytest.mark.unit
+def test_catalogo_de_tipos_de_equipo_sale_del_catalogo_del_pase(accesos_no_api, mocker):
+    """
+    TB-320: el front pide el catálogo de tipos de equipo del pase
+    (catalago_tipo_equipo); catalogo_tipo_equipo debe pedirlo al catálogo de
+    tipos de equipo de la forma Pase de entrada. Si pide otro, el selector de
+    tipo de equipo sale vacío o con otras opciones.
+    """
+    acc = accesos_no_api
+    consultar = mocker.patch.object(acc.lkf_api, "catalog_view", return_value=[])
+
+    acc.catalogo_tipo_equipo()
+
+    consultar.assert_called_once()
+    assert consultar.call_args.args[:2] == (acc.TIPO_EQUIPOS_CAT_ID, acc.PASE_ENTRADA)
