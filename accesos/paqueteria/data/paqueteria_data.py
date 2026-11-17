@@ -90,3 +90,11 @@ ENTREGA_PAQUETE = {
     "fecha_entregado_paqueteria": "2026-11-17 12:00:00",
     "entregado_a_paqueteria": ENTREGADO_A,
 }
+EDICION_PAQUETE = {
+    key: PAQUETE_UNIT[key]
+    for key in (
+        "ubicacion_paqueteria", "area_paqueteria", "fotografia_paqueteria", "descripcion_paqueteria",
+        "quien_recibe_paqueteria", "guardado_en_paqueteria", "fecha_recibido_paqueteria",
+        "entregado_a_paqueteria", "proveedor",
+    )
+}
