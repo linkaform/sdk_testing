@@ -21,6 +21,10 @@ from ..data.concesionados_data import (
     COMENTARIO_PRESTAMO,
     FOTO_VALIDA,
     FOLIO_CONCESION,
+    REGISTRO_CONCESION,
+    MOVIMIENTO_EQUIPO,
+    CANTIDAD_PRESTADA,
+    ESTADO_DEVUELTO,
 )
 from bson import ObjectId
 
@@ -28,6 +32,7 @@ C10_TRIGGERS = [
     "concesionados_base_match",
     "create_article_concessioned",
     "delete_article_concessioned",
+    "update_article_concessioned",
 ]
 
 
@@ -141,3 +146,46 @@ def test_folio_que_no_existe_da_error_y_no_borra(accesos_no_api, mocker):
     with pytest.raises(Exception, match="No se encontro el folio correspondiente"):
         accesos_no_api.delete_article_concessioned([FOLIO_CONCESION])
     borrar.assert_not_called()
+
+
+# --- update article concessioned (devoluciones) ---
+def concesion_guardada(acceso_obj, estado=ESTADO_ABIERTO):
+    """Registro de la concesión con un equipo en préstamo y sin devoluciones."""
+    f = acceso_obj.cons_f
+    return {
+        "_id": ObjectId(REGISTRO_CONCESION),
+        "folio": FOLIO_CONCESION,
+        "answers": {
+            f["status_concesion"]: estado,
+            f["grupo_equipos"]: [{
+                f["id_movimiento"]: MOVIMIENTO_EQUIPO,
+                f["equipo_catalog_concesion"]: {f["_nombre_equipo"]: EQUIPO_CONCESION["nombre_equipo"]},
+                f["cantidad_equipo_concesion"]: CANTIDAD_PRESTADA,
+                f["cantidad_equipo_devuelto"]: 0,
+                f["cantidad_equipo_pendiente"]: CANTIDAD_PRESTADA,
+                f["status_concesion_equipo"]: ESTADO_ABIERTO,
+            }],
+        },
+    }
+
+
+def devolucion_simulada(acceso_obj, mocker, registro):
+    """Simula el registro y el guardado; regresa el mock de patch_record."""
+    mocker.patch.dict(acceso_obj.user, {"timezone": "America/Monterrey"})
+    mocker.patch.object(acceso_obj, "get_record_by_id", return_value=registro)
+    return mocker.patch.object(acceso_obj.lkf_api, "patch_record", return_value=dict(GUARDADO_OK))
+
+
+@pytest.mark.unit
+def test_concesion_ya_devuelta_no_se_vuelve_a_devolver(accesos_no_api, mocker):
+    """
+    TB-239: si la concesión ya está 'devuelto', update_article_concessioned
+    debe detenerse con el error de que ya se encuentra devuelta y no guardar
+    nada. Si guarda, la misma concesión suma devoluciones que no ocurrieron.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc, ESTADO_DEVUELTO))
+
+    with pytest.raises(Exception, match="ya se encuentra devuelta"):
+        acc.update_article_concessioned({"status": "total", "state": "complete"}, REGISTRO_CONCESION)
+    guardar.assert_not_called()

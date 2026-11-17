@@ -48,3 +48,13 @@ CONCESION_OTRO = {
 }
 METADATA_CONCESION = {}
 GUARDADO_OK = {"status_code": 201}
+
+# Devoluciones (update_article_concessioned): concesión guardada con un equipo
+# en préstamo, como la regresa get_record_by_id. ESTADO_* son los estatus de
+# la concesión y del equipo.
+REGISTRO_CONCESION = "000000000000000000000031"
+MOVIMIENTO_EQUIPO = "000000000000000000000041"
+CANTIDAD_PRESTADA = 3
+ESTADO_DEVUELTO = "devuelto"
+ESTADO_PARCIAL = "parcial"
+QUIEN_ENTREGA = "Empleado de prueba QA"
