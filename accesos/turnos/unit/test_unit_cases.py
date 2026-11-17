@@ -194,3 +194,18 @@ def test_cerrar_turno_sin_el_id_del_turno_da_error(accesos_no_api, mocker):
     with pytest.raises(Exception, match="No encontramos un checking valido"):
         acc.do_checkout(checkin_id=None, location=LOCATION, area=AREA)
     guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_cerrar_turno_con_la_caseta_cerrada_da_error(accesos_no_api, mocker):
+    """
+    TB-275: si la caseta ya está cerrada, do_checkout debe detenerse con el
+    error de que no se puede cerrar sin haberla abierto y no guardar nada. Si
+    guarda, el turno queda cerrado dos veces con fechas distintas.
+    """
+    acc = accesos_no_api
+    guardar, _ = checkout_simulado(acc, mocker, caseta_abierta=False)
+
+    with pytest.raises(Exception, match="sin antes haber hecho check-in"):
+        acc.do_checkout(checkin_id=CHECKIN_ABIERTO["_id"], location=LOCATION, area=AREA)
+    guardar.assert_not_called()
