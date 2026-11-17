@@ -7,6 +7,8 @@ a guardar en el folio del turno.
 Notion: TB-278.
 """
 
+import pytest
+
 from ..data.turnos_data import (
     FOLIO_TURNO,
     SUPLENTE_VACIO,
@@ -14,12 +16,14 @@ from ..data.turnos_data import (
 )
 
 
+@pytest.mark.bug(1577)
 def test_quitar_el_suplente_lo_borra_del_turno(accesos_no_api, mocker):
     """
     TB-278: con el nombre del suplente vacío, update_delete_suplente debe
     mandar el campo del suplente vacío al folio del turno para borrarlo. Si
     manda los answers vacíos, el suplente se queda en el turno aunque el
-    guardia lo haya quitado.
+    guardia lo haya quitado. Ticket 2610-1577: con el nombre vacío manda
+    answers vacíos.
     """
     acc = accesos_no_api
     usuario = acc.user.get("user_id")
