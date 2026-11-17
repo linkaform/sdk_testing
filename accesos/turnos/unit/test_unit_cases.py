@@ -26,6 +26,7 @@ from ..data.turnos_data import (
     ZONA_TURNO,
     ESTATUS_ENTRADA,
     ASISTENCIA_OK,
+    ESTATUS_SALIDA,
 )
 
 C10_TRIGGERS = [
@@ -209,3 +210,28 @@ def test_cerrar_turno_con_la_caseta_cerrada_da_error(accesos_no_api, mocker):
     with pytest.raises(Exception, match="sin antes haber hecho check-in"):
         acc.do_checkout(checkin_id=CHECKIN_ABIERTO["_id"], location=LOCATION, area=AREA)
     guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_cierre_normal_deja_la_caseta_cerrada_y_cierra_la_asistencia(accesos_no_api, mocker):
+    """
+    TB-276: un cierre normal debe guardar la caseta 'cerrada', con fecha de
+    cierre y tipo 'regular', marcar la salida del guardia que seguía dentro y
+    cerrarle la asistencia. Si falta algo, la caseta sigue abierta o el
+    guardia sigue con asistencia abierta.
+    """
+    acc = accesos_no_api
+    guardar, asistencia = checkout_simulado(acc, mocker)
+
+    res = acc.do_checkout(checkin_id=CHECKIN_ABIERTO["_id"], location=LOCATION, area=AREA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == CHECKIN_ABIERTO["_id"]
+    f = acc.checkin_fields
+    answers = guardar.call_args.kwargs["data"]["answers"]
+    assert answers[f["checkin_type"]] == "cerrada"
+    assert answers.get(f["boot_checkout_date"]), "La caseta cerrada no tiene fecha de cierre"
+    assert answers[f["forzar_cierre"]] == "regular"
+    assert answers[f["guard_group"]][0][f["checkin_status"]] == ESTATUS_SALIDA
+    assert asistencia.call_args.args[0] == [GUARDIA_ID], f"Se cerró la asistencia de {asistencia.call_args.args[0]}"
+    assert res["registro_de_asistencia"] == ASISTENCIA_OK
