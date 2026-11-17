@@ -20,3 +20,15 @@ AREAS_DE_UBICACION = [
     {"_id": "a2", "folio": "12-10", "area": "Almacén", "ubicacion": LOCATION},
     {"_id": "a3", "folio": "10-10", "area": "Estacionamiento", "ubicacion": LOCATION},
 ]
+
+# Área guardada antes de "Múltiple ubicación" y "Utilizar Área en": el
+# registro no trae esos campos.
+AREA_SIN_USOS = {
+    "_id": AREA_RECORD_ID,
+    "folio": "12-10",
+    "area": AREA,
+    "ubicacion": LOCATION,
+    "tipo_de_area": "Caseta",
+    "area_state": "activa",
+    "area_status": "disponible",
+}

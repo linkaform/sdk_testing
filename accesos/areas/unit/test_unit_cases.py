@@ -14,7 +14,10 @@ import pytest
 
 from ..data.areas_data import (
     LOCATION,
+    AREA,
+    AREA_RECORD_ID,
     AREAS_DE_UBICACION,
+    AREA_SIN_USOS,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -79,3 +82,22 @@ def test_detalle_de_area_sin_record_id_marca_error(accesos_no_api, mocker):
 
     cr.aggregate.assert_not_called()
 
+
+@pytest.mark.unit
+@pytest.mark.target("get_area_by_id")
+def test_detalle_de_area_sin_multiple_ubicacion_ni_usos_regresa_no_y_lista_vacia(accesos_no_api, mocker):
+    """
+    TB-302: un área que no tiene guardados "Múltiple ubicación" ni "Utilizar
+    Área en" debe regresar "no" y [] en el detalle, para que el modal de
+    edición abra con el switch apagado y sin usos, y no con valores vacíos
+    que el front no sabe pintar.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(acc, "cr", mocker.Mock(), create=True)
+    mocker.patch.object(acc, "format_cr", return_value=dict(AREA_SIN_USOS))
+
+    area = acc.get_area_by_id(AREA_RECORD_ID)
+
+    assert area["multiple_ubicacion"] == "no"
+    assert area["usos"] == []
+    assert (area["record_id"], area["rondin_area"], area["ubicacion"]) == (AREA_RECORD_ID, AREA, LOCATION)
