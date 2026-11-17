@@ -179,3 +179,18 @@ def test_agregar_vehiculo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_
     assert vehiculo[acc.ESTADO_OBJ_ID] == {mf["nombre_estado"]: VEHICULO_AGREGADO["estado"]}
     assert vehiculo[mf["placas_vehiculo"]] == VEHICULO_AGREGADO["placas"]
     assert vehiculo[mf["color_vehiculo"]] == VEHICULO_AGREGADO["color"]
+
+
+@pytest.mark.unit
+def test_agregar_vehiculo_sin_record_id_ni_folio_da_error(accesos_no_api, mocker):
+    """
+    TB-311: sin record_id ni folio, update_bitacora_entrada debe detenerse con
+    el error de que se requiere el folio o el id y no guardar nada. Si sigue,
+    el vehículo no se agrega a ninguna entrada y el guardia no se entera.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record")
+
+    with pytest.raises(Exception, match="Se requiere el folio o el id"):
+        acc.update_bitacora_entrada({"vehiculo": dict(VEHICULO_AGREGADO)})
+    guardar.assert_not_called()
