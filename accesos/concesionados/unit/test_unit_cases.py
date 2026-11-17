@@ -26,6 +26,8 @@ from ..data.concesionados_data import (
     CANTIDAD_PRESTADA,
     ESTADO_DEVUELTO,
     DEVOLUCION_TOTAL,
+    ESTADO_PARCIAL,
+    devolucion_parcial,
 )
 from bson import ObjectId
 
@@ -233,3 +235,26 @@ def test_devolucion_total_deja_la_concesion_devuelta_con_fecha_de_cierre(accesos
     devolucion = answers[f["grupo_equipos_devolucion"]][0]
     assert devolucion[f["id_movimiento_devolucion"]] == MOVIMIENTO_EQUIPO
     assert devolucion[f["cantidad_devolucion"]] == CANTIDAD_PRESTADA
+
+
+@pytest.mark.unit
+def test_devolver_parte_de_un_equipo_deja_la_concesion_parcial_con_el_pendiente_correcto(accesos_no_api, mocker):
+    """
+    TB-242: al devolver 1 de los 3 equipos prestados, update_article_concessioned
+    debe dejar la concesión 'parcial' y en ese equipo 1 devuelto y 2
+    pendientes. Si las cuentas no cuadran, Parciales muestra otra cantidad por
+    devolver.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc))
+
+    acc.update_article_concessioned(devolucion_parcial(1), REGISTRO_CONCESION)
+
+    guardar.assert_called_once()
+    f = acc.cons_f
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["status_concesion"]] == ESTADO_PARCIAL
+    equipo = answers[f["grupo_equipos"]][0]
+    assert equipo[f["cantidad_equipo_devuelto"]] == 1
+    assert equipo[f["cantidad_equipo_pendiente"]] == CANTIDAD_PRESTADA - 1
+    assert answers[f["grupo_equipos_devolucion"]][0][f["cantidad_devolucion"]] == 1

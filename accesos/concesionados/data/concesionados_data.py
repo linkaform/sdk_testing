@@ -70,3 +70,19 @@ DEVOLUCION_TOTAL = {
     "comentario_entrega": "Devolución de prueba QA",
     "evidencia": FOTO_VALIDA,
 }
+# Lo que manda concesionados-seguimientos-contenido.tsx al devolver parte de
+# un equipo (status "parcial"); cada equipo lleva su cantidad y su estado.
+def devolucion_parcial(cantidad):
+    return {
+        "record_id": REGISTRO_CONCESION,
+        "status": ESTADO_PARCIAL,
+        "entregado_por": "empleado",
+        "quien_entrega": QUIEN_ENTREGA,
+        "equipos": [{
+            "id_movimiento": MOVIMIENTO_EQUIPO,
+            "cantidad_devuelta": cantidad,
+            "state": "complete",
+            "evidencia": FOTO_VALIDA,
+            "comentario_entrega": "Devolución parcial de prueba QA",
+        }],
+    }
