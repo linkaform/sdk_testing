@@ -228,7 +228,8 @@ def test_editar_nota_no_la_cierra(accesos_no_api, mocker):
     nf = accesos_no_api.notes_fields
     answers = guardar.call_args.kwargs["answers"]
     assert nf["note_close_date"] not in answers, f"Editar puso fecha de cierre: {answers[nf['note_close_date']]!r}"
-    assert accesos_no_api.CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID not in answers, "Editar guardó quién cerró la nota"
+    catalogo_quien_cierra = de(accesos_no_api, "CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID
+    assert catalogo_quien_cierra not in answers, "Editar guardó quién cerró la nota"
     assert nf["note_status"] not in answers, f"Editar cambió el estatus a {answers[nf['note_status']]!r}"
     empleado.assert_not_called()
 
