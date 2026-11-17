@@ -18,11 +18,12 @@ from ..data.areas_data import (
     AREA_RECORD_ID,
     AREAS_DE_UBICACION,
     AREA_SIN_USOS,
+    AREA_NUEVA,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["get_area_by_id", "get_catalog_areas_formatted"]
+C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted"]
 
 
 @pytest.mark.unit
@@ -101,3 +102,23 @@ def test_detalle_de_area_sin_multiple_ubicacion_ni_usos_regresa_no_y_lista_vacia
     assert area["multiple_ubicacion"] == "no"
     assert area["usos"] == []
     assert (area["record_id"], area["rondin_area"], area["ubicacion"]) == (AREA_RECORD_ID, AREA, LOCATION)
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_new_area")
+def test_area_repetida_en_la_ubicacion_no_se_vuelve_a_crear(accesos_no_api, mocker):
+    """
+    TB-303: si ya existe un área con ese nombre en la ubicación,
+    create_new_area debe responder 208 (la ruta lo muestra como "Área
+    duplicada") sin crear otro registro; si no, Disponibles mostraría la
+    misma área dos veces.
+    """
+    acc = accesos_no_api
+    existe = mocker.patch.object(acc, "exists_area", return_value=True)
+    crear = mocker.patch.object(acc, "create_register")
+
+    respuesta = acc.create_new_area(dict(AREA_NUEVA))
+
+    existe.assert_called_once_with(LOCATION, AREA)
+    assert respuesta["status_code"] == 208
+    crear.assert_not_called()

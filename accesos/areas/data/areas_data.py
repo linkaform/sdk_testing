@@ -32,3 +32,15 @@ AREA_SIN_USOS = {
     "area_state": "activa",
     "area_status": "disponible",
 }
+
+# data que arma la ruta /create_area de Sanic con el payload de + Nueva Área.
+AREA_NUEVA = {
+    "ubicacion": LOCATION,
+    "nombre_nueva_area": AREA,
+    "tipo_de_area": "Caseta",
+    "foto_area": [],
+    "qr_area": "",
+    "multiple_ubicacion": "no",
+    "direccion": "",
+    "usos": [],
+}
