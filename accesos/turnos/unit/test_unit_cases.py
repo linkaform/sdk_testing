@@ -100,7 +100,7 @@ def test_guardia_sin_la_caseta_configurada_no_puede_iniciar_turno(accesos_no_api
     """
     acc = accesos_no_api
     crear, sumar = checkin_simulado(acc, mocker, caseta_abierta=False)
-    mocker.patch.object(acc, "get_users_by_location_area", return_value=[])
+    mocker.patch.object(de(acc, "get_users_by_location_area"), "get_users_by_location_area", return_value=[])
 
     with pytest.raises(Exception, match="no puede hacer check-in en la caseta"):
         acc.do_checkin(LOCATION, AREA, employee_list=[])
