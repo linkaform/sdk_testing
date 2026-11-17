@@ -24,12 +24,16 @@ from ..data.perdidos_data import (
     GUARDADO_OK,
     TIPO_ARTICULO,
     ARTICULO_SELECCION,
+    DEVOLUCION,
+    ESTATUS_ENTREGADO,
+    EDICION_OK,
 )
 
 C10_TRIGGERS = [
     "create_article_lost",
     "delete_article_lost",
     "perdidos_base_match",
+    "update_article_lost",
 ]
 
 
@@ -171,3 +175,35 @@ def test_registrar_articulo_guarda_la_categoria_y_el_articulo_juntos(accesos_no_
         f["tipo_articulo_perdido"]: TIPO_ARTICULO,
         f["articulo_seleccion"]: ARTICULO_SELECCION,
     }
+
+
+# --- update article lost ---
+def editar_simulado(acc, mocker):
+    """Simula el empleado y el guardado; regresa el mock de patch_multi_record."""
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_PERDIDOS))
+    return mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value={**EDICION_OK, "json": {}})
+
+
+@pytest.mark.unit
+def test_entregar_articulo_lo_deja_entregado_con_fecha_y_quien_lo_recibe(accesos_no_api, mocker):
+    """
+    TB-231: con el payload de devolucion-article-modal y estatus 'entregado',
+    update_article_lost debe guardar 'entregado', la fecha de entrega y los
+    datos de quien lo recibe en el folio del artículo. Sin la fecha o sin quien
+    lo recibe, no hay forma de saber cuándo ni a quién se le entregó.
+    """
+    acc = accesos_no_api
+    guardar = editar_simulado(acc, mocker)
+
+    res = acc.update_article_lost({**DEVOLUCION, "estatus_perdido": ESTATUS_ENTREGADO}, FOLIO_ARTICULO)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["folios"] == [FOLIO_ARTICULO]
+    f = acc.perdidos_fields
+    answers = guardar.call_args.kwargs["answers"]
+    assert answers[f["estatus_perdido"]] == ESTATUS_ENTREGADO
+    fecha_entrega = res["json"]["date_entrega_perdido"]
+    assert fecha_entrega, "El artículo entregado no tiene fecha de entrega"
+    assert answers[f["date_entrega_perdido"]] == fecha_entrega
+    assert answers[f["recibe_perdido"]] == DEVOLUCION["recibe_perdido"]
+    assert answers[f["telefono_recibe_perdido"]] == DEVOLUCION["telefono_recibe_perdido"]

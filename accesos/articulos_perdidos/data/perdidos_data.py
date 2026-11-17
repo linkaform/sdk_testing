@@ -92,3 +92,6 @@ ARTICULO_UNIT = {
 }
 EMPLEADO_PERDIDOS = {"timezone": "America/Monterrey"}
 GUARDADO_OK = {"status_code": 201}
+# Respuesta del patch cuando se guarda bien (update_article_lost le agrega la
+# fecha de entrega en "json").
+EDICION_OK = {"status_code": 202, "json": {}}
