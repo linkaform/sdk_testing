@@ -21,11 +21,12 @@ from ..data.areas_data import (
     AREA_NUEVA,
     GUARDADO_OK,
     EDICION_PARCIAL,
+    ESTADO_INACTIVA,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted", "update_full_area"]
+C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted", "update_area_estado", "update_full_area"]
 
 
 @pytest.mark.unit
@@ -190,3 +191,22 @@ def test_editar_area_sin_cambios_no_guarda_nada(accesos_no_api, mocker):
     guardar.assert_not_called()
     assert res["status_code"] == 400
     assert res["json"]["error"] == "No hay cambios para guardar."
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_area_estado")
+def test_desactivar_area_guarda_el_estado_en_esa_area(accesos_no_api, mocker):
+    """
+    TB-307: al desactivar un área desde Disponibles, update_area_estado debe
+    guardar 'inactiva' en el campo de estado de esa área y solo en ella. Si
+    lo guarda en otro campo o en otra área, el área sigue activa.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    acc.update_area_estado(AREA_RECORD_ID, ESTADO_INACTIVA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [AREA_RECORD_ID]
+    assert guardar.call_args.kwargs["form_id"] == acc.Location.AREAS_DE_LAS_UBICACIONES
+    assert guardar.call_args.kwargs["answers"] == {acc.Location.f["area_state"]: ESTADO_INACTIVA}
