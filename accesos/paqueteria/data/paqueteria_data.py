@@ -98,3 +98,11 @@ EDICION_PAQUETE = {
         "entregado_a_paqueteria", "proveedor",
     )
 }
+
+# Lista de paquetes (get_paquetes): un paquete de destinatario externo como
+# lo regresa la consulta, con el estatus en lista.
+PAQUETE_LISTA_OTRO = {
+    "folio": FOLIO_PAQUETE,
+    "quien_recibe_otro": DESTINATARIO_EXTERNO,
+    "estatus_paqueteria": [ESTATUS_GUARDADO],
+}

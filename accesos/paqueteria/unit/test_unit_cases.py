@@ -28,10 +28,12 @@ from ..data.paqueteria_data import (
     FOLIO_PAQUETE,
     EDICION_OK,
     ENTREGA_PAQUETE,
+    PAQUETE_LISTA_OTRO,
 )
 
 C10_TRIGGERS = [
     "create_paquete",
+    "get_paquetes",
     "paqueteria_base_match",
     "update_paquete",
 ]
@@ -179,3 +181,23 @@ def test_entregar_paquete_guarda_el_estatus_la_fecha_y_a_quien_se_entrego(acceso
     assert answers[f["estatus_paqueteria"]] == ENTREGA_PAQUETE["estatus_paqueteria"]
     assert answers[f["fecha_entregado_paqueteria"]] == ENTREGA_PAQUETE["fecha_entregado_paqueteria"]
     assert answers[f["entregado_a_paqueteria"]] == ENTREGA_PAQUETE["entregado_a_paqueteria"]
+
+
+@pytest.mark.unit
+def test_lista_de_paquetes_muestra_al_destinatario_externo_y_el_estatus_como_texto(accesos_no_api, mocker):
+    """
+    TB-321: en la lista de paquetes, un paquete con destinatario externo
+    ("Otro") debe mostrar a ese destinatario en quien_recibe_paqueteria, que
+    es la columna que pinta el front, y el estatus como texto ('guardado'), no
+    como lista. Si no, la columna de destinatario sale vacía y el estatus no
+    coincide con la pestaña.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(acc, "cr", mocker.Mock(), create=True)
+    mocker.patch.object(acc, "format_cr_result", return_value=[dict(PAQUETE_LISTA_OTRO)])
+
+    paquetes = acc.get_paquetes(LOCATION, AREA, ESTATUS_GUARDADO)
+
+    assert len(paquetes) == 1
+    assert paquetes[0]["quien_recibe_paqueteria"] == DESTINATARIO_EXTERNO
+    assert paquetes[0]["estatus_paqueteria"] == ESTATUS_GUARDADO
