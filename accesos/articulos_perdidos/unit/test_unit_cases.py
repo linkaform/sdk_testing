@@ -132,7 +132,6 @@ def test_filtro_usa_el_estatus_de_la_pestana_y_la_caseta(accesos_no_api):
     assert estatus not in todos, f"Todos filtró por estatus {todos[estatus]!r}"
 
 
-# --- create article lost ---
 def registrar_simulado(acc, mocker):
     """Simula el empleado y el guardado; regresa el mock de post_forms_answers."""
     mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
@@ -177,7 +176,6 @@ def test_registrar_articulo_guarda_la_categoria_y_el_articulo_juntos(accesos_no_
     }
 
 
-# --- update article lost ---
 def editar_simulado(acc, mocker):
     """Simula el empleado y el guardado; regresa el mock de patch_multi_record."""
     mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_PERDIDOS))
