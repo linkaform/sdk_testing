@@ -112,3 +112,13 @@ AVISO_CORREO_GUIA = {**AVISO_CORREO, "no_guia": NO_GUIA}
 CORREO_ENVIADO = {"status_code": 200}
 # Aviso por SMS con un teléfono incompleto (menos de 10 dígitos).
 AVISO_SMS_TELEFONO_CORTO = {"canales": ["sms"], "telefono": "81 1234"}
+# Empleados para el catálogo de destinatarios: uno con usuario ligado y
+# contacto en la forma Empleados, y uno sin nombre (se omite).
+EMPLEADO_CON_USUARIO = {
+    "worker_name": "Empleado de prueba QA",
+    "usuario_email": ["usuario.qa@clave10.com"],
+    "correo_empresarial": "empleado.qa@clave10.com",
+    "usuario_telefono": [],
+    "telefono1": "8110000001",
+}
+EMPLEADO_SIN_NOMBRE = {"worker_name": "", "usuario_email": ["sin.nombre@clave10.com"]}

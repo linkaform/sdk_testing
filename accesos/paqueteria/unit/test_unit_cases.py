@@ -33,11 +33,14 @@ from ..data.paqueteria_data import (
     NO_GUIA,
     CORREO_ENVIADO,
     AVISO_SMS_TELEFONO_CORTO,
+    EMPLEADO_CON_USUARIO,
+    EMPLEADO_SIN_NOMBRE,
 )
 
 C10_TRIGGERS = [
     "_notificar_paquete_recibido",
     "create_paquete",
+    "get_destinatarios_paqueteria",
     "get_paquetes",
     "paqueteria_base_match",
     "update_paquete",
@@ -245,3 +248,26 @@ def test_aviso_por_sms_sin_telefono_valido_reporta_el_error_y_no_se_manda(acceso
 
     assert resultado["sms"] == {"ok": False, "error": "Sin teléfono válido del destinatario"}
     enviar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_catalogo_de_destinatarios_trae_el_contacto_del_usuario_y_omite_empleados_sin_nombre(accesos_no_api, mocker):
+    """
+    TB-324: el catálogo de destinatarios (catalogo_destinatarios) debe tomar
+    primero el email y el teléfono del usuario ligado y, si no trae, los de la
+    forma Empleados; los empleados sin nombre no salen. Si toma el contacto
+    equivocado, el aviso del paquete llega a otra persona.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(
+        de(acc, "Employee").Employee, "get_employee_data",
+        return_value=[dict(EMPLEADO_CON_USUARIO), dict(EMPLEADO_SIN_NOMBRE)],
+    )
+
+    destinatarios = acc.get_destinatarios_paqueteria()
+
+    assert destinatarios == [{
+        "nombre": EMPLEADO_CON_USUARIO["worker_name"],
+        "email": EMPLEADO_CON_USUARIO["usuario_email"][0],
+        "telefono": EMPLEADO_CON_USUARIO["telefono1"],
+    }]
