@@ -21,6 +21,7 @@ from ..data.pases_entrada_data import (
     PASE_AUTO_REGISTRO,
     VISITA_A_UNIT,
     AUTORIZACION_PASE,
+    AUTO_ACTIVACION_SI,
 )
 
 
@@ -111,3 +112,21 @@ def test_pase_de_nueva_visita_se_autoriza_con_quien_lo_crea(accesos_no_api, mock
     answers = pase_guardado(guardar)
     assert answers[acc.pase_entrada_fields["catalago_autorizado_por"]] == AUTORIZACION_PASE
     assert answers[acc.pase_entrada_fields["status_pase"]] == ESTATUS_ACTIVO
+
+
+@pytest.mark.unit
+def test_pase_con_auto_activacion_se_guarda_activo(accesos_no_api, mocker):
+    """
+    TB-211: con "Activar pase por defecto" (auto_activacion 'sí'), un pase de
+    web sin foto ni identificación debe guardarse 'activo', aunque
+    access_pass_set_status diga que le faltan datos. Si se queda en
+    'proceso', la auto activación no sirve.
+    """
+    acc = accesos_no_api
+    guardar = crear_pase_simulado(acc, mocker)
+    mocker.patch.object(de(acc, "access_pass_set_status"), "access_pass_set_status", return_value=ESTATUS_PROCESO)
+
+    acc.create_access_pass(pase_nuevo(acc, auto_activacion=AUTO_ACTIVACION_SI, foto=[], identificacion=[]))
+
+    estatus = pase_guardado(guardar)[acc.pase_entrada_fields["status_pase"]]
+    assert estatus == ESTATUS_ACTIVO, f"El pase con auto activación nació {estatus!r}"
