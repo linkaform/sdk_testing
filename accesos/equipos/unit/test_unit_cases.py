@@ -17,6 +17,11 @@ from ..data.equipos_data import (
     NOMBRE_PROYECTOR,
     REGISTRO_BITACORA,
     EQUIPO_PASE_ETIQUETAS,
+    LOCATION,
+    AREA,
+    LIMITE_LISTA,
+    DESGLOSE_EQUIPOS,
+    FILTRO_DENTRO,
 )
 
 C10_TRIGGERS = [
@@ -25,6 +30,7 @@ C10_TRIGGERS = [
     "_tipo_equipo_bitacora",
     "catalogo_tipo_equipo",
     "format_equipos_simple",
+    "get_list_bitacora",
     "update_bitacora_entrada",
 ]
 
@@ -168,3 +174,27 @@ def test_catalogo_de_tipos_de_equipo_sale_del_catalogo_del_pase(accesos_no_api, 
 
     consultar.assert_called_once()
     assert consultar.call_args.args[:2] == (acc.TIPO_EQUIPOS_CAT_ID, acc.PASE_ENTRADA)
+
+
+@pytest.mark.unit
+def test_pestana_equipos_desglosa_una_fila_por_equipo_en_el_total_y_la_lista(accesos_no_api, mocker):
+    """
+    TB-328: con desglose='equipos', get_list_bitacora debe pedir solo
+    bitácoras con equipos y desglosar el grupo (una fila por equipo), igual en
+    el total que en la lista. Si el total cuenta otra cosa, la paginación de
+    la pestaña Equipos muestra páginas vacías o le faltan equipos.
+    """
+    acc = accesos_no_api
+    grupo = acc.mf["grupo_equipos"]
+    cr = mocker.MagicMock()
+    cr.aggregate.return_value = []
+    mocker.patch.object(acc, "cr", cr, create=True)
+
+    acc.get_list_bitacora(
+        location=LOCATION, area=AREA, dynamic_filters=FILTRO_DENTRO, limit=LIMITE_LISTA, desglose=DESGLOSE_EQUIPOS
+    )
+
+    conteo, lista = (c.args[0] for c in cr.aggregate.call_args_list)
+    for consulta in (conteo, lista):
+        assert consulta[0]["$match"][f"answers.{grupo}.0"] == {"$exists": True}
+        assert consulta[1]["$unwind"]["path"] == f"$answers.{grupo}"
