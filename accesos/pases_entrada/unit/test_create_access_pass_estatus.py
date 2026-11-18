@@ -87,3 +87,27 @@ def test_pase_de_auto_registro_no_se_autoriza_solo(accesos_no_api, mocker):
     autorizar.assert_not_called()
     answers = pase_guardado(guardar)
     assert acc.pase_entrada_fields["catalago_autorizado_por"] not in answers, "El pase de auto registro se autorizó solo"
+
+
+@pytest.mark.unit
+def test_pase_de_nueva_visita_se_autoriza_con_quien_lo_crea(accesos_no_api, mocker):
+    """
+    TB-210: un pase de Nueva Visita lo crea el empleado que invita;
+    create_access_pass debe guardarlo autorizado con lo que regresa
+    autorizar_pase_acceso y con el estatus que calcula access_pass_set_status.
+    Si no se autoriza, el pase se queda en Por autorizar aunque el anfitrión
+    ya lo avaló.
+    """
+    acc = accesos_no_api
+    guardar = crear_pase_simulado(acc, mocker)
+    autorizar = mocker.patch.object(
+        de(acc, "autorizar_pase_acceso"), "autorizar_pase_acceso", return_value=dict(AUTORIZACION_PASE)
+    )
+    mocker.patch.object(de(acc, "access_pass_set_status"), "access_pass_set_status", return_value=ESTATUS_ACTIVO)
+
+    acc.create_access_pass(pase_nuevo(acc, created_from="nueva_visita"))
+
+    autorizar.assert_called_once()
+    answers = pase_guardado(guardar)
+    assert answers[acc.pase_entrada_fields["catalago_autorizado_por"]] == AUTORIZACION_PASE
+    assert answers[acc.pase_entrada_fields["status_pase"]] == ESTATUS_ACTIVO
