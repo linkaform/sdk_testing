@@ -79,3 +79,22 @@ CANALES_CORREO = ["correo"]
 AVISO_CORREO = {"canales": CANALES_CORREO, "email": "destinatario.qa@clave10.com"}
 AVISO_SIN_EMAIL = {"canales": CANALES_CORREO, "email": ""}
 AVISO_ENVIADO = {"correo": {"ok": True, "error": None}}
+
+# Editar y entregar (update_paquete): folio del paquete y lo que mandan
+# entregar-paqueteria.tsx (estatus en lista) y editar-paqueteria.tsx (los
+# campos del paquete, sin estatus).
+FOLIO_PAQUETE = "1-PAQUETE"
+EDICION_OK = {"status_code": 202}
+ENTREGA_PAQUETE = {
+    "estatus_paqueteria": [ESTATUS_ENTREGADO],
+    "fecha_entregado_paqueteria": "2026-11-17 12:00:00",
+    "entregado_a_paqueteria": ENTREGADO_A,
+}
+EDICION_PAQUETE = {
+    key: PAQUETE_UNIT[key]
+    for key in (
+        "ubicacion_paqueteria", "area_paqueteria", "fotografia_paqueteria", "descripcion_paqueteria",
+        "quien_recibe_paqueteria", "guardado_en_paqueteria", "fecha_recibido_paqueteria",
+        "entregado_a_paqueteria", "proveedor",
+    )
+}
