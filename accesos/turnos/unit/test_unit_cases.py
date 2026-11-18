@@ -148,7 +148,6 @@ def test_con_la_caseta_abierta_el_guardia_se_suma_al_turno(accesos_no_api, mocke
     assert sumar.call_args.args[7] == [ROL_GUARDIA], f"Roles que se mandaron: {sumar.call_args.args[7]}"
 
 
-# --- checkout ---
 def turno_guardado(acceso_obj):
     """Registro del turno abierto en la caseta con un guardia que sigue dentro."""
     f = acceso_obj.checkin_fields
