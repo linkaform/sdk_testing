@@ -8,6 +8,8 @@ se mandan a guardar.
 Notion: TB-207 a TB-211.
 """
 
+import copy
+
 import pytest
 from lkf_back import de
 
@@ -16,6 +18,9 @@ from ..data.pases_entrada_data import (
     ESTATUS_PROCESO,
     ESTATUS_ACTIVO,
     HABILITAR_SI,
+    PASE_AUTO_REGISTRO,
+    VISITA_A_UNIT,
+    AUTORIZACION_PASE,
 )
 
 
@@ -61,3 +66,24 @@ def test_pase_de_web_con_toggles_se_evalua_al_crearse(accesos_no_api, mocker):
     evaluar.assert_called_once()
     estatus = pase_guardado(guardar)[acc.pase_entrada_fields["status_pase"]]
     assert estatus == ESTATUS_ACTIVO, f"El pase con toggles nació {estatus!r}"
+
+
+@pytest.mark.unit
+def test_pase_de_auto_registro_no_se_autoriza_solo(accesos_no_api, mocker):
+    """
+    TB-209: un pase de auto registro lo llena el visitante, no un empleado;
+    create_access_pass no debe pedir la autorización ni guardar quién lo
+    autorizó, para que caiga en Por autorizar. Si se autoriza solo, cualquiera
+    que llene el formulario entra sin que nadie lo apruebe.
+    """
+    acc = accesos_no_api
+    guardar = crear_pase_simulado(acc, mocker)
+    autorizar = mocker.patch.object(
+        de(acc, "autorizar_pase_acceso"), "autorizar_pase_acceso", return_value=dict(AUTORIZACION_PASE)
+    )
+
+    acc.create_access_pass({**copy.deepcopy(PASE_AUTO_REGISTRO), "visita_a": VISITA_A_UNIT})
+
+    autorizar.assert_not_called()
+    answers = pase_guardado(guardar)
+    assert acc.pase_entrada_fields["catalago_autorizado_por"] not in answers, "El pase de auto registro se autorizó solo"
