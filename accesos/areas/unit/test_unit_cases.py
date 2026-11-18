@@ -22,11 +22,12 @@ from ..data.areas_data import (
     GUARDADO_OK,
     EDICION_PARCIAL,
     ESTADO_INACTIVA,
+    DISPONIBILIDAD_MANTENIMIENTO,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted", "update_area_estado", "update_full_area"]
+C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted", "update_area_disponibilidad", "update_area_estado", "update_full_area"]
 
 
 @pytest.mark.unit
@@ -210,3 +211,23 @@ def test_desactivar_area_guarda_el_estado_en_esa_area(accesos_no_api, mocker):
     assert guardar.call_args.kwargs["record_id"] == [AREA_RECORD_ID]
     assert guardar.call_args.kwargs["form_id"] == acc.Location.AREAS_DE_LAS_UBICACIONES
     assert guardar.call_args.kwargs["answers"] == {acc.Location.f["area_state"]: ESTADO_INACTIVA}
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_area_disponibilidad")
+def test_poner_area_en_mantenimiento_guarda_la_disponibilidad_en_esa_area(accesos_no_api, mocker):
+    """
+    TB-308: al cambiar la disponibilidad de un área (por ejemplo a
+    mantenimiento), update_area_disponibilidad debe guardarla en el campo de
+    disponibilidad de esa área y solo en ella. Si no, Disponibles sigue
+    mostrando el área como disponible.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    acc.update_area_disponibilidad(AREA_RECORD_ID, DISPONIBILIDAD_MANTENIMIENTO)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [AREA_RECORD_ID]
+    assert guardar.call_args.kwargs["form_id"] == acc.Location.AREAS_DE_LAS_UBICACIONES
+    assert guardar.call_args.kwargs["answers"] == {acc.Location.f["area_status"]: DISPONIBILIDAD_MANTENIMIENTO}
