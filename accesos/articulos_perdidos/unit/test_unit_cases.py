@@ -7,6 +7,7 @@ otros archivos de unit/ y se corren a mano.
 """
 
 import pytest
+from lkf_back import de
 from ..data.perdidos_data import (
     FOLIO_ARTICULO,
     FOLIOS_ARTICULO,
@@ -18,11 +19,21 @@ from ..data.perdidos_data import (
     OTRA_UBICACION,
     ESTATUS_PENDIENTE,
     ESTATUS_TODOS,
+    ARTICULO_UNIT,
+    EMPLEADO_PERDIDOS,
+    GUARDADO_OK,
+    TIPO_ARTICULO,
+    ARTICULO_SELECCION,
+    DEVOLUCION,
+    ESTATUS_ENTREGADO,
+    EDICION_OK,
 )
 
 C10_TRIGGERS = [
+    "create_article_lost",
     "delete_article_lost",
     "perdidos_base_match",
+    "update_article_lost",
 ]
 
 
@@ -119,3 +130,100 @@ def test_filtro_usa_el_estatus_de_la_pestana_y_la_caseta(accesos_no_api):
 
     todos = acc.perdidos_base_match(location=LOCATION, status=ESTATUS_TODOS)
     assert estatus not in todos, f"Todos filtró por estatus {todos[estatus]!r}"
+
+
+def registrar_simulado(acc, mocker):
+    """Simula el empleado y el guardado; regresa el mock de post_forms_answers."""
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_PERDIDOS))
+    return mocker.patch.object(acc.lkf_api, "post_forms_answers", return_value=dict(GUARDADO_OK))
+
+
+@pytest.mark.unit
+def test_registrar_articulo_guarda_la_ubicacion_y_la_caseta_juntas(accesos_no_api, mocker):
+    """
+    TB-229: con ubicación y caseta, create_article_lost debe guardar las dos
+    en el catálogo de ubicaciones del artículo. Si se pierde una, el artículo
+    no aparece al filtrar por ella.
+    """
+    acc = accesos_no_api
+    guardar = registrar_simulado(acc, mocker)
+
+    acc.create_article_lost(dict(ARTICULO_UNIT))
+
+    f = acc.perdidos_fields
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["ubicacion_catalog"]] == {f["ubicacion_perdido"]: LOCATION, f["area_perdido"]: AREA}
+
+
+@pytest.mark.unit
+def test_registrar_articulo_guarda_la_categoria_y_el_articulo_juntos(accesos_no_api, mocker):
+    """
+    TB-230: con categoría y artículo del catálogo, create_article_lost debe
+    guardar los dos en el catálogo de tipos de artículo. Si se pierde uno, el
+    buscador no lo encuentra por categoría o por artículo.
+    """
+    acc = accesos_no_api
+    guardar = registrar_simulado(acc, mocker)
+
+    acc.create_article_lost(dict(ARTICULO_UNIT))
+
+    f = acc.perdidos_fields
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["tipo_articulo_catalog"]] == {
+        f["tipo_articulo_perdido"]: TIPO_ARTICULO,
+        f["articulo_seleccion"]: ARTICULO_SELECCION,
+    }
+
+
+def editar_simulado(acc, mocker):
+    """Simula el empleado y el guardado; regresa el mock de patch_multi_record."""
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_PERDIDOS))
+    return mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value={**EDICION_OK, "json": {}})
+
+
+@pytest.mark.unit
+def test_entregar_articulo_lo_deja_entregado_con_fecha_y_quien_lo_recibe(accesos_no_api, mocker):
+    """
+    TB-231: con el payload de devolucion-article-modal y estatus 'entregado',
+    update_article_lost debe guardar 'entregado', la fecha de entrega y los
+    datos de quien lo recibe en el folio del artículo. Sin la fecha o sin quien
+    lo recibe, no hay forma de saber cuándo ni a quién se le entregó.
+    """
+    acc = accesos_no_api
+    guardar = editar_simulado(acc, mocker)
+
+    res = acc.update_article_lost({**DEVOLUCION, "estatus_perdido": ESTATUS_ENTREGADO}, FOLIO_ARTICULO)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["folios"] == [FOLIO_ARTICULO]
+    f = acc.perdidos_fields
+    answers = guardar.call_args.kwargs["answers"]
+    assert answers[f["estatus_perdido"]] == ESTATUS_ENTREGADO
+    fecha_entrega = res["json"]["date_entrega_perdido"]
+    assert fecha_entrega, "El artículo entregado no tiene fecha de entrega"
+    assert answers[f["date_entrega_perdido"]] == fecha_entrega
+    assert answers[f["recibe_perdido"]] == DEVOLUCION["recibe_perdido"]
+    assert answers[f["telefono_recibe_perdido"]] == DEVOLUCION["telefono_recibe_perdido"]
+
+
+@pytest.mark.unit
+def test_editar_articulo_sin_entregarlo_lo_deja_pendiente_y_sin_fecha_de_entrega(accesos_no_api, mocker):
+    """
+    TB-233: con el payload de editar-article-modal (estatus 'pendiente'),
+    update_article_lost debe guardar 'pendiente' en el folio del artículo y
+    no ponerle fecha de entrega. Si le pone fecha, el artículo parece
+    entregado aunque siga en Pendientes.
+    """
+    acc = accesos_no_api
+    guardar = editar_simulado(acc, mocker)
+
+    res = acc.update_article_lost(dict(ARTICULO_UNIT), FOLIO_ARTICULO)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["folios"] == [FOLIO_ARTICULO]
+    f = acc.perdidos_fields
+    answers = guardar.call_args.kwargs["answers"]
+    assert answers[f["estatus_perdido"]] == ESTATUS_PENDIENTE
+    assert f["date_entrega_perdido"] not in answers, "El artículo pendiente se guardó con fecha de entrega"
+    assert res["json"]["date_entrega_perdido"] == ""
