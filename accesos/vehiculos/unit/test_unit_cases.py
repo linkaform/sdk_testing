@@ -150,7 +150,6 @@ def test_contador_de_vehiculos_dentro_no_cuenta_los_que_no_tienen_tipo(accesos_n
     )
 
 
-# --- update bitacora entrada ---
 @pytest.mark.unit
 def test_agregar_vehiculo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_api, mocker):
     """
@@ -197,7 +196,6 @@ def test_agregar_vehiculo_sin_record_id_ni_folio_da_error(accesos_no_api, mocker
     guardar.assert_not_called()
 
 
-# --- vehiculo del pase a la bitacora ---
 @pytest.mark.unit
 def test_vehiculo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
     """
@@ -223,7 +221,6 @@ def test_vehiculo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
     assert vehiculo[mf["color_vehiculo"]] == VEHICULO_VISITA["color"]
 
 
-# --- catalogo vehiculos ---
 @pytest.mark.unit
 def test_catalogo_de_vehiculos_sale_del_catalogo_de_tipos_de_vehiculo(accesos_no_api, mocker):
     """
