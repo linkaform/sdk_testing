@@ -17,14 +17,18 @@ from ..data.vehiculos_data import (
     DESGLOSE_VEHICULOS,
     FILTRO_DENTRO,
     LIMITE_LISTA,
+    VEHICULO_AGREGADO,
+    REGISTRO_BITACORA,
 )
 
 C10_TRIGGERS = [
     "_answers_vehiculos",
     "_answers_vehiculos_pase",
     "_size_vehiculos_con_tipo",
+    "catalogo_vehiculos",
     "format_vehiculos_simple",
     "get_list_bitacora",
+    "update_bitacora_entrada",
 ]
 
 
@@ -144,3 +148,91 @@ def test_contador_de_vehiculos_dentro_no_cuenta_los_que_no_tienen_tipo(accesos_n
     assert filtro["cond"] == {"$not": [{"$in": [{"$ifNull": [tipo, None]}, ["", None]]}]}, (
         f"La condición del contador es {filtro['cond']}"
     )
+
+
+@pytest.mark.unit
+def test_agregar_vehiculo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_api, mocker):
+    """
+    TB-309: con el vehículo del modal Nuevo Vehículo (add-local-vehicule),
+    update_bitacora_entrada debe agregarlo como renglón nuevo del grupo de
+    vehículos de la entrada, con tipo, marca y modelo en el catálogo de
+    vehículos, el estado en su catálogo y placas y color en sus campos. Si un
+    dato cae fuera de su campo, la pestaña Vehículos no lo muestra.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value={"status_code": 202})
+
+    acc.update_bitacora_entrada({"vehiculo": dict(VEHICULO_AGREGADO)}, record_id=REGISTRO_BITACORA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [REGISTRO_BITACORA]
+    assert guardar.call_args.kwargs["form_id"] == acc.BITACORA_ACCESOS
+    renglones = guardar.call_args.kwargs["answers"][mf["grupo_vehiculos"]]
+    assert list(renglones) == [-1], f"El vehículo no se agregó como renglón nuevo: {list(renglones)}"
+    vehiculo = renglones[-1]
+    assert vehiculo[de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID] == {
+        mf["tipo_vehiculo"]: VEHICULO_AGREGADO["tipo"],
+        mf["marca_vehiculo"]: VEHICULO_AGREGADO["marca"],
+        mf["modelo_vehiculo"]: VEHICULO_AGREGADO["modelo"],
+    }
+    assert vehiculo[acc.ESTADO_OBJ_ID] == {mf["nombre_estado"]: VEHICULO_AGREGADO["estado"]}
+    assert vehiculo[mf["placas_vehiculo"]] == VEHICULO_AGREGADO["placas"]
+    assert vehiculo[mf["color_vehiculo"]] == VEHICULO_AGREGADO["color"]
+
+
+@pytest.mark.unit
+def test_agregar_vehiculo_sin_record_id_ni_folio_da_error(accesos_no_api, mocker):
+    """
+    TB-311: sin record_id ni folio, update_bitacora_entrada debe detenerse con
+    el error de que se requiere el folio o el id y no guardar nada. Si sigue,
+    el vehículo no se agrega a ninguna entrada y el guardia no se entera.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record")
+
+    with pytest.raises(Exception, match="Se requiere el folio o el id"):
+        acc.update_bitacora_entrada({"vehiculo": dict(VEHICULO_AGREGADO)})
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_vehiculo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
+    """
+    TB-312: al registrar la entrada, el vehículo del pase (con las etiquetas
+    de la lista) pasa por format_vehiculos_simple y luego por
+    _answers_vehiculos; debe llegar a la bitácora con tipo, marca, modelo,
+    estado, placas y color. Si se pierde uno, la pestaña Vehículos muestra el
+    vehículo incompleto.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+
+    simple = acc.format_vehiculos_simple([dict(VEHICULO_LLAVES_LARGAS)])
+    vehiculo = acc._answers_vehiculos(simple)[0]
+
+    assert vehiculo[de(acc, "TIPO_DE_VEHICULO_OBJ_ID").TIPO_DE_VEHICULO_OBJ_ID] == {
+        mf["tipo_vehiculo"]: VEHICULO_VISITA["tipo"],
+        mf["marca_vehiculo"]: VEHICULO_VISITA["marca"],
+        mf["modelo_vehiculo"]: VEHICULO_VISITA["modelo"],
+    }
+    assert vehiculo[acc.ESTADO_OBJ_ID] == {mf["nombre_estado"]: VEHICULO_VISITA["estado"]}
+    assert vehiculo[mf["placas_vehiculo"]] == VEHICULO_VISITA["placas"]
+    assert vehiculo[mf["color_vehiculo"]] == VEHICULO_VISITA["color"]
+
+
+@pytest.mark.unit
+def test_catalogo_de_vehiculos_sale_del_catalogo_de_tipos_de_vehiculo(accesos_no_api, mocker):
+    """
+    TB-313: el front y la app piden el catálogo de vehículos del pase
+    (catalago_vehiculo); catalogo_vehiculos debe pedirlo al catálogo de tipos
+    de vehículo de la forma Pase de entrada. Si pide otro, los selectores de
+    tipo, marca y modelo salen vacíos o con otras opciones.
+    """
+    acc = accesos_no_api
+    consultar = mocker.patch.object(acc.lkf_api, "catalog_view", return_value=[])
+
+    acc.catalogo_vehiculos()
+
+    consultar.assert_called_once()
+    assert consultar.call_args.args[:2] == (acc.TIPO_VEHICULOS_CAT_ID, acc.PASE_ENTRADA)
