@@ -97,3 +97,13 @@ GUARDADO_OK = {"status_code": 201}
 # solución) y respuesta del patch cuando se guarda bien.
 EMPLEADO_FALLA = {"timezone": "America/Monterrey"}
 EDICION_OK = {"status_code": 202, "json": {}}
+
+# update_failure_seguimiento: la falla como la regresa get_list_fallas para el
+# folio (sin seguimientos previos). add-seguimiento-falla-cerrar manda el
+# seguimiento con folio y estatus, sin ubicación ni caseta.
+FALLA_REGISTRADA = {
+    "_id": REGISTROS_FALLA[FOLIO_FALLA],
+    "folio": FOLIO_FALLA,
+    "falla_estatus": ESTATUS_ABIERTO,
+    "falla_grupo_seguimiento_formated": [],
+}

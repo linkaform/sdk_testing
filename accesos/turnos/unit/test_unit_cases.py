@@ -21,6 +21,8 @@ from ..data.turnos_data import (
     ROL_GUARDIA,
     ROL_ADMIN,
     CHECKIN_ABIERTO,
+    CHECKIN_TIPO_ABIERTA,
+    CHECKIN_TIPO_CERRADA,
     GUARDADO_OK,
     GUARDIA_ID,
     ZONA_TURNO,
@@ -39,11 +41,20 @@ C10_TRIGGERS = [
 
 def checkin_simulado(acceso_obj, mocker, caseta_abierta):
     """
-    Simula lo que do_checkin consulta antes de guardar: la caseta, el usuario y
-    su empleado. Regresa los mocks de crear el turno y de sumarse al abierto.
+    Simula lo que do_checkin consulta antes de guardar: el último turno de la
+    caseta, el usuario y su empleado. Regresa los mocks de crear el turno y de
+    sumarse al abierto. Se simula el último turno y no is_boot_available,
+    porque en addons regresa True con la caseta abierta y en Sanic con la
+    caseta libre; así cada back decide con su propia función.
     """
-    mocker.patch.object(acceso_obj, "is_boot_available", return_value=caseta_abierta)
-    mocker.patch.object(acceso_obj, "get_open_checkin", return_value={})
+    if caseta_abierta:
+        ultimo_turno = {**CHECKIN_ABIERTO, "checkin_type": CHECKIN_TIPO_ABIERTA}
+        turno_abierto = dict(CHECKIN_ABIERTO)
+    else:
+        ultimo_turno = {"checkin_type": CHECKIN_TIPO_CERRADA}
+        turno_abierto = {}
+    mocker.patch.object(acceso_obj, "get_last_checkin", return_value=ultimo_turno)
+    mocker.patch.object(acceso_obj, "get_open_checkin", return_value=turno_abierto)
     mocker.patch.object(acceso_obj.lkf_api, "get_user_by_id", return_value=dict(USUARIO_GUARDIA))
     mocker.patch.object(de(acceso_obj, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_GUARDIA))
     crear = mocker.patch.object(acceso_obj.lkf_api, "post_forms_answers")
@@ -95,7 +106,7 @@ def test_guardia_sin_la_caseta_configurada_no_puede_iniciar_turno(accesos_no_api
     """
     acc = accesos_no_api
     crear, sumar = checkin_simulado(acc, mocker, caseta_abierta=False)
-    mocker.patch.object(acc, "get_users_by_location_area", return_value=[])
+    mocker.patch.object(de(acc, "get_users_by_location_area"), "get_users_by_location_area", return_value=[])
 
     with pytest.raises(Exception, match="no puede hacer check-in en la caseta"):
         acc.do_checkin(LOCATION, AREA, employee_list=[])
@@ -113,7 +124,9 @@ def test_guardia_con_turno_abierto_en_otra_caseta_no_puede_entrar(accesos_no_api
     acc = accesos_no_api
     user_id = acc.user["user_id"]
     crear, sumar = checkin_simulado(acc, mocker, caseta_abierta=False)
-    mocker.patch.object(acc, "get_users_by_location_area", return_value=[{"user_id": user_id}])
+    mocker.patch.object(
+        de(acc, "get_users_by_location_area"), "get_users_by_location_area", return_value=[{"user_id": user_id}]
+    )
     mocker.patch.object(acc, "get_employee_checkin_status", return_value={user_id: {"status": "in"}})
 
     with pytest.raises(Exception, match="registrados en otra caseta"):
@@ -135,7 +148,6 @@ def test_con_la_caseta_abierta_el_guardia_se_suma_al_turno(accesos_no_api, mocke
     acc = accesos_no_api
     crear, sumar = checkin_simulado(acc, mocker, caseta_abierta=True)
     sumar.return_value = dict(GUARDADO_OK)
-    mocker.patch.object(acc, "last_check_in", dict(CHECKIN_ABIERTO), create=True)
     mocker.patch.object(acc, "get_roles_usuario", return_value=[ROL_GUARDIA])
     mocker.patch.object(acc, "assign_unassigned_rondines_on_checkin")
 

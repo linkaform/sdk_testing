@@ -78,3 +78,20 @@ REGISTROS_ARTICULO = {
 }
 URL_REGISTRO = "/api/infosync/form_answer/{}/"
 BORRADO_OK = {"status_code": 202}
+
+# Unitarios de registrar y editar (articulos_perdidos/unit): el artículo de
+# + Nuevo Artículo con tipo y artículo del catálogo ya elegidos.
+TIPO_ARTICULO = "Electrónicos"
+ARTICULO_SELECCION = "Celular"
+ARTICULO_UNIT = {
+    **ARTICULO_NUEVO,
+    "articulo_perdido": NOMBRE_ARTICULO,
+    "date_hallazgo_perdido": "2026-11-17 10:00:00",
+    "tipo_articulo_perdido": TIPO_ARTICULO,
+    "articulo_seleccion": ARTICULO_SELECCION,
+}
+EMPLEADO_PERDIDOS = {"timezone": "America/Monterrey"}
+GUARDADO_OK = {"status_code": 201}
+# Respuesta del patch cuando se guarda bien (update_article_lost le agrega la
+# fecha de entrega en "json").
+EDICION_OK = {"status_code": 202, "json": {}}

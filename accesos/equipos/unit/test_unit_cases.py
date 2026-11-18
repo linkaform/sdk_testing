@@ -15,13 +15,17 @@ from ..data.equipos_data import (
     TIPO_SINONIMO_CON_ACENTO,
     TIPO_FUERA_DEL_RADIO,
     NOMBRE_PROYECTOR,
+    REGISTRO_BITACORA,
+    EQUIPO_PASE_ETIQUETAS,
 )
 
 C10_TRIGGERS = [
     "_answers_equipos",
     "_answers_equipos_pase",
     "_tipo_equipo_bitacora",
+    "catalogo_tipo_equipo",
     "format_equipos_simple",
+    "update_bitacora_entrada",
 ]
 
 
@@ -95,3 +99,72 @@ def test_tipo_que_no_existe_en_la_bitacora_queda_como_otra(accesos_no_api):
 
     assert acc._tipo_equipo_bitacora(TIPO_FUERA_DEL_RADIO, "") == ("otra", TIPO_FUERA_DEL_RADIO)
     assert acc._tipo_equipo_bitacora(TIPO_FUERA_DEL_RADIO, NOMBRE_PROYECTOR) == ("otra", NOMBRE_PROYECTOR)
+
+
+@pytest.mark.unit
+def test_agregar_equipo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_api, mocker):
+    """
+    TB-316: con el equipo del modal de agregar equipo (add-local-equipo),
+    update_bitacora_entrada debe agregarlo como renglón nuevo del grupo de
+    equipos de la entrada, con tipo, nombre, marca, modelo, color y serie en
+    sus campos. Si un dato cae fuera de su campo, la pestaña Equipos no lo
+    muestra.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value={"status_code": 202})
+
+    acc.update_bitacora_entrada({"equipo": dict(EQUIPO_AGREGADO)}, record_id=REGISTRO_BITACORA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [REGISTRO_BITACORA]
+    renglones = guardar.call_args.kwargs["answers"][mf["grupo_equipos"]]
+    assert list(renglones) == [-1], f"El equipo no se agregó como renglón nuevo: {list(renglones)}"
+    equipo = renglones[-1]
+    assert equipo[mf["tipo_equipo"]] == "herramienta", f"El tipo quedó {equipo[mf['tipo_equipo']]!r}"
+    assert equipo[mf["nombre_articulo"]] == EQUIPO_AGREGADO["nombre"]
+    assert equipo[mf["marca_articulo"]] == EQUIPO_AGREGADO["marca"]
+    assert equipo[mf["modelo_articulo"]] == EQUIPO_AGREGADO["modelo"]
+    assert equipo[mf["color_articulo"]] == EQUIPO_AGREGADO["color"]
+    assert equipo[mf["numero_serie"]] == EQUIPO_AGREGADO["serie"]
+
+
+@pytest.mark.unit
+def test_equipo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
+    """
+    TB-319: al registrar la entrada, el equipo del pase (con las etiquetas
+    del detalle del pase) pasa por format_equipos_simple y luego por
+    _answers_equipos; debe llegar a la bitácora con el tipo del catálogo
+    convertido a la opción del radio ('Laptop' a 'computo') y con nombre,
+    marca, modelo, serie y color. Si se pierde uno, la pestaña Equipos
+    muestra el equipo incompleto.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+
+    simple = acc.format_equipos_simple([dict(EQUIPO_PASE_ETIQUETAS)])
+    equipo = acc._answers_equipos(simple)[0]
+
+    assert equipo[mf["tipo_equipo"]] == "computo", f"El tipo quedó {equipo[mf['tipo_equipo']]!r}"
+    assert equipo[mf["nombre_articulo"]] == EQUIPO_PASE_ETIQUETAS["nombre_articulo"]
+    assert equipo[mf["marca_articulo"]] == EQUIPO_PASE_ETIQUETAS["marca_articulo"]
+    assert equipo[mf["modelo_articulo"]] == EQUIPO_PASE_ETIQUETAS["modelo_articulo"]
+    assert equipo[mf["numero_serie"]] == EQUIPO_PASE_ETIQUETAS["numero_serie"]
+    assert equipo[mf["color_articulo"]] == EQUIPO_PASE_ETIQUETAS["color_articulo"]
+
+
+@pytest.mark.unit
+def test_catalogo_de_tipos_de_equipo_sale_del_catalogo_del_pase(accesos_no_api, mocker):
+    """
+    TB-320: el front pide el catálogo de tipos de equipo del pase
+    (catalago_tipo_equipo); catalogo_tipo_equipo debe pedirlo al catálogo de
+    tipos de equipo de la forma Pase de entrada. Si pide otro, el selector de
+    tipo de equipo sale vacío o con otras opciones.
+    """
+    acc = accesos_no_api
+    consultar = mocker.patch.object(acc.lkf_api, "catalog_view", return_value=[])
+
+    acc.catalogo_tipo_equipo()
+
+    consultar.assert_called_once()
+    assert consultar.call_args.args[:2] == (acc.TIPO_EQUIPOS_CAT_ID, acc.PASE_ENTRADA)

@@ -68,3 +68,19 @@ TIPO_SINONIMO_CON_ACENTO = "Computadora Portátil"
 TIPO_FUERA_DEL_RADIO = "Proyector"
 NOMBRE_PROYECTOR = "Proyector Epson"
 RENGLON_VACIO = {}
+
+# Agregar un equipo a una entrada ya registrada (update_bitacora_entrada):
+# _id del registro de la bitácora.
+REGISTRO_BITACORA = "000000000000000000000061"
+# El mismo equipo con la foto que sube el guardia en el modal.
+EQUIPO_AGREGADO_CON_FOTO = dict(EQUIPO_AGREGADO, foto_equipo=FOTO_VALIDA)
+# El equipo del pase como lo regresa el detalle del pase (etiquetas de la
+# lista): el tipo es el del catálogo de la cuenta.
+EQUIPO_PASE_ETIQUETAS = {
+    "tipo_equipo_pase": EQUIPO_TIPO_CATALOGO["tipo"],
+    "nombre_articulo": EQUIPO_TIPO_CATALOGO["nombre"],
+    "marca_articulo": EQUIPO_TIPO_CATALOGO["marca"],
+    "modelo_articulo": EQUIPO_TIPO_CATALOGO["modelo"],
+    "numero_serie": EQUIPO_TIPO_CATALOGO["serie"],
+    "color_articulo": EQUIPO_TIPO_CATALOGO["color"],
+}
