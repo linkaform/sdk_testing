@@ -30,3 +30,6 @@ ROL_ADMIN = "Administrador"
 # Turno abierto de la caseta y respuesta del guardado cuando sale bien.
 CHECKIN_ABIERTO = {"_id": "000000000000000000000031"}
 GUARDADO_OK = {"status_code": 202}
+# Tipo del último turno de la caseta (get_last_checkin): abierta o cerrada.
+CHECKIN_TIPO_ABIERTA = "abierta"
+CHECKIN_TIPO_CERRADA = "cerrada"
