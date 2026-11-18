@@ -44,3 +44,6 @@ AREA_NUEVA = {
     "direccion": "",
     "usos": [],
 }
+
+# Respuesta de LinkaForm cuando guarda o edita el área.
+GUARDADO_OK = {"status_code": 202}

@@ -19,6 +19,7 @@ from ..data.areas_data import (
     AREAS_DE_UBICACION,
     AREA_SIN_USOS,
     AREA_NUEVA,
+    GUARDADO_OK,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -122,3 +123,28 @@ def test_area_repetida_en_la_ubicacion_no_se_vuelve_a_crear(accesos_no_api, mock
     existe.assert_called_once_with(LOCATION, AREA)
     assert respuesta["status_code"] == 208
     crear.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_new_area")
+def test_area_nueva_nace_activa_y_disponible(accesos_no_api, mocker):
+    """
+    TB-304: con los datos de + Nueva Área, create_new_area debe guardar el
+    área activa y disponible, con su nombre, su ubicación en el catálogo de
+    ubicaciones y su tipo en el catálogo de tipos de área. Si nace inactiva o
+    sin ubicación, no aparece en Disponibles.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(acc, "exists_area", return_value=False)
+    mocker.patch.object(acc, "get_area_contact_details", return_value={})
+    crear = mocker.patch.object(acc, "create_register", return_value=dict(GUARDADO_OK))
+
+    acc.create_new_area(dict(AREA_NUEVA))
+
+    crear.assert_called_once()
+    answers = crear.call_args.kwargs["answers"]
+    assert answers[acc.f["estatus_config_area"]] == "activa"
+    assert answers[acc.f["estatus_area"]] == "disponible"
+    assert answers[acc.mf["nombre_area"]] == AREA
+    assert answers[acc.Location.UBICACIONES_CAT_OBJ_ID] == {acc.mf["nombre_ubicacion_salida"]: LOCATION}
+    assert answers[acc.Location.TIPO_AREA_OBJ_ID] == {acc.f["tipo_de_area"]: AREA_NUEVA["tipo_de_area"]}
