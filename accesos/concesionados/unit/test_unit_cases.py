@@ -151,7 +151,6 @@ def test_folio_que_no_existe_da_error_y_no_borra(accesos_no_api, mocker):
     borrar.assert_not_called()
 
 
-# --- update article concessioned (devoluciones) ---
 def concesion_guardada(acceso_obj, estado=ESTADO_ABIERTO):
     """Registro de la concesión con un equipo en préstamo y sin devoluciones."""
     f = acceso_obj.cons_f
