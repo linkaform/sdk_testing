@@ -47,3 +47,5 @@ AREA_NUEVA = {
 
 # Respuesta de LinkaForm cuando guarda o edita el área.
 GUARDADO_OK = {"status_code": 202}
+# Cambios del modal de edición: solo nombre y tipo.
+EDICION_PARCIAL = {"nombre": "Caseta Principal QA editada", "tipo_de_area": "Estacionamiento"}

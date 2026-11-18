@@ -20,11 +20,12 @@ from ..data.areas_data import (
     AREA_SIN_USOS,
     AREA_NUEVA,
     GUARDADO_OK,
+    EDICION_PARCIAL,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted"]
+C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted", "update_full_area"]
 
 
 @pytest.mark.unit
@@ -148,3 +149,26 @@ def test_area_nueva_nace_activa_y_disponible(accesos_no_api, mocker):
     assert answers[acc.mf["nombre_area"]] == AREA
     assert answers[acc.Location.UBICACIONES_CAT_OBJ_ID] == {acc.mf["nombre_ubicacion_salida"]: LOCATION}
     assert answers[acc.Location.TIPO_AREA_OBJ_ID] == {acc.f["tipo_de_area"]: AREA_NUEVA["tipo_de_area"]}
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_full_area")
+def test_editar_area_solo_cambia_los_campos_enviados(accesos_no_api, mocker):
+    """
+    TB-305: el modal de edición solo manda los campos que cambian;
+    update_full_area debe guardar en el registro del área solo esos campos
+    (aquí nombre y tipo). Si manda los demás vacíos, borra la foto, el QR o la
+    ubicación que el área ya tenía.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    acc.update_full_area(AREA_RECORD_ID, dict(EDICION_PARCIAL))
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [AREA_RECORD_ID]
+    assert guardar.call_args.kwargs["form_id"] == acc.Location.AREAS_DE_LAS_UBICACIONES
+    assert guardar.call_args.kwargs["answers"] == {
+        acc.mf["nombre_area"]: EDICION_PARCIAL["nombre"],
+        acc.Location.TIPO_AREA_OBJ_ID: {acc.f["tipo_de_area"]: EDICION_PARCIAL["tipo_de_area"]},
+    }
