@@ -172,3 +172,21 @@ def test_editar_area_solo_cambia_los_campos_enviados(accesos_no_api, mocker):
         acc.mf["nombre_area"]: EDICION_PARCIAL["nombre"],
         acc.Location.TIPO_AREA_OBJ_ID: {acc.f["tipo_de_area"]: EDICION_PARCIAL["tipo_de_area"]},
     }
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_full_area")
+def test_editar_area_sin_cambios_no_guarda_nada(accesos_no_api, mocker):
+    """
+    TB-306: si el modal de edición no manda ningún campo, update_full_area
+    debe responder 400 "No hay cambios para guardar." sin llamar al guardado.
+    Si guarda, LinkaForm recibe un registro vacío.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    res = acc.update_full_area(AREA_RECORD_ID, {})
+
+    guardar.assert_not_called()
+    assert res["status_code"] == 400
+    assert res["json"]["error"] == "No hay cambios para guardar."
