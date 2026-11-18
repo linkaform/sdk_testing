@@ -110,3 +110,5 @@ PAQUETE_LISTA_OTRO = {
 NO_GUIA = "GUIA-QA-123"
 AVISO_CORREO_GUIA = {**AVISO_CORREO, "no_guia": NO_GUIA}
 CORREO_ENVIADO = {"status_code": 200}
+# Aviso por SMS con un teléfono incompleto (menos de 10 dígitos).
+AVISO_SMS_TELEFONO_CORTO = {"canales": ["sms"], "telefono": "81 1234"}

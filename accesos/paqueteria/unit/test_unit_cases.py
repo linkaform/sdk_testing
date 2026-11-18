@@ -32,6 +32,7 @@ from ..data.paqueteria_data import (
     AVISO_CORREO_GUIA,
     NO_GUIA,
     CORREO_ENVIADO,
+    AVISO_SMS_TELEFONO_CORTO,
 )
 
 C10_TRIGGERS = [
@@ -227,3 +228,20 @@ def test_aviso_por_correo_lleva_los_datos_del_paquete_y_se_manda_al_destinatario
     assert correo["email_to"] == AVISO_CORREO_GUIA["email"]
     for dato in (PAQUETE_UNIT["proveedor"], NO_GUIA, LOCATION, AREA, PAQUETE_UNIT["guardado_en_paqueteria"]):
         assert dato in correo["mensaje"], f"El correo no trae {dato!r}: {correo['mensaje']!r}"
+
+
+@pytest.mark.unit
+def test_aviso_por_sms_sin_telefono_valido_reporta_el_error_y_no_se_manda(accesos_no_api, mocker):
+    """
+    TB-323: con el canal SMS y un teléfono de menos de 10 dígitos,
+    _notificar_paquete_recibido debe reportar "Sin teléfono válido del
+    destinatario" y no intentar mandar el SMS. Si lo manda, falla en el
+    proveedor y el guardia cree que se avisó.
+    """
+    acc = accesos_no_api
+    enviar = mocker.patch.object(acc, "send_sms_masiv")
+
+    resultado = acc._notificar_paquete_recibido(dict(PAQUETE_UNIT), dict(AVISO_SMS_TELEFONO_CORTO))
+
+    assert resultado["sms"] == {"ok": False, "error": "Sin teléfono válido del destinatario"}
+    enviar.assert_not_called()
