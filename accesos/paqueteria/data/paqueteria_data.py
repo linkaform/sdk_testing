@@ -106,3 +106,7 @@ PAQUETE_LISTA_OTRO = {
     "quien_recibe_otro": DESTINATARIO_EXTERNO,
     "estatus_paqueteria": [ESTATUS_GUARDADO],
 }
+# Aviso por correo con número de guía, y respuesta del envío.
+NO_GUIA = "GUIA-QA-123"
+AVISO_CORREO_GUIA = {**AVISO_CORREO, "no_guia": NO_GUIA}
+CORREO_ENVIADO = {"status_code": 200}

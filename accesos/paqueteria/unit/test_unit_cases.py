@@ -29,9 +29,13 @@ from ..data.paqueteria_data import (
     EDICION_OK,
     ENTREGA_PAQUETE,
     PAQUETE_LISTA_OTRO,
+    AVISO_CORREO_GUIA,
+    NO_GUIA,
+    CORREO_ENVIADO,
 )
 
 C10_TRIGGERS = [
+    "_notificar_paquete_recibido",
     "create_paquete",
     "get_paquetes",
     "paqueteria_base_match",
@@ -201,3 +205,25 @@ def test_lista_de_paquetes_muestra_al_destinatario_externo_y_el_estatus_como_tex
     assert len(paquetes) == 1
     assert paquetes[0]["quien_recibe_paqueteria"] == DESTINATARIO_EXTERNO
     assert paquetes[0]["estatus_paqueteria"] == ESTATUS_GUARDADO
+
+
+@pytest.mark.unit
+def test_aviso_por_correo_lleva_los_datos_del_paquete_y_se_manda_al_destinatario(accesos_no_api, mocker):
+    """
+    TB-322: con el canal correo y el email del destinatario,
+    _notificar_paquete_recibido debe mandar el correo a ese email con el
+    proveedor, la guía, la ubicación y caseta y el locker del paquete, y
+    reportarlo como enviado. Si falta un dato, el destinatario no sabe dónde
+    recoger su paquete.
+    """
+    acc = accesos_no_api
+    enviar = mocker.patch.object(acc, "send_email_notification", return_value=dict(CORREO_ENVIADO))
+
+    resultado = acc._notificar_paquete_recibido(dict(PAQUETE_UNIT), dict(AVISO_CORREO_GUIA))
+
+    assert resultado["correo"] == {"ok": True, "error": None}
+    enviar.assert_called_once()
+    correo = enviar.call_args.args[0]
+    assert correo["email_to"] == AVISO_CORREO_GUIA["email"]
+    for dato in (PAQUETE_UNIT["proveedor"], NO_GUIA, LOCATION, AREA, PAQUETE_UNIT["guardado_en_paqueteria"]):
+        assert dato in correo["mensaje"], f"El correo no trae {dato!r}: {correo['mensaje']!r}"
