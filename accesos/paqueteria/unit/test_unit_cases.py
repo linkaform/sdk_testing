@@ -158,7 +158,6 @@ def test_filtro_usa_la_ubicacion_la_caseta_y_el_estatus_de_la_pestana(accesos_no
     assert estatus not in todos, f"Todos filtró por estatus {todos[estatus]!r}"
 
 
-# --- update paquete ---
 @pytest.mark.unit
 def test_entregar_paquete_guarda_el_estatus_la_fecha_y_a_quien_se_entrego(accesos_no_api, mocker):
     """
