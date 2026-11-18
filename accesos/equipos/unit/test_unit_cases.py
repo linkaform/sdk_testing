@@ -29,6 +29,7 @@ C10_TRIGGERS = [
     "_answers_equipos_pase",
     "_tipo_equipo_bitacora",
     "catalogo_tipo_equipo",
+    "format_equipos",
     "format_equipos_simple",
     "get_list_bitacora",
     "update_bitacora_entrada",
@@ -198,3 +199,33 @@ def test_pestana_equipos_desglosa_una_fila_por_equipo_en_el_total_y_la_lista(acc
     for consulta in (conteo, lista):
         assert consulta[0]["$match"][f"answers.{grupo}.0"] == {"$exists": True}
         assert consulta[1]["$unwind"]["path"] == f"$answers.{grupo}"
+
+
+@pytest.mark.unit
+def test_filas_de_la_pestana_equipos_leen_el_equipo_de_la_bitacora(accesos_no_api):
+    """
+    TB-329: cada fila de la pestaña Equipos sale de format_equipos con el
+    equipo como está guardado en la bitácora (ids de los campos); debe traer
+    nombre, marca, modelo, serie y color, y el tipo con mayúscula
+    ('herramienta' a 'Herramienta'). Si un dato no se lee, la fila sale
+    incompleta.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+    guardado = {
+        mf["tipo_equipo"]: "herramienta",
+        mf["nombre_articulo"]: EQUIPO_AGREGADO["nombre"],
+        mf["marca_articulo"]: EQUIPO_AGREGADO["marca"],
+        mf["modelo_articulo"]: EQUIPO_AGREGADO["modelo"],
+        mf["numero_serie"]: EQUIPO_AGREGADO["serie"],
+        mf["color_articulo"]: EQUIPO_AGREGADO["color"],
+    }
+
+    fila = acc.format_equipos([guardado])[0]
+
+    assert fila["tipo_equipo"] == "Herramienta"
+    assert fila["nombre_articulo"] == EQUIPO_AGREGADO["nombre"]
+    assert fila["marca_articulo"] == EQUIPO_AGREGADO["marca"]
+    assert fila["modelo_articulo"] == EQUIPO_AGREGADO["modelo"]
+    assert fila["numero_serie"] == EQUIPO_AGREGADO["serie"]
+    assert fila["color_articulo"] == EQUIPO_AGREGADO["color"]
