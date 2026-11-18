@@ -101,7 +101,6 @@ def test_tipo_que_no_existe_en_la_bitacora_queda_como_otra(accesos_no_api):
     assert acc._tipo_equipo_bitacora(TIPO_FUERA_DEL_RADIO, NOMBRE_PROYECTOR) == ("otra", NOMBRE_PROYECTOR)
 
 
-# --- update bitacora entrada ---
 @pytest.mark.unit
 def test_agregar_equipo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_api, mocker):
     """
@@ -130,7 +129,6 @@ def test_agregar_equipo_a_una_entrada_lo_guarda_como_renglon_nuevo(accesos_no_ap
     assert equipo[mf["numero_serie"]] == EQUIPO_AGREGADO["serie"]
 
 
-# --- equipo del pase a la bitacora ---
 @pytest.mark.unit
 def test_equipo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
     """
@@ -155,7 +153,6 @@ def test_equipo_del_pase_llega_completo_a_la_bitacora(accesos_no_api):
     assert equipo[mf["color_articulo"]] == EQUIPO_PASE_ETIQUETAS["color_articulo"]
 
 
-# --- catalogo tipo equipo ---
 @pytest.mark.unit
 def test_catalogo_de_tipos_de_equipo_sale_del_catalogo_del_pase(accesos_no_api, mocker):
     """
