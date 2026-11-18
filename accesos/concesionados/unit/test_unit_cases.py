@@ -21,6 +21,13 @@ from ..data.concesionados_data import (
     COMENTARIO_PRESTAMO,
     FOTO_VALIDA,
     FOLIO_CONCESION,
+    REGISTRO_CONCESION,
+    MOVIMIENTO_EQUIPO,
+    CANTIDAD_PRESTADA,
+    ESTADO_DEVUELTO,
+    DEVOLUCION_TOTAL,
+    ESTADO_PARCIAL,
+    devolucion_parcial,
 )
 from bson import ObjectId
 
@@ -28,6 +35,7 @@ C10_TRIGGERS = [
     "concesionados_base_match",
     "create_article_concessioned",
     "delete_article_concessioned",
+    "update_article_concessioned",
 ]
 
 
@@ -141,3 +149,126 @@ def test_folio_que_no_existe_da_error_y_no_borra(accesos_no_api, mocker):
     with pytest.raises(Exception, match="No se encontro el folio correspondiente"):
         accesos_no_api.delete_article_concessioned([FOLIO_CONCESION])
     borrar.assert_not_called()
+
+
+def concesion_guardada(acceso_obj, estado=ESTADO_ABIERTO):
+    """Registro de la concesión con un equipo en préstamo y sin devoluciones."""
+    f = acceso_obj.cons_f
+    return {
+        "_id": ObjectId(REGISTRO_CONCESION),
+        "folio": FOLIO_CONCESION,
+        "answers": {
+            f["status_concesion"]: estado,
+            f["grupo_equipos"]: [{
+                f["id_movimiento"]: MOVIMIENTO_EQUIPO,
+                f["equipo_catalog_concesion"]: {f["_nombre_equipo"]: EQUIPO_CONCESION["nombre_equipo"]},
+                f["cantidad_equipo_concesion"]: CANTIDAD_PRESTADA,
+                f["cantidad_equipo_devuelto"]: 0,
+                f["cantidad_equipo_pendiente"]: CANTIDAD_PRESTADA,
+                f["status_concesion_equipo"]: ESTADO_ABIERTO,
+            }],
+        },
+    }
+
+
+def devolucion_simulada(acceso_obj, mocker, registro):
+    """Simula el registro y el guardado; regresa el mock de patch_record."""
+    mocker.patch.dict(acceso_obj.user, {"timezone": "America/Monterrey"})
+    mocker.patch.object(acceso_obj, "get_record_by_id", return_value=registro)
+    return mocker.patch.object(acceso_obj.lkf_api, "patch_record", return_value=dict(GUARDADO_OK))
+
+
+@pytest.mark.unit
+def test_concesion_ya_devuelta_no_se_vuelve_a_devolver(accesos_no_api, mocker):
+    """
+    TB-239: si la concesión ya está 'devuelto', update_article_concessioned
+    debe detenerse con el error de que ya se encuentra devuelta y no guardar
+    nada. Si guarda, la misma concesión suma devoluciones que no ocurrieron.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc, ESTADO_DEVUELTO))
+
+    with pytest.raises(Exception, match="ya se encuentra devuelta"):
+        acc.update_article_concessioned({"status": "total", "state": "complete"}, REGISTRO_CONCESION)
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_devolucion_total_sin_el_estado_del_equipo_da_error(accesos_no_api, mocker):
+    """
+    TB-240: una devolución total sin state (completo, dañado o perdido) debe
+    detenerse con el error de que hay que indicar el estado y no guardar
+    nada. Si guarda, no queda registro de en qué condición regresó el equipo.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc))
+    sin_estado = {k: v for k, v in DEVOLUCION_TOTAL.items() if k != "state"}
+
+    with pytest.raises(Exception, match="hay que indicar el Estado"):
+        acc.update_article_concessioned(sin_estado, REGISTRO_CONCESION)
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_devolucion_total_deja_la_concesion_devuelta_con_fecha_de_cierre(accesos_no_api, mocker):
+    """
+    TB-241: con la devolución total de concesionados-nueva-devolucion,
+    update_article_concessioned debe dejar cada equipo 'devuelto' con todo lo
+    prestado devuelto y pendiente 0, poner la fecha de cierre y la concesión
+    en 'devuelto'. Si queda algo pendiente, la concesión sigue en Pendientes.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc))
+
+    acc.update_article_concessioned(dict(DEVOLUCION_TOTAL), REGISTRO_CONCESION)
+
+    guardar.assert_called_once()
+    f = acc.cons_f
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["status_concesion"]] == ESTADO_DEVUELTO
+    assert answers.get(f["fecha_cierre_concesion"]), "La concesión devuelta no tiene fecha de cierre"
+    equipo = answers[f["grupo_equipos"]][0]
+    assert equipo[f["status_concesion_equipo"]] == ESTADO_DEVUELTO
+    assert equipo[f["cantidad_equipo_devuelto"]] == CANTIDAD_PRESTADA
+    assert equipo[f["cantidad_equipo_pendiente"]] == 0
+    devolucion = answers[f["grupo_equipos_devolucion"]][0]
+    assert devolucion[f["id_movimiento_devolucion"]] == MOVIMIENTO_EQUIPO
+    assert devolucion[f["cantidad_devolucion"]] == CANTIDAD_PRESTADA
+
+
+@pytest.mark.unit
+def test_devolver_parte_de_un_equipo_deja_la_concesion_parcial_con_el_pendiente_correcto(accesos_no_api, mocker):
+    """
+    TB-242: al devolver 1 de los 3 equipos prestados, update_article_concessioned
+    debe dejar la concesión 'parcial' y en ese equipo 1 devuelto y 2
+    pendientes. Si las cuentas no cuadran, Parciales muestra otra cantidad por
+    devolver.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc))
+
+    acc.update_article_concessioned(devolucion_parcial(1), REGISTRO_CONCESION)
+
+    guardar.assert_called_once()
+    f = acc.cons_f
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["status_concesion"]] == ESTADO_PARCIAL
+    equipo = answers[f["grupo_equipos"]][0]
+    assert equipo[f["cantidad_equipo_devuelto"]] == 1
+    assert equipo[f["cantidad_equipo_pendiente"]] == CANTIDAD_PRESTADA - 1
+    assert answers[f["grupo_equipos_devolucion"]][0][f["cantidad_devolucion"]] == 1
+
+
+@pytest.mark.unit
+def test_devolver_mas_de_lo_que_falta_da_error_y_no_guarda(accesos_no_api, mocker):
+    """
+    TB-243: si se devuelven más equipos de los que faltan (4 de 3 prestados),
+    update_article_concessioned debe detenerse con el aviso de devolución
+    negativa y no guardar nada. Si guarda, el pendiente queda en negativo.
+    """
+    acc = accesos_no_api
+    guardar = devolucion_simulada(acc, mocker, concesion_guardada(acc))
+
+    with pytest.raises(Exception, match="negativa de: -1"):
+        acc.update_article_concessioned(devolucion_parcial(CANTIDAD_PRESTADA + 1), REGISTRO_CONCESION)
+    guardar.assert_not_called()

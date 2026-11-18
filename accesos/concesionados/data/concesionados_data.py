@@ -48,3 +48,41 @@ CONCESION_OTRO = {
 }
 METADATA_CONCESION = {}
 GUARDADO_OK = {"status_code": 201}
+
+# Devoluciones (update_article_concessioned): concesión guardada con un equipo
+# en préstamo, como la regresa get_record_by_id. ESTADO_* son los estatus de
+# la concesión y del equipo.
+REGISTRO_CONCESION = "000000000000000000000031"
+MOVIMIENTO_EQUIPO = "000000000000000000000041"
+CANTIDAD_PRESTADA = 3
+ESTADO_DEVUELTO = "devuelto"
+ESTADO_PARCIAL = "parcial"
+QUIEN_ENTREGA = "Empleado de prueba QA"
+# Lo que manda concesionados-nueva-devolucion.tsx al devolver todo (state:
+# complete | damage | lost).
+DEVOLUCION_TOTAL = {
+    "record_id": REGISTRO_CONCESION,
+    "status": "total",
+    "state": "complete",
+    "entregado_por": "empleado",
+    "quien_entrega": QUIEN_ENTREGA,
+    "company": "",
+    "comentario_entrega": "Devolución de prueba QA",
+    "evidencia": FOTO_VALIDA,
+}
+# Lo que manda concesionados-seguimientos-contenido.tsx al devolver parte de
+# un equipo (status "parcial"); cada equipo lleva su cantidad y su estado.
+def devolucion_parcial(cantidad):
+    return {
+        "record_id": REGISTRO_CONCESION,
+        "status": ESTADO_PARCIAL,
+        "entregado_por": "empleado",
+        "quien_entrega": QUIEN_ENTREGA,
+        "equipos": [{
+            "id_movimiento": MOVIMIENTO_EQUIPO,
+            "cantidad_devuelta": cantidad,
+            "state": "complete",
+            "evidencia": FOTO_VALIDA,
+            "comentario_entrega": "Devolución parcial de prueba QA",
+        }],
+    }
