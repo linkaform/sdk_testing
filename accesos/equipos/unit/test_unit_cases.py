@@ -27,6 +27,7 @@ from ..data.equipos_data import (
 C10_TRIGGERS = [
     "_answers_equipos",
     "_answers_equipos_pase",
+    "_tipo_equipo_de_pase",
     "_tipo_equipo_bitacora",
     "catalogo_tipo_equipo",
     "format_equipos",
@@ -229,3 +230,20 @@ def test_filas_de_la_pestana_equipos_leen_el_equipo_de_la_bitacora(accesos_no_ap
     assert fila["modelo_articulo"] == EQUIPO_AGREGADO["modelo"]
     assert fila["numero_serie"] == EQUIPO_AGREGADO["serie"]
     assert fila["color_articulo"] == EQUIPO_AGREGADO["color"]
+
+
+@pytest.mark.unit
+def test_tipo_del_equipo_del_pase_se_lee_del_catalogo_o_del_campo_anterior(accesos_no_api):
+    """
+    TB-330: _tipo_equipo_de_pase debe leer el tipo del equipo del pase del
+    catálogo de tipos de equipo, de la etiqueta tipo_equipo_pase o, en pases
+    viejos, del campo de tipo de la bitácora. Si no lo encuentra, el equipo
+    llega sin tipo a la entrada y LinkaForm la rechaza.
+    """
+    acc = accesos_no_api
+    mf = acc.mf
+    tipo = EQUIPO_TIPO_CATALOGO["tipo"]
+
+    assert acc._tipo_equipo_de_pase({acc.TIPO_DE_EQUIPO_OBJ_ID: {mf["tipo_equipo_pase"]: tipo}}) == tipo
+    assert acc._tipo_equipo_de_pase({"tipo_equipo_pase": tipo}) == tipo
+    assert acc._tipo_equipo_de_pase({mf["tipo_equipo"]: "computo"}) == "computo"
