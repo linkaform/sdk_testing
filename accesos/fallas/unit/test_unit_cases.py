@@ -232,7 +232,6 @@ def test_editar_falla_sin_cerrarla_la_deja_abierta_y_sin_fecha_de_solucion(acces
     )
 
 
-# --- update failure seguimiento ---
 @pytest.mark.unit
 def test_seguimiento_a_folio_que_no_existe_da_error_y_no_guarda(accesos_no_api, mocker):
     """
