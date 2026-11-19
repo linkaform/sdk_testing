@@ -51,3 +51,26 @@ SEGUIMIENTO_NUEVO = {"accion_correctiva_incidencia": "Se cambió la chapa"}
 
 # Tiempo transcurrido al cierre: texto que ya tenía una incidencia cerrada.
 TIEMPO_CIERRE_GUARDADO = "2 h 15 min"
+
+# Tests de bugs de editar y dar seguimiento (incidencia-detalle.tsx y
+# add-incidencia.tsx): incidencia guardada con su falla generada y datos de robo.
+FALLA_GENERADA_URL = "https://app.linkaform.com/#/records/detail/6a0000000000000000000009"
+INCIDENCIA_CON_FALLA = {
+    **INCIDENCIA_ANTES,
+    "reporta_incidencia": GUARDIA_SESION,
+    "fecha_hora_incidencia": "2026-11-13 10:00:00",
+    "ubicacion_incidencia": LOCATION,
+    "area_incidencia": AREA,
+    "incidencia": "Choque",
+    "categoria": "Incidentes de tránsito",
+    "sub_categoria": "",
+    "prioridad_incidencia": "Moderada",
+    "comentario_incidencia": "Incidencia de prueba QA",
+    "falla_generada_url": FALLA_GENERADA_URL,
+    "placas": "QA-INC-001",
+    "marca": "Nissan",
+    "seguimientos_incidencia": [],
+    "tags": [],
+}
+# Lo que manda editarIncidencia del catálogo del tipo de incidencia.
+EDICION_CATALOGO = {"categoria": "Incidentes de tránsito", "incidencia": "Choque", "incidente": "Choque", "sub_categoria": ""}
