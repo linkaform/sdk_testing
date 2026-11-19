@@ -19,11 +19,15 @@ from ..data.areas_data import (
     AREAS_DE_UBICACION,
     AREA_SIN_USOS,
     AREA_NUEVA,
+    GUARDADO_OK,
+    EDICION_PARCIAL,
+    ESTADO_INACTIVA,
+    DISPONIBILIDAD_MANTENIMIENTO,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted"]
+C10_TRIGGERS = ["create_new_area", "get_area_by_id", "get_catalog_areas_formatted", "update_area_disponibilidad", "update_area_estado", "update_full_area"]
 
 
 @pytest.mark.unit
@@ -122,3 +126,108 @@ def test_area_repetida_en_la_ubicacion_no_se_vuelve_a_crear(accesos_no_api, mock
     existe.assert_called_once_with(LOCATION, AREA)
     assert respuesta["status_code"] == 208
     crear.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_new_area")
+def test_area_nueva_nace_activa_y_disponible(accesos_no_api, mocker):
+    """
+    TB-304: con los datos de + Nueva Área, create_new_area debe guardar el
+    área activa y disponible, con su nombre, su ubicación en el catálogo de
+    ubicaciones y su tipo en el catálogo de tipos de área. Si nace inactiva o
+    sin ubicación, no aparece en Disponibles.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(acc, "exists_area", return_value=False)
+    mocker.patch.object(acc, "get_area_contact_details", return_value={})
+    crear = mocker.patch.object(acc, "create_register", return_value=dict(GUARDADO_OK))
+
+    acc.create_new_area(dict(AREA_NUEVA))
+
+    crear.assert_called_once()
+    answers = crear.call_args.kwargs["answers"]
+    assert answers[acc.f["estatus_config_area"]] == "activa"
+    assert answers[acc.f["estatus_area"]] == "disponible"
+    assert answers[acc.mf["nombre_area"]] == AREA
+    assert answers[acc.Location.UBICACIONES_CAT_OBJ_ID] == {acc.mf["nombre_ubicacion_salida"]: LOCATION}
+    assert answers[acc.Location.TIPO_AREA_OBJ_ID] == {acc.f["tipo_de_area"]: AREA_NUEVA["tipo_de_area"]}
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_full_area")
+def test_editar_area_solo_cambia_los_campos_enviados(accesos_no_api, mocker):
+    """
+    TB-305: el modal de edición solo manda los campos que cambian;
+    update_full_area debe guardar en el registro del área solo esos campos
+    (aquí nombre y tipo). Si manda los demás vacíos, borra la foto, el QR o la
+    ubicación que el área ya tenía.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    acc.update_full_area(AREA_RECORD_ID, dict(EDICION_PARCIAL))
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [AREA_RECORD_ID]
+    assert guardar.call_args.kwargs["form_id"] == acc.Location.AREAS_DE_LAS_UBICACIONES
+    assert guardar.call_args.kwargs["answers"] == {
+        acc.mf["nombre_area"]: EDICION_PARCIAL["nombre"],
+        acc.Location.TIPO_AREA_OBJ_ID: {acc.f["tipo_de_area"]: EDICION_PARCIAL["tipo_de_area"]},
+    }
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_full_area")
+def test_editar_area_sin_cambios_no_guarda_nada(accesos_no_api, mocker):
+    """
+    TB-306: si el modal de edición no manda ningún campo, update_full_area
+    debe responder 400 "No hay cambios para guardar." sin llamar al guardado.
+    Si guarda, LinkaForm recibe un registro vacío.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    res = acc.update_full_area(AREA_RECORD_ID, {})
+
+    guardar.assert_not_called()
+    assert res["status_code"] == 400
+    assert res["json"]["error"] == "No hay cambios para guardar."
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_area_estado")
+def test_desactivar_area_guarda_el_estado_en_esa_area(accesos_no_api, mocker):
+    """
+    TB-307: al desactivar un área desde Disponibles, update_area_estado debe
+    guardar 'inactiva' en el campo de estado de esa área y solo en ella. Si
+    lo guarda en otro campo o en otra área, el área sigue activa.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    acc.update_area_estado(AREA_RECORD_ID, ESTADO_INACTIVA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [AREA_RECORD_ID]
+    assert guardar.call_args.kwargs["form_id"] == acc.Location.AREAS_DE_LAS_UBICACIONES
+    assert guardar.call_args.kwargs["answers"] == {acc.Location.f["area_state"]: ESTADO_INACTIVA}
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_area_disponibilidad")
+def test_poner_area_en_mantenimiento_guarda_la_disponibilidad_en_esa_area(accesos_no_api, mocker):
+    """
+    TB-308: al cambiar la disponibilidad de un área (por ejemplo a
+    mantenimiento), update_area_disponibilidad debe guardarla en el campo de
+    disponibilidad de esa área y solo en ella. Si no, Disponibles sigue
+    mostrando el área como disponible.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    acc.update_area_disponibilidad(AREA_RECORD_ID, DISPONIBILIDAD_MANTENIMIENTO)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [AREA_RECORD_ID]
+    assert guardar.call_args.kwargs["form_id"] == acc.Location.AREAS_DE_LAS_UBICACIONES
+    assert guardar.call_args.kwargs["answers"] == {acc.Location.f["area_status"]: DISPONIBILIDAD_MANTENIMIENTO}
