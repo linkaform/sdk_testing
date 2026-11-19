@@ -202,3 +202,6 @@ TELEFONO_CON_LADA = "+528110000099"
 VISITA_A_UNIT = ["Usuario Actual"]
 CAMPOS_REQUERIDOS = ("ubicaciones", "perfil_pase", "visita_a")
 PASE_GUARDADO = {"status_code": 201, "json": {"id": "000000000000000000000041"}}
+
+# Lo que regresa autorizar_pase_acceso: el catálogo de quién autoriza el pase.
+AUTORIZACION_PASE = {"autorizado_por": AUTORIZADO_POR}
