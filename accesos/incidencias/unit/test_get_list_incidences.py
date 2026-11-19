@@ -17,12 +17,14 @@ from ..data.incidencias_data import (
 pytestmark = pytest.mark.back("sanic")
 
 
+@pytest.mark.bug(1604)
 def test_lista_de_incidencias_no_truena_con_una_sin_prioridad(accesos_no_api, mocker):
     """
     TB-350: una incidencia guardada sin prioridad sale en la lista. Hoy
     format_incidencia hace .title() sobre la lista vacía que pone de default.
     El AttributeError se vuelve falla aquí porque lkf_back lo marcaría como
     SKIPPED ("falta en sanic").
+    Ticket 2611-1604.
     """
     acc = accesos_no_api
     cr = mocker.MagicMock()
