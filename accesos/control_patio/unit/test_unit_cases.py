@@ -22,6 +22,7 @@ from ..data.control_patio_data import (
     REMOLQUE_EXISTENTE,
     CONTENEDOR_NUEVO,
     MATERIALES_POR_LUGAR,
+    SIN_CAMBIOS,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -130,3 +131,20 @@ def test_cada_material_se_guarda_con_su_lugar_segun_su_referencia(accesos_no_api
     grupo = answers[f["grupo_materiales"]]
     lugares = [grupo[-(i + 1)][f["lugar_material"]] for i in range(len(MATERIALES_POR_LUGAR))]
     assert lugares == ["contenedor", "remolque", "vehiculo"], f"Lugares: {lugares}"
+
+
+@pytest.mark.unit
+@pytest.mark.target("save_bitac_transportista_record")
+def test_guardar_el_camion_sin_cambios_no_llama_al_guardado(accesos_no_api, mocker):
+    """
+    TB-336: si el detalle del camión se guarda sin ningún cambio,
+    save_bitac_transportista_record responde OK sin mandar nada a guardar. Un
+    guardado vacío en LinkaForm solo genera una versión nueva del registro.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record")
+
+    res = acc.save_bitac_transportista_record(REGISTRO_CAMION, dict(SIN_CAMBIOS))
+
+    guardar.assert_not_called()
+    assert res["status_code"] == 200

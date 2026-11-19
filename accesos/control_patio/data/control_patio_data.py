@@ -157,3 +157,5 @@ MATERIALES_POR_LUGAR = [
     {"producto": "QA material 2", "ref": "remolque QA-CAJA-01"},
     {"producto": "QA material 3", "ref": ""},
 ]
+# Guardar el detalle sin tocar ningún campo.
+SIN_CAMBIOS = {}
