@@ -18,6 +18,7 @@ from ..data.control_patio_data import (
     ESTATUS_TERMINADO,
     REGISTRO_CAMION,
     GUARDADO_PATIO_OK,
+    ANDEN_UNIT,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -69,3 +70,19 @@ def test_pasar_camion_a_terminado_guarda_la_fecha_de_terminado(accesos_no_api, m
     assert answers[f["estatus"]] == ESTATUS_TERMINADO
     assert answers.get(f["fecha_hora_terminado"]), "No se guardó la fecha de terminado"
     assert f["fecha_hora_descarga"] not in answers
+
+
+@pytest.mark.unit
+@pytest.mark.target("save_bitac_transportista_record")
+def test_asignar_anden_lo_guarda_en_el_camion(accesos_no_api, mocker):
+    """
+    TB-333: al asignar un andén desde el lápiz del Kanban,
+    save_bitac_transportista_record debe guardarlo en el andén asignado del
+    camión y nada más. Si no, el camión no aparece en el andén.
+    """
+    acc = accesos_no_api
+    f = acc.bitacora_transportista_fields
+
+    answers = answers_del_camion(acc, mocker, {"anden": ANDEN_UNIT})
+
+    assert answers == {f["anden_asignado"]: ANDEN_UNIT}

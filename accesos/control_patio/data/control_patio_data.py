@@ -145,3 +145,4 @@ MATERIAL_CON_EVIDENCIA = {
 # transportistas y respuesta del guardado.
 REGISTRO_CAMION = "000000000000000000000081"
 GUARDADO_PATIO_OK = {"status_code": 202}
+ANDEN_UNIT = "Andén 1"
