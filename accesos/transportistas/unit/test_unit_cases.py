@@ -26,7 +26,7 @@ from ..data.transportistas_data import (
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["create_pass_transportista", "generate_submit_token_transportista"]
+C10_TRIGGERS = ["create_pass_transportista", "generate_submit_token_transportista", "validate_token"]
 
 
 @pytest.mark.unit
@@ -76,3 +76,22 @@ def test_generar_link_del_transportista_guarda_un_token_nuevo_en_el_pase(accesos
     assert res["record_id"] == PASE_ID
     assert res["token"], "No se generó el token"
     assert guardar.call_args.kwargs["answers"] == {f["token_transportista"]: res["token"]}
+
+
+@pytest.mark.unit
+@pytest.mark.target("validate_token")
+def test_validar_link_del_transportista_sin_record_id_o_token_da_error(accesos_no_api, mocker):
+    """
+    TB-340: validate_token sin record_id o sin token debe detenerse con el
+    error de que se requieren los dos, sin consultar la base. Si sigue, un
+    link incompleto podría abrir el formulario del transportista.
+    """
+    acc = accesos_no_api
+    cr = mocker.MagicMock()
+    mocker.patch.object(acc, "cr", cr, create=True)
+
+    with pytest.raises(Exception, match="Se requiere record_id y token"):
+        acc.validate_token(record_id=PASE_ID, token=None)
+    with pytest.raises(Exception, match="Se requiere record_id y token"):
+        acc.validate_token(record_id=None, token="token-qa")
+    cr.aggregate.assert_not_called()
