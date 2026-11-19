@@ -80,3 +80,6 @@ EDICION_SIN_LIGA = {"comentario_incidencia": "Se agregó la descripción del cho
 # Incidencia que el guardia captura como texto libre en el check de un rondín.
 INCIDENCIA_DE_RONDIN = "Puerta del almacén abierta"
 FOLIO_CHECK_RONDIN = "512-10"
+
+# Incidencia guardada sin prioridad (registros viejos o creados desde un rondín).
+INCIDENCIA_SIN_PRIORIDAD = {"folio": FOLIO_INCIDENCIA, "estatus": "abierto"}
