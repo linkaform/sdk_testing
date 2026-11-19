@@ -15,6 +15,7 @@ import pytest
 
 from ..data.control_patio_data import (
     ESTATUS_CARGA_DESCARGA,
+    ESTATUS_TERMINADO,
     REGISTRO_CAMION,
     GUARDADO_PATIO_OK,
 )
@@ -50,3 +51,21 @@ def test_pasar_camion_a_carga_descarga_guarda_el_estatus_y_la_fecha_de_descarga(
     assert answers[f["estatus"]] == ESTATUS_CARGA_DESCARGA
     assert answers.get(f["fecha_hora_descarga"]), "No se guardó la fecha de descarga"
     assert f["fecha_hora_terminado"] not in answers
+
+
+@pytest.mark.unit
+@pytest.mark.target("save_bitac_transportista_record")
+def test_pasar_camion_a_terminado_guarda_la_fecha_de_terminado(accesos_no_api, mocker):
+    """
+    TB-332: al mover el camión a "terminado", save_bitac_transportista_record
+    debe guardar ese estatus y la fecha y hora de terminado, y no volver a
+    escribir la de descarga. Sin la fecha, no se sabe cuándo salió del patio.
+    """
+    acc = accesos_no_api
+    f = acc.bitacora_transportista_fields
+
+    answers = answers_del_camion(acc, mocker, {"estatus": ESTATUS_TERMINADO})
+
+    assert answers[f["estatus"]] == ESTATUS_TERMINADO
+    assert answers.get(f["fecha_hora_terminado"]), "No se guardó la fecha de terminado"
+    assert f["fecha_hora_descarga"] not in answers
