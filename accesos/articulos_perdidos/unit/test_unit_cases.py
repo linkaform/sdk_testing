@@ -30,6 +30,7 @@ from ..data.perdidos_data import (
 )
 
 C10_TRIGGERS = [
+    "catalogo_tipo_articulo",
     "create_article_lost",
     "delete_article_lost",
     "perdidos_base_match",
@@ -227,3 +228,25 @@ def test_editar_articulo_sin_entregarlo_lo_deja_pendiente_y_sin_fecha_de_entrega
     assert answers[f["estatus_perdido"]] == ESTATUS_PENDIENTE
     assert f["date_entrega_perdido"] not in answers, "El artículo pendiente se guardó con fecha de entrega"
     assert res["json"]["date_entrega_perdido"] == ""
+
+
+@pytest.mark.unit
+def test_el_catalogo_de_articulos_se_pide_por_la_categoria_elegida(accesos_no_api, mocker):
+    """
+    TB-326: al elegir la categoría en + Nuevo Artículo, catalogo_tipo_articulo
+    debe pedir al catálogo solo los artículos de esa categoría; sin categoría,
+    el catálogo completo. Si el filtro se pierde, el select de artículo muestra
+    los de todas las categorías.
+    """
+    acc = accesos_no_api
+    consultar = mocker.patch.object(acc, "catalogo_view", return_value=[])
+
+    acc.catalogo_tipo_articulo(TIPO_ARTICULO)
+    acc.catalogo_tipo_articulo()
+
+    por_categoria, completo = consultar.call_args_list
+    assert por_categoria.args[:2] == (acc.TIPO_ARTICULOS_PERDIDOS_CAT_ID, acc.BITACORA_OBJETOS_PERDIDOS)
+    opciones = por_categoria.args[2]
+    assert opciones["startkey"] == [TIPO_ARTICULO]
+    assert opciones["group_level"] == 2
+    assert completo.args[2] == {}
