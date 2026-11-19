@@ -12,6 +12,7 @@ salen SKIPPED.
 
 import pytest
 
+from .helpers import editar_simulado
 from ..data.incidencias_data import (
     LOCATION,
     AREA,
@@ -22,7 +23,6 @@ from ..data.incidencias_data import (
     REPORTAR_FALLA,
     AFECTACION_SIN_MONTO,
     AFECTACION_CON_MONTO,
-    EDITADO_OK,
     FOLIO_INCIDENCIA,
     INCIDENCIA_ANTES,
     SEGUIMIENTO_EXISTENTE,
@@ -154,18 +154,6 @@ def test_si_la_incidencia_no_se_guarda_no_crea_falla_ni_historial(accesos_no_api
     assert not mocks["falla"].called, "Creó la falla de una incidencia que no se guardó"
     assert not mocks["historial"].called
     assert not mocks["catalogo"].called
-
-
-def editar_simulado(acc, mocker, antes=INCIDENCIA_ANTES, editado=EDITADO_OK):
-    mocker.patch.object(acc, "_incidencia_formateada", return_value=dict(antes))
-    mocker.patch.object(acc, "_reporta_sesion", return_value=GUARDIA_SESION)
-    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
-    mocker.patch.object(acc, "get_record_by_folio", return_value={"_id": INCIDENCIA_ANTES["_id"]})
-    mocker.patch.object(acc, "agregar_tipo_al_catalogo")
-    return {
-        "guardar": mocker.patch.object(acc.net, "patch_forms_answers", return_value=dict(editado)),
-        "historial": mocker.patch.object(acc, "registrar_cambios_incidencia"),
-    }
 
 
 @pytest.mark.unit
