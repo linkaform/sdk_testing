@@ -51,3 +51,36 @@ SEGUIMIENTO_NUEVO = {"accion_correctiva_incidencia": "Se cambió la chapa"}
 
 # Tiempo transcurrido al cierre: texto que ya tenía una incidencia cerrada.
 TIEMPO_CIERRE_GUARDADO = "2 h 15 min"
+
+# Tests de bugs de editar y dar seguimiento (incidencia-detalle.tsx y
+# add-incidencia.tsx): incidencia guardada con su falla generada y datos de robo.
+# La liga a la falla la arma helpers.incidencia_con_falla con el id, igual que
+# el back (_url_registro_lkf).
+FALLA_GENERADA_ID = "6a0000000000000000000009"
+INCIDENCIA_CON_FALLA = {
+    **INCIDENCIA_ANTES,
+    "reporta_incidencia": GUARDIA_SESION,
+    "fecha_hora_incidencia": "2026-11-13 10:00:00",
+    "ubicacion_incidencia": LOCATION,
+    "area_incidencia": AREA,
+    "incidencia": "Choque",
+    "categoria": "Incidentes de tránsito",
+    "sub_categoria": "",
+    "prioridad_incidencia": "Moderada",
+    "comentario_incidencia": "Incidencia de prueba QA",
+    "placas": "QA-INC-001",
+    "marca": "Nissan",
+    "seguimientos_incidencia": [],
+    "tags": [],
+}
+# Lo que manda editarIncidencia del catálogo del tipo de incidencia.
+EDICION_CATALOGO = {"categoria": "Incidentes de tránsito", "incidencia": "Choque", "incidente": "Choque", "sub_categoria": ""}
+# Lo que manda editar desde el detalle: no trae la liga a la falla.
+EDICION_SIN_LIGA = {"comentario_incidencia": "Se agregó la descripción del choque", "estatus": "cerrado"}
+
+# Incidencia que el guardia captura como texto libre en el check de un rondín.
+INCIDENCIA_DE_RONDIN = "Puerta del almacén abierta"
+FOLIO_CHECK_RONDIN = "512-10"
+
+# Incidencia guardada sin prioridad (registros viejos o creados desde un rondín).
+INCIDENCIA_SIN_PRIORIDAD = {"folio": FOLIO_INCIDENCIA, "estatus": "abierto"}
