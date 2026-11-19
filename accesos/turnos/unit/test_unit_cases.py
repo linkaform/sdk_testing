@@ -24,10 +24,16 @@ from ..data.turnos_data import (
     CHECKIN_TIPO_ABIERTA,
     CHECKIN_TIPO_CERRADA,
     GUARDADO_OK,
+    GUARDIA_ID,
+    ZONA_TURNO,
+    ESTATUS_ENTRADA,
+    ASISTENCIA_OK,
+    ESTATUS_SALIDA,
 )
 
 C10_TRIGGERS = [
     "do_checkin",
+    "do_checkout",
     "parse_geolocation",
     "require_active_employee",
 ]
@@ -152,3 +158,111 @@ def test_con_la_caseta_abierta_el_guardia_se_suma_al_turno(accesos_no_api, mocke
     sumar.assert_called_once()
     assert sumar.call_args.args[1] == CHECKIN_ABIERTO["_id"], "Se sumó a otro turno"
     assert sumar.call_args.args[7] == [ROL_GUARDIA], f"Roles que se mandaron: {sumar.call_args.args[7]}"
+
+
+def turno_guardado(acceso_obj):
+    """Registro del turno abierto en la caseta con un guardia que sigue dentro."""
+    f = acceso_obj.checkin_fields
+    empleados = de(acceso_obj, "CONF_AREA_EMPLEADOS_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_CAT_OBJ_ID
+    apoyo = de(acceso_obj, "CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID
+    return {
+        "_id": CHECKIN_ABIERTO["_id"],
+        "folio": "1-TURNO",
+        "timezone": ZONA_TURNO,
+        "answers": {
+            empleados: {acceso_obj.f["location"]: LOCATION, acceso_obj.f["area"]: AREA},
+            f["guard_group"]: [{
+                apoyo: {acceso_obj.mf["id_usuario"]: [GUARDIA_ID]},
+                f["checkin_status"]: ESTATUS_ENTRADA,
+            }],
+        },
+    }
+
+
+def checkout_simulado(acceso_obj, mocker, caseta_abierta=True):
+    """
+    Simula lo que do_checkout consulta antes de guardar: el usuario, la caseta
+    y el turno. Regresa los mocks del guardado y de cerrar la asistencia.
+    """
+    mocker.patch.object(acceso_obj.lkf_api, "get_user_by_id", return_value=dict(USUARIO_GUARDIA))
+    mocker.patch.object(acceso_obj, "is_boot_available", return_value=caseta_abierta)
+    mocker.patch.object(acceso_obj, "get_record_by_id", return_value=turno_guardado(acceso_obj))
+    mocker.patch.object(acceso_obj.lkf_api, "get_metadata", return_value={})
+    guardar = mocker.patch.object(acceso_obj.lkf_api, "patch_record", return_value=dict(GUARDADO_OK))
+    asistencia = mocker.patch.object(acceso_obj, "close_guards_attendance", return_value=ASISTENCIA_OK)
+    return guardar, asistencia
+
+
+@pytest.mark.unit
+def test_cerrar_turno_sin_el_id_del_turno_da_error(accesos_no_api, mocker):
+    """
+    TB-274: sin checkin_id, do_checkout debe detenerse con el error de que no
+    encontró un turno válido y no guardar nada. Si sigue, cierra un turno que
+    no se sabe cuál es.
+    """
+    acc = accesos_no_api
+    guardar, _ = checkout_simulado(acc, mocker)
+
+    with pytest.raises(Exception, match="No encontramos un checking valido"):
+        acc.do_checkout(checkin_id=None, location=LOCATION, area=AREA)
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_cerrar_turno_con_la_caseta_cerrada_da_error(accesos_no_api, mocker):
+    """
+    TB-275: si la caseta ya está cerrada, do_checkout debe detenerse con el
+    error de que no se puede cerrar sin haberla abierto y no guardar nada. Si
+    guarda, el turno queda cerrado dos veces con fechas distintas.
+    """
+    acc = accesos_no_api
+    guardar, _ = checkout_simulado(acc, mocker, caseta_abierta=False)
+
+    with pytest.raises(Exception, match="sin antes haber hecho check-in"):
+        acc.do_checkout(checkin_id=CHECKIN_ABIERTO["_id"], location=LOCATION, area=AREA)
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_cierre_normal_deja_la_caseta_cerrada_y_cierra_la_asistencia(accesos_no_api, mocker):
+    """
+    TB-276: un cierre normal debe guardar la caseta 'cerrada', con fecha de
+    cierre y tipo 'regular', marcar la salida del guardia que seguía dentro y
+    cerrarle la asistencia. Si falta algo, la caseta sigue abierta o el
+    guardia sigue con asistencia abierta.
+    """
+    acc = accesos_no_api
+    guardar, asistencia = checkout_simulado(acc, mocker)
+
+    res = acc.do_checkout(checkin_id=CHECKIN_ABIERTO["_id"], location=LOCATION, area=AREA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == CHECKIN_ABIERTO["_id"]
+    f = acc.checkin_fields
+    answers = guardar.call_args.kwargs["data"]["answers"]
+    assert answers[f["checkin_type"]] == "cerrada"
+    assert answers.get(f["boot_checkout_date"]), "La caseta cerrada no tiene fecha de cierre"
+    assert answers[f["forzar_cierre"]] == "regular"
+    assert answers[f["guard_group"]][0][f["checkin_status"]] == ESTATUS_SALIDA
+    assert asistencia.call_args.args[0] == [GUARDIA_ID], f"Se cerró la asistencia de {asistencia.call_args.args[0]}"
+    assert res["registro_de_asistencia"] == ASISTENCIA_OK
+
+
+@pytest.mark.unit
+def test_cierre_forzado_se_guarda_como_forzado_con_quien_lo_cerro(accesos_no_api, mocker):
+    """
+    TB-277: con forzar, do_checkout debe guardar el tipo de cierre 'forzar' y
+    en el comentario "Cerrado por: <nombre del usuario>". Si no, un cierre
+    forzado no se distingue de uno normal ni se sabe quién lo hizo.
+    """
+    acc = accesos_no_api
+    guardar, _ = checkout_simulado(acc, mocker)
+
+    acc.do_checkout(checkin_id=CHECKIN_ABIERTO["_id"], location=LOCATION, area=AREA, forzar=True)
+
+    guardar.assert_called_once()
+    f = acc.checkin_fields
+    answers = guardar.call_args.kwargs["data"]["answers"]
+    assert answers[f["forzar_cierre"]] == "forzar"
+    comentario = answers[f["commentario_checkin_caseta"]]
+    assert f"Cerrado por: {USUARIO_GUARDIA['name']}" in comentario, f"El comentario quedó {comentario!r}"

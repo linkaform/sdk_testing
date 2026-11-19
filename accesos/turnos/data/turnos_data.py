@@ -33,3 +33,15 @@ GUARDADO_OK = {"status_code": 202}
 # Tipo del último turno de la caseta (get_last_checkin): abierta o cerrada.
 CHECKIN_TIPO_ABIERTA = "abierta"
 CHECKIN_TIPO_CERRADA = "cerrada"
+
+# Cerrar turno (do_checkout): id del guardia que sigue dentro del turno y la
+# zona con la que se creó el registro.
+GUARDIA_ID = 1001
+ZONA_TURNO = "America/Monterrey"
+ESTATUS_ENTRADA = "entrada"
+ESTATUS_SALIDA = "salida"
+ASISTENCIA_OK = "Correcto"
+# Quitar el suplente (update_delete_suplente): folio del turno abierto del
+# usuario y lo que manda el front al borrar el nombre.
+FOLIO_TURNO = "1-TURNO"
+SUPLENTE_VACIO = ""
