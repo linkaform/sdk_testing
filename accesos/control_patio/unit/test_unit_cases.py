@@ -11,6 +11,7 @@ La seccion la sirve Sanic en prod (transportistas_sdk.py): los tests llevan
 back("sanic") y en addons salen SKIPPED.
 """
 
+from bson import ObjectId
 import pytest
 
 from ..data.control_patio_data import (
@@ -23,6 +24,7 @@ from ..data.control_patio_data import (
     CONTENEDOR_NUEVO,
     MATERIALES_POR_LUGAR,
     SIN_CAMBIOS,
+    DESGLOSE_EMPAQUE,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -148,3 +150,28 @@ def test_guardar_el_camion_sin_cambios_no_llama_al_guardado(accesos_no_api, mock
 
     guardar.assert_not_called()
     assert res["status_code"] == 200
+
+
+@pytest.mark.unit
+@pytest.mark.target("save_bitac_transportista_record")
+def test_el_desglose_de_empaque_reemplaza_el_grupo_completo(accesos_no_api, mocker):
+    """
+    TB-337: el front manda siempre el desglose de empaque completo. Se guarda
+    reemplazando el grupo entero con lo que llega; si se agregara como
+    renglones nuevos, el desglose se duplicaría en cada guardado.
+    """
+    acc = accesos_no_api
+    f = acc.bitacora_transportista_fields
+    cr = mocker.MagicMock()
+    mocker.patch.object(acc, "cr", cr)
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record")
+
+    acc.save_bitac_transportista_record(REGISTRO_CAMION, {"desglose_empaque": [dict(d) for d in DESGLOSE_EMPAQUE]})
+
+    cr.update_one.assert_called_once()
+    filtro, cambio = cr.update_one.call_args.args
+    assert filtro["_id"] == ObjectId(REGISTRO_CAMION)
+    grupo = cambio["$set"][f"answers.{f['grupo_desglose_empaque']}"]
+    referencias = [r[f["no_referencia_material_desglose"]] for r in grupo]
+    assert referencias == [d["no_referencia_material"] for d in DESGLOSE_EMPAQUE]
+    guardar.assert_not_called()

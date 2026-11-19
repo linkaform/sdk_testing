@@ -159,3 +159,8 @@ MATERIALES_POR_LUGAR = [
 ]
 # Guardar el detalle sin tocar ningún campo.
 SIN_CAMBIOS = {}
+# Desglose de empaque completo que reenvía el detalle en cada guardado.
+DESGLOSE_EMPAQUE = [
+    {"no_referencia_material": "QA material 1", "nivel": "1", "tipo_unidad_empaque": "Tarima", "cantidad": "2", "cantidad_acumulada": "2"},
+    {"no_referencia_material": "QA material 1", "nivel": "2", "tipo_unidad_empaque": "Caja", "cantidad": "40", "cantidad_acumulada": "80"},
+]
