@@ -21,6 +21,7 @@ from ..data.control_patio_data import (
     ANDEN_UNIT,
     REMOLQUE_EXISTENTE,
     CONTENEDOR_NUEVO,
+    MATERIALES_POR_LUGAR,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -111,3 +112,21 @@ def test_remolques_y_contenedores_se_guardan_en_el_mismo_grupo(accesos_no_api, m
     assert grupo[0][f["num_caja_contenedor"]] == REMOLQUE_EXISTENTE["no_caja"]
     assert grupo[-2][f["num_caja_contenedor"]] == CONTENEDOR_NUEVO["no_contenedor"]
     assert grupo[-2][f["num_sello"]] == CONTENEDOR_NUEVO["no_sello"]
+
+
+@pytest.mark.unit
+@pytest.mark.target("save_bitac_transportista_record")
+def test_cada_material_se_guarda_con_su_lugar_segun_su_referencia(accesos_no_api, mocker):
+    """
+    TB-335: cada material del camión se guarda con su lugar según su
+    referencia: contenedor, remolque o, sin referencia, vehículo. Si el lugar
+    sale mal, la inspección de material busca el producto donde no está.
+    """
+    acc = accesos_no_api
+    f = acc.bitacora_transportista_fields
+
+    answers = answers_del_camion(acc, mocker, {"materiales": [dict(m) for m in MATERIALES_POR_LUGAR]})
+
+    grupo = answers[f["grupo_materiales"]]
+    lugares = [grupo[-(i + 1)][f["lugar_material"]] for i in range(len(MATERIALES_POR_LUGAR))]
+    assert lugares == ["contenedor", "remolque", "vehiculo"], f"Lugares: {lugares}"
