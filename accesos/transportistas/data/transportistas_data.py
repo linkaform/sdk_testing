@@ -31,3 +31,8 @@ INFORMACION_TRANSPORTISTA_UNIT = {
     "ayudante": {"nombre": "Ayudante QA", "licencia": "LIC-QA-02", "foto": {}},
     "vehiculo": {"placas": "QA-TRANS-341", "marca": "Kenworth", "foto": {}},
 }
+# Contenedores que captura el transportista.
+CONTENEDORES_TRANSPORTISTA = [
+    {"numero": "QA-CONT-341", "sello": "QA-SELLO-341", "tipo": "dry_40"},
+    {"numero": "QA-CONT-342", "sello": "QA-SELLO-342", "tipo": "reefer_20"},
+]

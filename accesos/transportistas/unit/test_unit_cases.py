@@ -24,6 +24,7 @@ from ..data.transportistas_data import (
     GUARDADO_OK,
     INFORMACION_TRANSPORTISTA_UNIT,
     FOTO_LICENCIA,
+    CONTENEDORES_TRANSPORTISTA,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -130,3 +131,28 @@ def test_completar_datos_del_transportista_guarda_conductor_y_vehiculo(accesos_n
     assert answers[f["ayudante_foto_licencia"]] == []
     assert answers[f["vehiculo_placas"]] == INFORMACION_TRANSPORTISTA_UNIT["vehiculo"]["placas"]
     assert answers[f["vehiculo_marca"]] == INFORMACION_TRANSPORTISTA_UNIT["vehiculo"]["marca"]
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_information_transportista")
+def test_contenedores_del_transportista_se_guardan_como_renglones_nuevos(accesos_no_api, mocker):
+    """
+    TB-342: los contenedores que captura el transportista deben guardarse
+    como renglones nuevos del grupo de contenedores del pase, cada uno con su
+    número, sello y tipo. Si se pierde uno, en el patio no se sabe qué
+    contenedor trae el camión.
+    """
+    acc = accesos_no_api
+    f = acc.pass_fields_transportista
+
+    answers = informacion_guardada(
+        acc, mocker, {"record_id": PASE_ID, "contenedores": [dict(c) for c in CONTENEDORES_TRANSPORTISTA]}
+    )
+
+    grupo = answers[f["grupo_contenedores"]]
+    assert sorted(grupo) == [-2, -1], f"Renglones del grupo: {sorted(grupo)}"
+    for i, contenedor in enumerate(CONTENEDORES_TRANSPORTISTA):
+        renglon = grupo[-(i + 1)]
+        assert renglon[f["contenedor_numero"]] == contenedor["numero"]
+        assert renglon[f["contenedor_sello"]] == contenedor["sello"]
+        assert renglon[f["contenedor_tipo"]] == contenedor["tipo"]
