@@ -74,3 +74,5 @@ INCIDENCIA_CON_FALLA = {
 }
 # Lo que manda editarIncidencia del catálogo del tipo de incidencia.
 EDICION_CATALOGO = {"categoria": "Incidentes de tránsito", "incidencia": "Choque", "incidente": "Choque", "sub_categoria": ""}
+# Lo que manda editar desde el detalle: no trae la liga a la falla.
+EDICION_SIN_LIGA = {"comentario_incidencia": "Se agregó la descripción del choque", "estatus": "cerrado"}
