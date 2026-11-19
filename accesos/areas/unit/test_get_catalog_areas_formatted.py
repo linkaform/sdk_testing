@@ -40,12 +40,14 @@ def test_disponibles_no_trae_areas_homonimas_de_otra_ubicacion(accesos_no_api, m
     assert res["total_records"] == 1, f"El total cuenta {res['total_records']} áreas"
 
 
+@pytest.mark.bug(1606)
 def test_catalogo_de_areas_trae_los_usos_para_priorizar_las_de_rondines(accesos_no_api, mocker):
     """
     TB-344: get_catalog_areas_formatted pone primero las áreas marcadas para
     "rondines" (campo Utilizar Área en), pero la consulta de get_areas_details
     no trae ese campo, así que el filtro nunca se aplica y el modal de
     recorridos recibe todas las áreas. La consulta debe traer los usos.
+    Ticket 2611-1606.
     """
     acc = accesos_no_api
     cr = mocker.MagicMock()
