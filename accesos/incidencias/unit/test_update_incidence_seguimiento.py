@@ -9,9 +9,11 @@ Notion: TB-347.
 
 import pytest
 
-from .helpers import edicion_simulada
 from ..data.incidencias_data import (
     FOLIO_INCIDENCIA,
+    INCIDENCIA_CON_FALLA,
+    GUARDIA_SESION,
+    EDITADO_OK,
     SEGUIMIENTO_NUEVO,
 )
 
@@ -27,7 +29,12 @@ def test_agregar_seguimiento_conserva_la_liga_a_la_falla_y_los_datos_del_robo(ac
     Ticket 2611-1602.
     """
     acc = accesos_no_api
-    guardar = edicion_simulada(acc, mocker)
+    mocker.patch.object(acc, "get_list_incidences", return_value=[dict(INCIDENCIA_CON_FALLA)])
+    mocker.patch.object(acc, "_reporta_sesion", return_value=GUARDIA_SESION)
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    mocker.patch.object(acc, "get_record_by_folio", return_value={"_id": INCIDENCIA_CON_FALLA["_id"]})
+    mocker.patch.object(acc, "registrar_cambios_incidencia")
+    guardar = mocker.patch.object(acc.net, "patch_forms_answers", return_value=dict(EDITADO_OK))
 
     acc.update_incidence_seguimiento(FOLIO_INCIDENCIA, dict(SEGUIMIENTO_NUEVO), "Abierto")
 
