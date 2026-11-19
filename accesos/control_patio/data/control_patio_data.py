@@ -140,3 +140,8 @@ MATERIAL_CON_EVIDENCIA = {
     "comentario": "Material prueba patio",
     "evidencia": [IMAGEN_PREPROD],
 }
+
+# Unitarios (control_patio/unit): _id del registro del camión en la bitácora de
+# transportistas y respuesta del guardado.
+REGISTRO_CAMION = "000000000000000000000081"
+GUARDADO_PATIO_OK = {"status_code": 202}
