@@ -145,6 +145,7 @@ MATERIAL_CON_EVIDENCIA = {
 # transportistas y respuesta del guardado.
 REGISTRO_CAMION = "000000000000000000000081"
 GUARDADO_PATIO_OK = {"status_code": 202}
+CREADO_PATIO_OK = {"status_code": 201}
 ANDEN_UNIT = "Andén 1"
 # Remolque que ya existe en el camión (renglón 0) y contenedor nuevo: el
 # contenedor trae su propio número además del de caja.

@@ -1,8 +1,9 @@
 # coding: utf-8
 
-"""Transportistas – Control de patio: guardar el camión en la bitácora de
-transportistas (save_bitac_transportista_record: etapas, andén, remolques,
-contenedores y materiales) sin tocar la cuenta.
+"""Transportistas – Control de patio: registrar la llegada de un camión
+(create_visit_transportista) y guardarlo en la bitácora de transportistas
+(save_bitac_transportista_record: etapas, andén, remolques, contenedores,
+materiales y desglose de empaque) sin tocar la cuenta.
 Notion: TB-331 a TB-338.
 
 Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
@@ -25,11 +26,14 @@ from ..data.control_patio_data import (
     MATERIALES_POR_LUGAR,
     SIN_CAMBIOS,
     DESGLOSE_EMPAQUE,
+    LLEGADA_SIN_PASE,
+    ESTATUS_ARRIBO,
+    CREADO_PATIO_OK,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["save_bitac_transportista_record"]
+C10_TRIGGERS = ["create_visit_transportista", "save_bitac_transportista_record"]
 
 
 def answers_del_camion(acceso_obj, mocker, data):
@@ -175,3 +179,25 @@ def test_el_desglose_de_empaque_reemplaza_el_grupo_completo(accesos_no_api, mock
     referencias = [r[f["no_referencia_material_desglose"]] for r in grupo]
     assert referencias == [d["no_referencia_material"] for d in DESGLOSE_EMPAQUE]
     guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_visit_transportista")
+def test_la_llegada_de_un_camion_sin_pase_lo_deja_en_arribo(accesos_no_api, mocker):
+    """
+    TB-338: un camión que llega sin pase (Nuevo Acceso Transportista) se crea
+    en la bitácora en "arribo", con su fecha de ingreso y sus placas, para que
+    aparezca en la primera columna del Kanban del patio.
+    """
+    acc = accesos_no_api
+    f = acc.bitacora_transportista_fields
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    crear = mocker.patch.object(acc.lkf_api, "post_forms_answers", return_value=dict(CREADO_PATIO_OK))
+
+    acc.create_visit_transportista(dict(LLEGADA_SIN_PASE))
+
+    crear.assert_called_once()
+    answers = crear.call_args.args[0]["answers"]
+    assert answers[f["estatus"]] == ESTATUS_ARRIBO
+    assert answers.get(f["fecha_hora_ingreso"]), "No se guardó la fecha de ingreso"
+    assert answers[f["placas_de_vehiculo"]] == LLEGADA_SIN_PASE["vehiculo"]["placa"]
