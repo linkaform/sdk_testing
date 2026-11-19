@@ -19,12 +19,14 @@ from ..data.incidencias_data import (
 pytestmark = pytest.mark.back("sanic")
 
 
+@pytest.mark.bug(1601)
 def test_editar_no_guarda_categoria_tipo_ni_subcategoria_fuera_del_catalogo(accesos_no_api, mocker):
     """
     TB-346: al editar, la categoría, el tipo y la subcategoría van en el
     catálogo de incidencias. update_incidence de Sanic además los escribe como
     respuestas sueltas (addons y update_incidence_seguimiento los saltan), y la
     subcategoría suelta se guarda aunque venga vacía.
+    Ticket 2611-1601.
     """
     acc = accesos_no_api
     guardar = edicion_simulada(acc, mocker)
