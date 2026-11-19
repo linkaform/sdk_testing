@@ -9,10 +9,9 @@ Notion: TB-346 y TB-348.
 
 import pytest
 
-from .helpers import editar_simulado
+from .helpers import editar_simulado, incidencia_con_falla
 from ..data.incidencias_data import (
     FOLIO_INCIDENCIA,
-    INCIDENCIA_CON_FALLA,
     EDICION_CATALOGO,
     EDICION_SIN_LIGA,
 )
@@ -30,7 +29,7 @@ def test_editar_no_guarda_categoria_tipo_ni_subcategoria_fuera_del_catalogo(acce
     Ticket 2611-1601.
     """
     acc = accesos_no_api
-    guardar = editar_simulado(acc, mocker, antes=INCIDENCIA_CON_FALLA)["guardar"]
+    guardar = editar_simulado(acc, mocker, antes=incidencia_con_falla(acc))["guardar"]
 
     acc.update_incidence(dict(EDICION_CATALOGO), FOLIO_INCIDENCIA)
 
@@ -49,7 +48,7 @@ def test_editar_conserva_la_liga_a_la_falla_generada(accesos_no_api, mocker):
     Ticket 2611-1602.
     """
     acc = accesos_no_api
-    guardar = editar_simulado(acc, mocker, antes=INCIDENCIA_CON_FALLA)["guardar"]
+    guardar = editar_simulado(acc, mocker, antes=incidencia_con_falla(acc))["guardar"]
 
     acc.update_incidence(dict(EDICION_SIN_LIGA), FOLIO_INCIDENCIA)
 

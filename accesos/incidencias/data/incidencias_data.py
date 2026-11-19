@@ -54,7 +54,9 @@ TIEMPO_CIERRE_GUARDADO = "2 h 15 min"
 
 # Tests de bugs de editar y dar seguimiento (incidencia-detalle.tsx y
 # add-incidencia.tsx): incidencia guardada con su falla generada y datos de robo.
-FALLA_GENERADA_URL = "https://app.linkaform.com/#/records/detail/6a0000000000000000000009"
+# La liga a la falla la arma helpers.incidencia_con_falla con el id, igual que
+# el back (_url_registro_lkf).
+FALLA_GENERADA_ID = "6a0000000000000000000009"
 INCIDENCIA_CON_FALLA = {
     **INCIDENCIA_ANTES,
     "reporta_incidencia": GUARDIA_SESION,
@@ -66,7 +68,6 @@ INCIDENCIA_CON_FALLA = {
     "sub_categoria": "",
     "prioridad_incidencia": "Moderada",
     "comentario_incidencia": "Incidencia de prueba QA",
-    "falla_generada_url": FALLA_GENERADA_URL,
     "placas": "QA-INC-001",
     "marca": "Nissan",
     "seguimientos_incidencia": [],
