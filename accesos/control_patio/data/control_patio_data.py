@@ -146,3 +146,7 @@ MATERIAL_CON_EVIDENCIA = {
 REGISTRO_CAMION = "000000000000000000000081"
 GUARDADO_PATIO_OK = {"status_code": 202}
 ANDEN_UNIT = "Andén 1"
+# Remolque que ya existe en el camión (renglón 0) y contenedor nuevo: el
+# contenedor trae su propio número además del de caja.
+REMOLQUE_EXISTENTE = {"index": 0, "tipo": "remolque", "no_caja": "QA-CAJA-01", "no_sello": "QA-SELLO-01"}
+CONTENEDOR_NUEVO = {"tipo": "contenedor", "no_caja": "QA-CAJA-02", "no_contenedor": "QA-CONT-02", "no_sello": "QA-SELLO-02"}
