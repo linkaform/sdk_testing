@@ -22,11 +22,13 @@ from ..data.transportistas_data import (
     ANDEN_ENTREGA,
     PASE_ID,
     GUARDADO_OK,
+    INFORMACION_TRANSPORTISTA_UNIT,
+    FOTO_LICENCIA,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["create_pass_transportista", "generate_submit_token_transportista", "validate_token"]
+C10_TRIGGERS = ["create_pass_transportista", "generate_submit_token_transportista", "update_information_transportista", "validate_token"]
 
 
 @pytest.mark.unit
@@ -95,3 +97,36 @@ def test_validar_link_del_transportista_sin_record_id_o_token_da_error(accesos_n
     with pytest.raises(Exception, match="Se requiere record_id y token"):
         acc.validate_token(record_id=None, token="token-qa")
     cr.aggregate.assert_not_called()
+
+
+def informacion_guardada(acceso_obj, mocker, data):
+    """Guarda lo que completa el transportista con el guardado simulado y regresa los answers."""
+    guardar = mocker.patch.object(acceso_obj.lkf_api, "patch_multi_record", return_value={"status_code": 202})
+    acceso_obj.update_information_transportista(copy.deepcopy(data))
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [PASE_ID]
+    return guardar.call_args.kwargs["answers"]
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_information_transportista")
+def test_completar_datos_del_transportista_guarda_conductor_y_vehiculo(accesos_no_api, mocker):
+    """
+    TB-341: con lo que completa el transportista en su link,
+    update_information_transportista debe guardar el nombre y la licencia del
+    conductor y las placas y marca del vehículo en el pase. La foto de la
+    licencia solo se guarda si trae URL; sin URL queda vacía. Si guarda una
+    foto sin URL, el detalle del camión muestra una imagen rota.
+    """
+    acc = accesos_no_api
+    f = acc.pass_fields_transportista
+
+    answers = informacion_guardada(acc, mocker, INFORMACION_TRANSPORTISTA_UNIT)
+
+    conductor = INFORMACION_TRANSPORTISTA_UNIT["conductor"]
+    assert answers[f["conductor_nombre"]] == conductor["nombre"]
+    assert answers[f["conductor_no_licencia"]] == conductor["licencia"]
+    assert answers[f["conductor_foto_licencia"]] == [FOTO_LICENCIA]
+    assert answers[f["ayudante_foto_licencia"]] == []
+    assert answers[f["vehiculo_placas"]] == INFORMACION_TRANSPORTISTA_UNIT["vehiculo"]["placas"]
+    assert answers[f["vehiculo_marca"]] == INFORMACION_TRANSPORTISTA_UNIT["vehiculo"]["marca"]

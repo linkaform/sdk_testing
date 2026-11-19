@@ -21,3 +21,13 @@ PASE_TRANSPORTISTA_UNIT = {
 }
 PASE_ID = "000000000000000000000091"
 GUARDADO_OK = {"status_code": 201}
+
+# Lo que completa el transportista con el link (preview del pase): el
+# conductor con foto de licencia, el ayudante sin foto y el vehículo.
+FOTO_LICENCIA = {"file_name": "licencia_qa.jpg", "file_url": "https://f001.backblazeb2.com/file/app-linkaform/licencia_qa.jpg"}
+INFORMACION_TRANSPORTISTA_UNIT = {
+    "record_id": PASE_ID,
+    "conductor": {"nombre": "Conductor QA", "licencia": "LIC-QA-01", "foto": FOTO_LICENCIA},
+    "ayudante": {"nombre": "Ayudante QA", "licencia": "LIC-QA-02", "foto": {}},
+    "vehiculo": {"placas": "QA-TRANS-341", "marca": "Kenworth", "foto": {}},
+}
