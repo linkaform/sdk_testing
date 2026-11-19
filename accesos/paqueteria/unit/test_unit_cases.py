@@ -28,10 +28,20 @@ from ..data.paqueteria_data import (
     FOLIO_PAQUETE,
     EDICION_OK,
     ENTREGA_PAQUETE,
+    PAQUETE_LISTA_OTRO,
+    AVISO_CORREO_GUIA,
+    NO_GUIA,
+    CORREO_ENVIADO,
+    AVISO_SMS_TELEFONO_CORTO,
+    EMPLEADO_CON_USUARIO,
+    EMPLEADO_SIN_NOMBRE,
 )
 
 C10_TRIGGERS = [
+    "_notificar_paquete_recibido",
     "create_paquete",
+    "get_destinatarios_paqueteria",
+    "get_paquetes",
     "paqueteria_base_match",
     "update_paquete",
 ]
@@ -179,3 +189,85 @@ def test_entregar_paquete_guarda_el_estatus_la_fecha_y_a_quien_se_entrego(acceso
     assert answers[f["estatus_paqueteria"]] == ENTREGA_PAQUETE["estatus_paqueteria"]
     assert answers[f["fecha_entregado_paqueteria"]] == ENTREGA_PAQUETE["fecha_entregado_paqueteria"]
     assert answers[f["entregado_a_paqueteria"]] == ENTREGA_PAQUETE["entregado_a_paqueteria"]
+
+
+@pytest.mark.unit
+def test_lista_de_paquetes_muestra_al_destinatario_externo_y_el_estatus_como_texto(accesos_no_api, mocker):
+    """
+    TB-321: en la lista de paquetes, un paquete con destinatario externo
+    ("Otro") debe mostrar a ese destinatario en quien_recibe_paqueteria, que
+    es la columna que pinta el front, y el estatus como texto ('guardado'), no
+    como lista. Si no, la columna de destinatario sale vacía y el estatus no
+    coincide con la pestaña.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(acc, "cr", mocker.Mock(), create=True)
+    mocker.patch.object(acc, "format_cr_result", return_value=[dict(PAQUETE_LISTA_OTRO)])
+
+    paquetes = acc.get_paquetes(LOCATION, AREA, ESTATUS_GUARDADO)
+
+    assert len(paquetes) == 1
+    assert paquetes[0]["quien_recibe_paqueteria"] == DESTINATARIO_EXTERNO
+    assert paquetes[0]["estatus_paqueteria"] == ESTATUS_GUARDADO
+
+
+@pytest.mark.unit
+def test_aviso_por_correo_lleva_los_datos_del_paquete_y_se_manda_al_destinatario(accesos_no_api, mocker):
+    """
+    TB-322: con el canal correo y el email del destinatario,
+    _notificar_paquete_recibido debe mandar el correo a ese email con el
+    proveedor, la guía, la ubicación y caseta y el locker del paquete, y
+    reportarlo como enviado. Si falta un dato, el destinatario no sabe dónde
+    recoger su paquete.
+    """
+    acc = accesos_no_api
+    enviar = mocker.patch.object(acc, "send_email_notification", return_value=dict(CORREO_ENVIADO))
+
+    resultado = acc._notificar_paquete_recibido(dict(PAQUETE_UNIT), dict(AVISO_CORREO_GUIA))
+
+    assert resultado["correo"] == {"ok": True, "error": None}
+    enviar.assert_called_once()
+    correo = enviar.call_args.args[0]
+    assert correo["email_to"] == AVISO_CORREO_GUIA["email"]
+    for dato in (PAQUETE_UNIT["proveedor"], NO_GUIA, LOCATION, AREA, PAQUETE_UNIT["guardado_en_paqueteria"]):
+        assert dato in correo["mensaje"], f"El correo no trae {dato!r}: {correo['mensaje']!r}"
+
+
+@pytest.mark.unit
+def test_aviso_por_sms_sin_telefono_valido_reporta_el_error_y_no_se_manda(accesos_no_api, mocker):
+    """
+    TB-323: con el canal SMS y un teléfono de menos de 10 dígitos,
+    _notificar_paquete_recibido debe reportar "Sin teléfono válido del
+    destinatario" y no intentar mandar el SMS. Si lo manda, falla en el
+    proveedor y el guardia cree que se avisó.
+    """
+    acc = accesos_no_api
+    enviar = mocker.patch.object(acc, "send_sms_masiv")
+
+    resultado = acc._notificar_paquete_recibido(dict(PAQUETE_UNIT), dict(AVISO_SMS_TELEFONO_CORTO))
+
+    assert resultado["sms"] == {"ok": False, "error": "Sin teléfono válido del destinatario"}
+    enviar.assert_not_called()
+
+
+@pytest.mark.unit
+def test_catalogo_de_destinatarios_trae_el_contacto_del_usuario_y_omite_empleados_sin_nombre(accesos_no_api, mocker):
+    """
+    TB-324: el catálogo de destinatarios (catalogo_destinatarios) debe tomar
+    primero el email y el teléfono del usuario ligado y, si no trae, los de la
+    forma Empleados; los empleados sin nombre no salen. Si toma el contacto
+    equivocado, el aviso del paquete llega a otra persona.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(
+        de(acc, "Employee").Employee, "get_employee_data",
+        return_value=[dict(EMPLEADO_CON_USUARIO), dict(EMPLEADO_SIN_NOMBRE)],
+    )
+
+    destinatarios = acc.get_destinatarios_paqueteria()
+
+    assert destinatarios == [{
+        "nombre": EMPLEADO_CON_USUARIO["worker_name"],
+        "email": EMPLEADO_CON_USUARIO["usuario_email"][0],
+        "telefono": EMPLEADO_CON_USUARIO["telefono1"],
+    }]
