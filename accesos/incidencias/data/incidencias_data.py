@@ -76,3 +76,7 @@ INCIDENCIA_CON_FALLA = {
 EDICION_CATALOGO = {"categoria": "Incidentes de tránsito", "incidencia": "Choque", "incidente": "Choque", "sub_categoria": ""}
 # Lo que manda editar desde el detalle: no trae la liga a la falla.
 EDICION_SIN_LIGA = {"comentario_incidencia": "Se agregó la descripción del choque", "estatus": "cerrado"}
+
+# Incidencia que el guardia captura como texto libre en el check de un rondín.
+INCIDENCIA_DE_RONDIN = "Puerta del almacén abierta"
+FOLIO_CHECK_RONDIN = "512-10"
