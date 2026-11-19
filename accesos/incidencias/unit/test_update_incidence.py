@@ -39,11 +39,13 @@ def test_editar_no_guarda_categoria_tipo_ni_subcategoria_fuera_del_catalogo(acce
     assert not sueltos, f"Se guardaron fuera del catálogo: {sueltos}"
 
 
+@pytest.mark.bug(1602)
 def test_editar_conserva_la_liga_a_la_falla_generada(accesos_no_api, mocker):
     """
     TB-348: editar una incidencia que se reportó como falla no manda la liga
     (el front no la tiene en el formulario); el back debe conservarla de la
     versión de antes para que la incidencia siga ligada a su falla.
+    Ticket 2611-1602.
     """
     acc = accesos_no_api
     guardar = edicion_simulada(acc, mocker)

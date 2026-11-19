@@ -18,11 +18,13 @@ from ..data.incidencias_data import (
 pytestmark = pytest.mark.back("sanic")
 
 
+@pytest.mark.bug(1602)
 def test_agregar_seguimiento_conserva_la_liga_a_la_falla_y_los_datos_del_robo(accesos_no_api, mocker):
     """
     TB-347: el seguimiento rearma toda la incidencia para guardarla; si deja
     fuera la liga a la falla y los datos del robo (placas, marca), se borran de
     la incidencia al agregar un seguimiento.
+    Ticket 2611-1602.
     """
     acc = accesos_no_api
     guardar = edicion_simulada(acc, mocker)
