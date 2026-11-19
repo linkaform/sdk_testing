@@ -18,12 +18,14 @@ from ..data.catalogo_areas_data import (
 pytestmark = pytest.mark.back("sanic")
 
 
+@pytest.mark.bug(1605)
 def test_disponibles_no_trae_areas_homonimas_de_otra_ubicacion(accesos_no_api, mocker):
     """
     TB-343: Disponibles de una ubicación debe traer solo sus áreas. Si otra
     ubicación tiene un área con el mismo nombre, no debe aparecer. Hoy la
     consulta filtra solo por nombre de área, así que el área homónima de la
     otra ubicación sale en la lista y cuenta en el total y la paginación.
+    Ticket 2611-1605.
     """
     acc = accesos_no_api
     mocker.patch.object(acc, "areas_de_ubicaciones", return_value=[AREA])
