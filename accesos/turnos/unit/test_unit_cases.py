@@ -29,6 +29,8 @@ from ..data.turnos_data import (
     ESTATUS_ENTRADA,
     ASISTENCIA_OK,
     ESTATUS_SALIDA,
+    FOLIO_TURNO,
+    SUPLENTE_NOMBRE,
 )
 
 C10_TRIGGERS = [
@@ -36,6 +38,7 @@ C10_TRIGGERS = [
     "do_checkout",
     "parse_geolocation",
     "require_active_employee",
+    "update_delete_suplente",
 ]
 
 
@@ -266,3 +269,22 @@ def test_cierre_forzado_se_guarda_como_forzado_con_quien_lo_cerro(accesos_no_api
     assert answers[f["forzar_cierre"]] == "forzar"
     comentario = answers[f["commentario_checkin_caseta"]]
     assert f"Cerrado por: {USUARIO_GUARDIA['name']}" in comentario, f"El comentario quedó {comentario!r}"
+
+
+@pytest.mark.unit
+def test_poner_un_suplente_lo_guarda_en_el_turno(accesos_no_api, mocker):
+    """
+    TB-327: con el nombre del suplente, update_delete_suplente lo guarda en el
+    folio del turno abierto del guardia. Si no se guarda, el reporte del turno
+    no dice quién cubrió al guardia. Es el caso contrario de TB-278 (quitarlo).
+    """
+    acc = accesos_no_api
+    usuario = acc.user.get("user_id")
+    mocker.patch.object(acc, "get_employee_checkin_status", return_value={usuario: {"folio": FOLIO_TURNO}})
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value=dict(GUARDADO_OK))
+
+    acc.update_delete_suplente(SUPLENTE_NOMBRE)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["folios"] == [FOLIO_TURNO]
+    assert guardar.call_args.kwargs["answers"] == {acc.checkin_fields["nombre_suplente"]: SUPLENTE_NOMBRE}
