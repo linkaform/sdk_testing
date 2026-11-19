@@ -26,7 +26,7 @@ from ..data.transportistas_data import (
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["create_pass_transportista"]
+C10_TRIGGERS = ["create_pass_transportista", "generate_submit_token_transportista"]
 
 
 @pytest.mark.unit
@@ -53,3 +53,26 @@ def test_crear_pase_de_transportista_deja_un_registro_programado_en_el_patio(acc
     assert programado[bf["num_de_pase"]] == PASE_ID
     assert programado[bf["fecha_hora_ingreso"]] == f"{FECHA_ENTREGA} 00:00:00"
     assert programado[bf["anden_asignado"]] == ANDEN_ENTREGA
+
+
+@pytest.mark.unit
+@pytest.mark.target("generate_submit_token_transportista")
+def test_generar_link_del_transportista_guarda_un_token_nuevo_en_el_pase(accesos_no_api, mocker):
+    """
+    TB-339: al generar el link para que el transportista complete sus datos,
+    generate_submit_token_transportista debe guardar un token nuevo en el pase
+    y regresarlo con el record_id. Si el token no se guarda, el link que
+    recibe el transportista no valida.
+    """
+    acc = accesos_no_api
+    f = acc.pass_fields_transportista
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record", return_value={"status_code": 202})
+
+    res = acc.generate_submit_token_transportista(PASE_ID)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [PASE_ID]
+    assert guardar.call_args.kwargs["form_id"] == acc.PASE_ENTRADA_TRANSPORTISTA
+    assert res["record_id"] == PASE_ID
+    assert res["token"], "No se generó el token"
+    assert guardar.call_args.kwargs["answers"] == {f["token_transportista"]: res["token"]}
