@@ -1,0 +1,138 @@
+# coding: utf-8
+
+"""Usuarios: dar de alta un usuario (create_user) y la lista (list_users),
+sin tocar la cuenta.
+Notion: TB-361 a TB-370.
+
+Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
+./lkf test corre este archivo cuando cambia alguna funcion de C10_TRIGGERS.
+La seccion solo existe en Sanic: los tests llevan back("sanic") y en addons
+salen SKIPPED.
+"""
+
+import pytest
+
+from ..data.usuarios_data import (
+    USUARIO_SIN_ROL,
+    USUARIO_EMAIL_INVALIDO,
+    USUARIO_USERNAME_INVALIDO,
+    USUARIO_NUEVO,
+    USUARIOS_FORM,
+    CREADO_OK,
+    ESTATUS_CREAR,
+    LIGAR_EMPLEADO_SIN_NOMBRE,
+    ESTATUS_ACTIVADO,
+    BUSQUEDA,
+    TOTAL_USUARIOS,
+    POR_PAGINA,
+)
+
+pytestmark = pytest.mark.back("sanic")
+
+C10_TRIGGERS = ["_build_match", "_valid_language", "_valid_timezone", "create_user", "list_users"]
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_user")
+def test_dar_de_alta_un_usuario_sin_un_dato_obligatorio_da_error_y_no_guarda(usuarios_admin, mocker):
+    """
+    TB-361: nombre, username, email, teléfono y rol son obligatorios para
+    crear el usuario en LinkaForm. Si falta uno (aquí el rol), create_user
+    debe responder error sin guardar el registro de Usuarios; si lo guardara,
+    el workflow de creación fallaría sin avisar al administrador.
+    """
+    admin = usuarios_admin
+    guardar = mocker.patch.object(admin.lkf_api, "post_forms_answers")
+
+    with pytest.raises(Exception, match="son obligatorios"):
+        admin.create_user(**USUARIO_SIN_ROL)
+
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_user")
+def test_dar_de_alta_un_usuario_con_email_o_username_invalido_da_error(usuarios_admin, mocker):
+    """
+    TB-362: el email recibe la liga de activación y el username se usa sin
+    codificar en la URL de LinkaForm. Un email mal formado o un username con
+    espacios debe responder error sin guardar el registro.
+    """
+    admin = usuarios_admin
+    guardar = mocker.patch.object(admin.lkf_api, "post_forms_answers")
+
+    with pytest.raises(Exception, match="email no es v"):
+        admin.create_user(**USUARIO_EMAIL_INVALIDO)
+    with pytest.raises(Exception, match="username solo puede llevar"):
+        admin.create_user(**USUARIO_USERNAME_INVALIDO)
+
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_user", "_valid_timezone", "_valid_language")
+def test_un_usuario_nuevo_se_guarda_en_estatus_crear_con_zona_e_idioma_por_defecto(usuarios_admin, mocker):
+    """
+    TB-363: el alta guarda el registro de Usuarios en estatus "crear", que es
+    lo que dispara el workflow que crea el usuario en LinkaForm. Si el modal no
+    manda zona horaria ni idioma, se guardan los de por defecto; sin ellos el
+    usuario nace con la hora o el idioma equivocados.
+    """
+    admin = usuarios_admin
+    f = admin.user_fields
+    mocker.patch.object(type(admin), "usuarios_form", new_callable=mocker.PropertyMock, return_value=USUARIOS_FORM)
+    mocker.patch.object(admin.lkf_api, "get_metadata", return_value={})
+    guardar = mocker.patch.object(admin.lkf_api, "post_forms_answers", return_value=dict(CREADO_OK))
+
+    res = admin.create_user(**USUARIO_NUEVO)
+
+    assert res == {"created": True}
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["status"]] == ESTATUS_CREAR
+    assert answers[f["username"]] == USUARIO_NUEVO["username"]
+    assert answers[f["timezone"]] == admin.TIMEZONE_DEFAULT
+    assert answers[f["language"]] == admin.LANGUAGE_DEFAULT
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_user")
+def test_ligar_un_empleado_sin_su_nombre_da_error(usuarios_admin, mocker):
+    """
+    TB-364: al ligar el usuario a un empleado existente, el workflow lo busca
+    por su nombre completo. Si se elige "ligar" sin escribir el nombre,
+    create_user debe responder error sin guardar el registro.
+    """
+    admin = usuarios_admin
+    guardar = mocker.patch.object(admin.lkf_api, "post_forms_answers")
+
+    with pytest.raises(Exception, match="nombre completo del empleado"):
+        admin.create_user(**USUARIO_NUEVO, **LIGAR_EMPLEADO_SIN_NOMBRE)
+
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("list_users", "_build_match")
+def test_la_lista_de_usuarios_filtra_por_estatus_y_por_texto(usuarios_admin, mocker):
+    """
+    TB-365: la lista de Usuarios filtra por los estatus elegidos y busca el
+    texto del buscador en nombre, username y email sin importar mayúsculas.
+    El total y las páginas salen del conteo con ese mismo filtro.
+    """
+    admin = usuarios_admin
+    f = admin.user_fields
+    mocker.patch.object(type(admin), "usuarios_form", new_callable=mocker.PropertyMock, return_value=USUARIOS_FORM)
+    cr = mocker.MagicMock()
+    cr.count_documents.return_value = TOTAL_USUARIOS
+    cr.find.return_value.sort.return_value.skip.return_value.limit.return_value = []
+    mocker.patch.object(admin, "cr", cr, create=True)
+
+    res = admin.list_users(limit=POR_PAGINA, skip=0, status=[ESTATUS_ACTIVADO], search=BUSQUEDA)
+
+    match = cr.count_documents.call_args.args[0]
+    assert match["form_id"] == USUARIOS_FORM
+    assert match[f"answers.{f['status']}"] == {"$in": [ESTATUS_ACTIVADO]}
+    buscados = [campo for condicion in match["$or"] for campo in condicion]
+    assert buscados == [f"answers.{f[k]}" for k in ("name", "username", "email")]
+    assert all(c[campo]["$options"] == "i" for c in match["$or"] for campo in c)
+    assert (res["total_records"], res["total_pages"]) == (TOTAL_USUARIOS, 2)
