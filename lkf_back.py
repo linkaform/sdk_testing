@@ -39,6 +39,7 @@ ADDONS_MODULES = "/srv/repo/modules"
 # suite -> (carpeta de scripts, modulo de addons, modulo de Sanic)
 MODULOS = {
     "accesos": ("accesos/items/scripts/Accesos", "accesos_utils", "accesos_service"),
+    "location": ("location/items/scripts/Locations", "location_util", "location_service"),
 }
 
 
