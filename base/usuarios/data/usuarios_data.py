@@ -18,3 +18,7 @@ USUARIO_SIN_ROL = dict(USUARIO_NUEVO, role="")
 # Email sin dominio y username con espacio (no pasan EMAIL_RE ni USERNAME_RE).
 USUARIO_EMAIL_INVALIDO = dict(USUARIO_NUEVO, email="usuario.qa@clave10")
 USUARIO_USERNAME_INVALIDO = dict(USUARIO_NUEVO, username="usuario qa")
+# form_id del form Usuarios (en la cuenta sale de lkm.form_id) y respuesta del guardado.
+USUARIOS_FORM = 130001
+CREADO_OK = {"status_code": 201}
+ESTATUS_CREAR = "crear"
