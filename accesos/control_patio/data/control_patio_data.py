@@ -145,6 +145,7 @@ MATERIAL_CON_EVIDENCIA = {
 # transportistas y respuesta del guardado.
 REGISTRO_CAMION = "000000000000000000000081"
 GUARDADO_PATIO_OK = {"status_code": 202}
+CREADO_PATIO_OK = {"status_code": 201}
 ANDEN_UNIT = "Andén 1"
 # Remolque que ya existe en el camión (renglón 0) y contenedor nuevo: el
 # contenedor trae su propio número además del de caja.
@@ -156,4 +157,11 @@ MATERIALES_POR_LUGAR = [
     {"producto": "QA material 1", "ref": "contenedor QA-CONT-02"},
     {"producto": "QA material 2", "ref": "remolque QA-CAJA-01"},
     {"producto": "QA material 3", "ref": ""},
+]
+# Guardar el detalle sin tocar ningún campo.
+SIN_CAMBIOS = {}
+# Desglose de empaque completo que reenvía el detalle en cada guardado.
+DESGLOSE_EMPAQUE = [
+    {"no_referencia_material": "QA material 1", "nivel": "1", "tipo_unidad_empaque": "Tarima", "cantidad": "2", "cantidad_acumulada": "2"},
+    {"no_referencia_material": "QA material 1", "nivel": "2", "tipo_unidad_empaque": "Caja", "cantidad": "40", "cantidad_acumulada": "80"},
 ]
