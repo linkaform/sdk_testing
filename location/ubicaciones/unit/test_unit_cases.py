@@ -14,6 +14,7 @@ import pytest
 
 from ..data.ubicaciones_data import (
     NOMBRE_VACIO,
+    UBICACION_QA,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -34,5 +35,23 @@ def test_crear_una_ubicacion_sin_nombre_da_error_y_no_guarda(location_no_api, mo
 
     with pytest.raises(Exception, match="nombre de la ubicaci.*es requerido"):
         loc.create_new_ubicacion(nombre=NOMBRE_VACIO)
+
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_new_ubicacion")
+def test_crear_una_ubicacion_con_un_nombre_que_ya_existe_da_error_y_no_guarda(location_no_api, mocker):
+    """
+    TB-352: dos ubicaciones con el mismo nombre no se distinguen en los
+    catálogos que las usan. Si el nombre ya existe, create_new_ubicacion debe
+    responder "Ubicación duplicada" sin mandar nada a guardar.
+    """
+    loc = location_no_api
+    mocker.patch.object(loc, "exists_ubicacion", return_value=True)
+    guardar = mocker.patch.object(loc.lkf_api, "post_forms_answers")
+
+    with pytest.raises(Exception, match="Ya existe una ubicaci"):
+        loc.create_new_ubicacion(nombre=UBICACION_QA)
 
     guardar.assert_not_called()

@@ -7,3 +7,6 @@ location_sdk.py de Sanic).
 
 # Nombre que manda el front cuando el campo se deja en blanco.
 NOMBRE_VACIO = "   "
+
+# Ubicación de esta suite; en los tests de duplicado se simula que ya existe.
+UBICACION_QA = "Planta QA Ubicaciones"
