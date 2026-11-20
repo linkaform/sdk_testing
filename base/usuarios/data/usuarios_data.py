@@ -15,3 +15,6 @@ USUARIO_NUEVO = {
 }
 # El mismo alta sin el rol (campo obligatorio).
 USUARIO_SIN_ROL = dict(USUARIO_NUEVO, role="")
+# Email sin dominio y username con espacio (no pasan EMAIL_RE ni USERNAME_RE).
+USUARIO_EMAIL_INVALIDO = dict(USUARIO_NUEVO, email="usuario.qa@clave10")
+USUARIO_USERNAME_INVALIDO = dict(USUARIO_NUEVO, username="usuario qa")
