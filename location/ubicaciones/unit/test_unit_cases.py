@@ -17,11 +17,15 @@ from ..data.ubicaciones_data import (
     UBICACION_QA,
     DIRECCION_UBICACION,
     CREADO_OK,
+    CONTACTO_QA,
+    DIRECCION_CONTACTO,
+    CIUDAD_CONTACTO,
+    ID_CONTACTO,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_contacto_answers", "create_new_ubicacion"]
+C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_new_ubicacion"]
 
 
 @pytest.mark.unit
@@ -89,3 +93,38 @@ def test_una_ubicacion_sin_contacto_elegido_da_de_alta_su_contacto_con_la_direcc
     assert ubicacion_contacto[f["address_name"]] == UBICACION_QA
     assert ubicacion_contacto[f["address"]] == [DIRECCION_UBICACION["direccion"]]
     assert ubicacion_contacto[f["city"]] == [DIRECCION_UBICACION["ciudad"]]
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_new_ubicacion", "_contacto_ubicacion_desde_catalogo")
+def test_una_ubicacion_con_contacto_del_catalogo_apunta_a_el_sin_crear_otro(location_no_api, mocker):
+    """
+    TB-354: si se elige un contacto que ya existe en el catálogo,
+    create_new_ubicacion apunta la ubicación a ese contacto y no da de alta
+    otro. Del registro del catálogo no se copian su _id ni su estatus: la
+    ubicación solo lleva los datos de la dirección.
+    """
+    loc = location_no_api
+    f = loc.f
+    registro = {
+        "_id": ID_CONTACTO,
+        f["address_name"]: CONTACTO_QA,
+        f["address"]: DIRECCION_CONTACTO,
+        f["city"]: CIUDAD_CONTACTO,
+        loc.CONTACTO_STATUS_FIELD: "Activo",
+    }
+    mocker.patch.object(loc, "exists_ubicacion", return_value=False)
+    mocker.patch.object(loc.lkf_api, "search_catalog", return_value=[registro])
+    alta_contacto = mocker.patch.object(loc.lkf_api, "post_catalog_answers")
+    mocker.patch.object(loc.lkf_api, "get_metadata", return_value={})
+    guardar = mocker.patch.object(loc.lkf_api, "post_forms_answers", return_value=dict(CREADO_OK))
+
+    loc.create_new_ubicacion(nombre=UBICACION_QA, contacto=CONTACTO_QA)
+
+    alta_contacto.assert_not_called()
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[loc.CONTACTO_CAT_OBJ_ID] == {
+        f["address_name"]: CONTACTO_QA,
+        f["address"]: [DIRECCION_CONTACTO],
+        f["city"]: [CIUDAD_CONTACTO],
+    }
