@@ -15,11 +15,13 @@ import pytest
 from ..data.ubicaciones_data import (
     NOMBRE_VACIO,
     UBICACION_QA,
+    DIRECCION_UBICACION,
+    CREADO_OK,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["create_new_ubicacion"]
+C10_TRIGGERS = ["_contacto_answers", "create_new_ubicacion"]
 
 
 @pytest.mark.unit
@@ -55,3 +57,35 @@ def test_crear_una_ubicacion_con_un_nombre_que_ya_existe_da_error_y_no_guarda(lo
         loc.create_new_ubicacion(nombre=UBICACION_QA)
 
     guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_new_ubicacion", "_contacto_answers")
+def test_una_ubicacion_sin_contacto_elegido_da_de_alta_su_contacto_con_la_direccion(location_no_api, mocker):
+    """
+    TB-353: si no se elige un contacto del catálogo, create_new_ubicacion da
+    de alta uno con el nombre de la ubicación y la dirección capturada, y la
+    ubicación apunta a él: el nombre va suelto y los demás campos como lista,
+    igual que los registros existentes. Si no, LinkaForm rechaza el contacto
+    o la ubicación queda sin dirección.
+    """
+    loc = location_no_api
+    f = loc.f
+    mocker.patch.object(loc, "exists_ubicacion", return_value=False)
+    mocker.patch.object(loc.lkf_api, "search_catalog", return_value=[])
+    mocker.patch.object(loc.lkf_api, "get_catalog_metadata", return_value={})
+    alta_contacto = mocker.patch.object(loc.lkf_api, "post_catalog_answers", return_value=dict(CREADO_OK))
+    mocker.patch.object(loc.lkf_api, "get_metadata", return_value={})
+    guardar = mocker.patch.object(loc.lkf_api, "post_forms_answers", return_value=dict(CREADO_OK))
+
+    loc.create_new_ubicacion(nombre=UBICACION_QA, **DIRECCION_UBICACION)
+
+    contacto = alta_contacto.call_args.args[0]["answers"]
+    assert contacto[f["address_name"]] == UBICACION_QA
+    assert contacto[f["address"]] == DIRECCION_UBICACION["direccion"]
+    answers = guardar.call_args.args[0]["answers"]
+    assert answers[f["location"]] == UBICACION_QA
+    ubicacion_contacto = answers[loc.CONTACTO_CAT_OBJ_ID]
+    assert ubicacion_contacto[f["address_name"]] == UBICACION_QA
+    assert ubicacion_contacto[f["address"]] == [DIRECCION_UBICACION["direccion"]]
+    assert ubicacion_contacto[f["city"]] == [DIRECCION_UBICACION["ciudad"]]
