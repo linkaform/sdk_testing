@@ -21,11 +21,15 @@ from ..data.usuarios_data import (
     CREADO_OK,
     ESTATUS_CREAR,
     LIGAR_EMPLEADO_SIN_NOMBRE,
+    ESTATUS_ACTIVADO,
+    BUSQUEDA,
+    TOTAL_USUARIOS,
+    POR_PAGINA,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_valid_language", "_valid_timezone", "create_user"]
+C10_TRIGGERS = ["_build_match", "_valid_language", "_valid_timezone", "create_user", "list_users"]
 
 
 @pytest.mark.unit
@@ -105,3 +109,30 @@ def test_ligar_un_empleado_sin_su_nombre_da_error(usuarios_admin, mocker):
         admin.create_user(**USUARIO_NUEVO, **LIGAR_EMPLEADO_SIN_NOMBRE)
 
     guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("list_users", "_build_match")
+def test_la_lista_de_usuarios_filtra_por_estatus_y_por_texto(usuarios_admin, mocker):
+    """
+    TB-365: la lista de Usuarios filtra por los estatus elegidos y busca el
+    texto del buscador en nombre, username y email sin importar mayúsculas.
+    El total y las páginas salen del conteo con ese mismo filtro.
+    """
+    admin = usuarios_admin
+    f = admin.user_fields
+    mocker.patch.object(type(admin), "usuarios_form", new_callable=mocker.PropertyMock, return_value=USUARIOS_FORM)
+    cr = mocker.MagicMock()
+    cr.count_documents.return_value = TOTAL_USUARIOS
+    cr.find.return_value.sort.return_value.skip.return_value.limit.return_value = []
+    mocker.patch.object(admin, "cr", cr, create=True)
+
+    res = admin.list_users(limit=POR_PAGINA, skip=0, status=[ESTATUS_ACTIVADO], search=BUSQUEDA)
+
+    match = cr.count_documents.call_args.args[0]
+    assert match["form_id"] == USUARIOS_FORM
+    assert match[f"answers.{f['status']}"] == {"$in": [ESTATUS_ACTIVADO]}
+    buscados = [campo for condicion in match["$or"] for campo in condicion]
+    assert buscados == [f"answers.{f[k]}" for k in ("name", "username", "email")]
+    assert all(c[campo]["$options"] == "i" for c in match["$or"] for campo in c)
+    assert (res["total_records"], res["total_pages"]) == (TOTAL_USUARIOS, 2)

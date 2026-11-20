@@ -24,3 +24,8 @@ CREADO_OK = {"status_code": 201}
 ESTATUS_CREAR = "crear"
 # Opción "ligar a un empleado existente" del modal, sin escribir el nombre.
 LIGAR_EMPLEADO_SIN_NOMBRE = {"empleado": "ligar_empleado", "empleado_nombre": ""}
+# Buscador de la lista: estatus elegido, texto y total de registros que hay.
+ESTATUS_ACTIVADO = "activado"
+BUSQUEDA = "usuario.qa"
+TOTAL_USUARIOS = 30
+POR_PAGINA = 25
