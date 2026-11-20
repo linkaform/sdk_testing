@@ -20,6 +20,7 @@ from ..data.usuarios_data import (
     USUARIOS_FORM,
     CREADO_OK,
     ESTATUS_CREAR,
+    LIGAR_EMPLEADO_SIN_NOMBRE,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -87,3 +88,20 @@ def test_un_usuario_nuevo_se_guarda_en_estatus_crear_con_zona_e_idioma_por_defec
     assert answers[f["username"]] == USUARIO_NUEVO["username"]
     assert answers[f["timezone"]] == admin.TIMEZONE_DEFAULT
     assert answers[f["language"]] == admin.LANGUAGE_DEFAULT
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_user")
+def test_ligar_un_empleado_sin_su_nombre_da_error(usuarios_admin, mocker):
+    """
+    TB-364: al ligar el usuario a un empleado existente, el workflow lo busca
+    por su nombre completo. Si se elige "ligar" sin escribir el nombre,
+    create_user debe responder error sin guardar el registro.
+    """
+    admin = usuarios_admin
+    guardar = mocker.patch.object(admin.lkf_api, "post_forms_answers")
+
+    with pytest.raises(Exception, match="nombre completo del empleado"):
+        admin.create_user(**USUARIO_NUEVO, **LIGAR_EMPLEADO_SIN_NOMBRE)
+
+    guardar.assert_not_called()

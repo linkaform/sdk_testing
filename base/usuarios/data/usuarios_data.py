@@ -22,3 +22,5 @@ USUARIO_USERNAME_INVALIDO = dict(USUARIO_NUEVO, username="usuario qa")
 USUARIOS_FORM = 130001
 CREADO_OK = {"status_code": 201}
 ESTATUS_CREAR = "crear"
+# Opción "ligar a un empleado existente" del modal, sin escribir el nombre.
+LIGAR_EMPLEADO_SIN_NOMBRE = {"empleado": "ligar_empleado", "empleado_nombre": ""}
