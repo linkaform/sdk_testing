@@ -128,3 +128,22 @@ def test_una_ubicacion_con_contacto_del_catalogo_apunta_a_el_sin_crear_otro(loca
         f["address"]: [DIRECCION_CONTACTO],
         f["city"]: [CIUDAD_CONTACTO],
     }
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_new_ubicacion", "_get_contacto_catalogo")
+def test_un_contacto_que_no_existe_en_el_catalogo_da_error_y_no_guarda_la_ubicacion(location_no_api, mocker):
+    """
+    TB-355: LinkaForm solo acepta en el campo de contacto valores que existen
+    en el catálogo. Si el contacto elegido ya no está, create_new_ubicacion
+    debe responder "Contacto no encontrado" sin guardar la ubicación.
+    """
+    loc = location_no_api
+    mocker.patch.object(loc, "exists_ubicacion", return_value=False)
+    mocker.patch.object(loc.lkf_api, "search_catalog", return_value=[])
+    guardar = mocker.patch.object(loc.lkf_api, "post_forms_answers")
+
+    with pytest.raises(Exception, match="No existe el contacto"):
+        loc.create_new_ubicacion(nombre=UBICACION_QA, contacto=CONTACTO_QA)
+
+    guardar.assert_not_called()
