@@ -30,6 +30,8 @@ from ..data.ubicaciones_data import (
     OTRA_UBICACION,
     ENVIO_GUARDADO,
     CAMBIO_ENVIO,
+    CAMBIO_ENVIO_INVALIDO,
+    TOLERANCIA_NEGATIVA,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -243,3 +245,25 @@ def test_las_opciones_avanzadas_de_una_ubicacion_solo_guardan_su_fila(location_n
     assert list(filas) == ["1"], f"Se mandaron las filas {list(filas)}"
     assert filas["1"][loc.UBICACIONES_CAT_OBJ_ID] == {loc.f["location"]: UBICACION_QA}
     assert filas["1"][campos["envio_por"]] == CAMBIO_ENVIO["envio_por"]
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_config_seguridad_ubicacion")
+def test_una_opcion_avanzada_que_no_existe_da_error_y_no_guarda(location_no_api, mocker):
+    """
+    TB-360: LinkaForm rechaza un valor que no es opción del campo, y una
+    tolerancia negativa no tiene sentido para los pases. Con cualquiera de
+    los dos, update_config_seguridad_ubicacion debe responder "Valor
+    inválido" sin mandar nada a guardar.
+    """
+    loc = location_no_api
+    mocker.patch.object(loc, "exists_ubicacion", return_value=True)
+    mocker.patch.object(loc, "_get_config_seguridad_record", return_value={"_id": ID_CONFIG_SEGURIDAD, "grupo": []})
+    guardar = mocker.patch.object(loc.lkf_api, "patch_multi_record")
+
+    with pytest.raises(Exception, match="Valor inv"):
+        loc.update_config_seguridad_ubicacion(ubicacion=UBICACION_QA, config=dict(CAMBIO_ENVIO_INVALIDO))
+    with pytest.raises(Exception, match="Valor inv"):
+        loc.update_config_seguridad_ubicacion(ubicacion=UBICACION_QA, config=dict(TOLERANCIA_NEGATIVA))
+
+    guardar.assert_not_called()

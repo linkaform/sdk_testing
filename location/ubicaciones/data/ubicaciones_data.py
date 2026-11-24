@@ -43,3 +43,7 @@ ID_CONFIG_SEGURIDAD = "6a0000000000000000000359"
 OTRA_UBICACION = "Planta QA Ubicaciones Sur"
 ENVIO_GUARDADO = ["sms"]
 CAMBIO_ENVIO = {"envio_por": ["correo"]}
+# Valores que no acepta la forma: una opción de envío que no existe y una
+# tolerancia negativa.
+CAMBIO_ENVIO_INVALIDO = {"envio_por": ["whatsapp"]}
+TOLERANCIA_NEGATIVA = {"tolerancia_de_entrada_previa": -5}
