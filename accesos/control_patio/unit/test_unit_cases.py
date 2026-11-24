@@ -1,8 +1,9 @@
 # coding: utf-8
 
-"""Transportistas – Control de patio: guardar el camión en la bitácora de
-transportistas (save_bitac_transportista_record: etapas, andén, remolques,
-contenedores y materiales) sin tocar la cuenta.
+"""Transportistas – Control de patio: registrar la llegada de un camión
+(create_visit_transportista) y guardarlo en la bitácora de transportistas
+(save_bitac_transportista_record: etapas, andén, remolques, contenedores,
+materiales y desglose de empaque) sin tocar la cuenta.
 Notion: TB-331 a TB-338.
 
 Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
@@ -11,6 +12,7 @@ La seccion la sirve Sanic en prod (transportistas_sdk.py): los tests llevan
 back("sanic") y en addons salen SKIPPED.
 """
 
+from bson import ObjectId
 import pytest
 
 from ..data.control_patio_data import (
@@ -22,11 +24,16 @@ from ..data.control_patio_data import (
     REMOLQUE_EXISTENTE,
     CONTENEDOR_NUEVO,
     MATERIALES_POR_LUGAR,
+    SIN_CAMBIOS,
+    DESGLOSE_EMPAQUE,
+    LLEGADA_SIN_PASE,
+    ESTATUS_ARRIBO,
+    CREADO_PATIO_OK,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["save_bitac_transportista_record"]
+C10_TRIGGERS = ["create_visit_transportista", "save_bitac_transportista_record"]
 
 
 def answers_del_camion(acceso_obj, mocker, data):
@@ -130,3 +137,67 @@ def test_cada_material_se_guarda_con_su_lugar_segun_su_referencia(accesos_no_api
     grupo = answers[f["grupo_materiales"]]
     lugares = [grupo[-(i + 1)][f["lugar_material"]] for i in range(len(MATERIALES_POR_LUGAR))]
     assert lugares == ["contenedor", "remolque", "vehiculo"], f"Lugares: {lugares}"
+
+
+@pytest.mark.unit
+@pytest.mark.target("save_bitac_transportista_record")
+def test_guardar_el_camion_sin_cambios_no_llama_al_guardado(accesos_no_api, mocker):
+    """
+    TB-336: si el detalle del camión se guarda sin ningún cambio,
+    save_bitac_transportista_record responde OK sin mandar nada a guardar. Un
+    guardado vacío en LinkaForm solo genera una versión nueva del registro.
+    """
+    acc = accesos_no_api
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record")
+
+    res = acc.save_bitac_transportista_record(REGISTRO_CAMION, dict(SIN_CAMBIOS))
+
+    guardar.assert_not_called()
+    assert res["status_code"] == 200
+
+
+@pytest.mark.unit
+@pytest.mark.target("save_bitac_transportista_record")
+def test_el_desglose_de_empaque_reemplaza_el_grupo_completo(accesos_no_api, mocker):
+    """
+    TB-337: el front manda siempre el desglose de empaque completo. Se guarda
+    reemplazando el grupo entero con lo que llega; si se agregara como
+    renglones nuevos, el desglose se duplicaría en cada guardado.
+    """
+    acc = accesos_no_api
+    f = acc.bitacora_transportista_fields
+    cr = mocker.MagicMock()
+    mocker.patch.object(acc, "cr", cr)
+    guardar = mocker.patch.object(acc.lkf_api, "patch_multi_record")
+
+    acc.save_bitac_transportista_record(REGISTRO_CAMION, {"desglose_empaque": [dict(d) for d in DESGLOSE_EMPAQUE]})
+
+    cr.update_one.assert_called_once()
+    filtro, cambio = cr.update_one.call_args.args
+    assert filtro["_id"] == ObjectId(REGISTRO_CAMION)
+    grupo = cambio["$set"][f"answers.{f['grupo_desglose_empaque']}"]
+    referencias = [r[f["no_referencia_material_desglose"]] for r in grupo]
+    assert referencias == [d["no_referencia_material"] for d in DESGLOSE_EMPAQUE]
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_visit_transportista")
+def test_la_llegada_de_un_camion_sin_pase_lo_deja_en_arribo(accesos_no_api, mocker):
+    """
+    TB-338: un camión que llega sin pase (Nuevo Acceso Transportista) se crea
+    en la bitácora en "arribo", con su fecha de ingreso y sus placas, para que
+    aparezca en la primera columna del Kanban del patio.
+    """
+    acc = accesos_no_api
+    f = acc.bitacora_transportista_fields
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    crear = mocker.patch.object(acc.lkf_api, "post_forms_answers", return_value=dict(CREADO_PATIO_OK))
+
+    acc.create_visit_transportista(dict(LLEGADA_SIN_PASE))
+
+    crear.assert_called_once()
+    answers = crear.call_args.args[0]["answers"]
+    assert answers[f["estatus"]] == ESTATUS_ARRIBO
+    assert answers.get(f["fecha_hora_ingreso"]), "No se guardó la fecha de ingreso"
+    assert answers[f["placas_de_vehiculo"]] == LLEGADA_SIN_PASE["vehiculo"]["placa"]
