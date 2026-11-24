@@ -79,3 +79,5 @@ RENGLON_VACIO = {}
 REGISTRO_BITACORA = "000000000000000000000051"
 # El mismo vehículo con la foto que sube el guardia en el modal.
 VEHICULO_AGREGADO_CON_FOTO = dict(VEHICULO_AGREGADO, foto_vehiculo=FOTO_VALIDA)
+# Vehículo del pase con la foto que se toma en + Nuevo Pase.
+VEHICULO_PASE_CON_FOTO = dict(VEHICULO_VISITA, foto_vehiculo=FOTO_VALIDA)

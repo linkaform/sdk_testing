@@ -45,3 +45,4 @@ ASISTENCIA_OK = "Correcto"
 # usuario y lo que manda el front al borrar el nombre.
 FOLIO_TURNO = "1-TURNO"
 SUPLENTE_VACIO = ""
+SUPLENTE_NOMBRE = "Suplente prueba QA"

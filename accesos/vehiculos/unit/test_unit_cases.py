@@ -19,6 +19,8 @@ from ..data.vehiculos_data import (
     LIMITE_LISTA,
     VEHICULO_AGREGADO,
     REGISTRO_BITACORA,
+    VEHICULO_PASE_CON_FOTO,
+    FOTO_VALIDA,
 )
 
 C10_TRIGGERS = [
@@ -236,3 +238,17 @@ def test_catalogo_de_vehiculos_sale_del_catalogo_de_tipos_de_vehiculo(accesos_no
 
     consultar.assert_called_once()
     assert consultar.call_args.args[:2] == (acc.TIPO_VEHICULOS_CAT_ID, acc.PASE_ENTRADA)
+
+
+@pytest.mark.unit
+def test_la_foto_del_vehiculo_del_pase_se_guarda_en_su_campo(accesos_no_api):
+    """
+    TB-325: el vehículo del pase con foto debe guardarla en el campo de foto
+    del vehículo. Si _answers_vehiculos_pase la pierde, el guardia no puede
+    comparar el vehículo que llega con el que se registró en el pase.
+    """
+    acc = accesos_no_api
+
+    grupo = acc._answers_vehiculos_pase([dict(VEHICULO_PASE_CON_FOTO)])
+
+    assert grupo[0][acc.f["foto_vehiculo"]] == FOTO_VALIDA
