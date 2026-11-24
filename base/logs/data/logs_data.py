@@ -41,3 +41,6 @@ LOGS_CON_Y_SIN_ARCHIVO = [
     {"_id": "6a0000000000000000000374", "script_id": 101, "user_id": 10, "status": "done", "traceback": URL_LOG},
     {"_id": "6a0000000000000000000375", "script_id": 102, "user_id": 10, "status": "done", "traceback": TEXTO_ERROR},
 ]
+# URLs que no se deben descargar: otro host y Backblaze sin https.
+URL_OTRO_HOST = "https://otro-sitio.com/logs/qa_script_375.log"
+URL_SIN_HTTPS = "http://f001.backblazeb2.com/file/app-linkaform/logs/qa_script_375.log"
