@@ -18,3 +18,8 @@ FECHA_INICIO = "2026-11-01"
 FECHA_FIN = "2026-11-02"
 DESDE = datetime(2026, 11, 1)
 HASTA = datetime(2026, 11, 2, 23, 59, 59, 999000)
+
+# Buscar por nombre de script (sin mayúsculas): "cierre" está en dos de los
+# tres scripts visibles.
+NOMBRE_SCRIPT = "CIERRE"
+IDS_CON_ESE_NOMBRE = {101, 103}

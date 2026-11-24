@@ -19,11 +19,13 @@ from ..data.logs_data import (
     FECHA_FIN,
     DESDE,
     HASTA,
+    NOMBRE_SCRIPT,
+    IDS_CON_ESE_NOMBRE,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_to_date", "list_script_logs"]
+C10_TRIGGERS = ["_ids_by_name", "_to_date", "list_script_logs"]
 
 
 def script_logs_simulados(logs, mocker, registros=()):
@@ -52,3 +54,22 @@ def test_script_log_el_filtro_de_fechas_toma_el_dia_completo(script_logs, mocker
 
     match = coleccion.find.call_args.args[0]
     assert match["start_date"] == {"$gte": DESDE, "$lte": HASTA}
+
+
+@pytest.mark.unit
+@pytest.mark.target("list_script_logs", "_ids_by_name")
+def test_script_log_buscar_por_nombre_de_script_filtra_por_sus_ids(script_logs, mocker):
+    """
+    TB-372: al buscar un script por nombre, list_script_logs debe filtrar
+    los logs solo por los scripts cuyo nombre contiene ese texto, sin
+    importar mayúsculas. Si el filtro incluye otros scripts, la búsqueda
+    regresa logs que no tienen nada que ver.
+    """
+    logs = script_logs
+    coleccion = script_logs_simulados(logs, mocker)
+
+    logs.list_script_logs(script_name=NOMBRE_SCRIPT)
+
+    match = coleccion.find.call_args.args[0]
+    filtrados = set(match["script_id"]["$in"])
+    assert filtrados == IDS_CON_ESE_NOMBRE, f"Filtra por los scripts {sorted(filtrados)}"
