@@ -1,7 +1,7 @@
 # coding: utf-8
 
-"""Usuarios: dar de alta un usuario (create_user) y la lista (list_users),
-sin tocar la cuenta.
+"""Usuarios: dar de alta un usuario (create_user), la lista (list_users) y
+editarlo (update_user), sin tocar la cuenta.
 Notion: TB-361 a TB-370.
 
 Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
@@ -25,11 +25,13 @@ from ..data.usuarios_data import (
     BUSQUEDA,
     TOTAL_USUARIOS,
     POR_PAGINA,
+    REGISTRO_USUARIO,
+    USER_ID_LKF,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_build_match", "_valid_language", "_valid_timezone", "create_user", "list_users"]
+C10_TRIGGERS = ["_build_match", "_valid_language", "_valid_timezone", "create_user", "list_users", "update_user"]
 
 
 @pytest.mark.unit
@@ -136,3 +138,39 @@ def test_la_lista_de_usuarios_filtra_por_estatus_y_por_texto(usuarios_admin, moc
     assert buscados == [f"answers.{f[k]}" for k in ("name", "username", "email")]
     assert all(c[campo]["$options"] == "i" for c in match["$or"] for campo in c)
     assert (res["total_records"], res["total_pages"]) == (TOTAL_USUARIOS, 2)
+
+
+def usuario_guardado(admin, mocker, estatus):
+    """Simula el registro de Usuarios que se edita, con su Id de Usuario de
+    LinkaForm y el estatus dado; regresa los mocks de los dos guardados."""
+    f = admin.user_fields
+    mocker.patch.object(type(admin), "usuarios_form", new_callable=mocker.PropertyMock, return_value=USUARIOS_FORM)
+    cr = mocker.MagicMock()
+    cr.find_one.return_value = {
+        "_id": REGISTRO_USUARIO,
+        "form_id": USUARIOS_FORM,
+        "answers": {f["user_id"]: [USER_ID_LKF], f["status"]: estatus},
+    }
+    mocker.patch.object(admin, "cr", cr, create=True)
+    return {
+        "linkaform": mocker.patch.object(admin, "_patch_lkf_user"),
+        "registro": mocker.patch.object(admin.lkf_api, "patch_multi_record"),
+    }
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_user")
+def test_editar_un_usuario_sin_cambios_da_error_y_no_toca_linkaform(usuarios_admin, mocker):
+    """
+    TB-366: si el panel de edición se guarda sin cambiar nada, update_user
+    debe responder "No hay cambios que guardar" sin actualizar el usuario de
+    LinkaForm ni el registro de Usuarios.
+    """
+    admin = usuarios_admin
+    guardados = usuario_guardado(admin, mocker, ESTATUS_ACTIVADO)
+
+    with pytest.raises(Exception, match="No hay cambios"):
+        admin.update_user(record_id=REGISTRO_USUARIO)
+
+    guardados["linkaform"].assert_not_called()
+    guardados["registro"].assert_not_called()

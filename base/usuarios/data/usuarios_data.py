@@ -29,3 +29,8 @@ ESTATUS_ACTIVADO = "activado"
 BUSQUEDA = "usuario.qa"
 TOTAL_USUARIOS = 30
 POR_PAGINA = 25
+
+# Editar y restaurar contraseña: _id del registro de Usuarios y el Id de
+# Usuario de LinkaForm que ya tiene (el workflow de alta lo llena).
+REGISTRO_USUARIO = "6a0000000000000000000366"
+USER_ID_LKF = 99366
