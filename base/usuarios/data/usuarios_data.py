@@ -34,3 +34,6 @@ POR_PAGINA = 25
 # Usuario de LinkaForm que ya tiene (el workflow de alta lo llena).
 REGISTRO_USUARIO = "6a0000000000000000000366"
 USER_ID_LKF = 99366
+# Cambios del panel de edición y respuestas de LinkaForm.
+CAMBIO_TELEFONO = {"phone": "8187654321"}
+RECHAZO_LKF = {"status_code": 400, "json": {"phone": "no es válido"}}

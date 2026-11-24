@@ -27,6 +27,8 @@ from ..data.usuarios_data import (
     POR_PAGINA,
     REGISTRO_USUARIO,
     USER_ID_LKF,
+    CAMBIO_TELEFONO,
+    RECHAZO_LKF,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -173,4 +175,24 @@ def test_editar_un_usuario_sin_cambios_da_error_y_no_toca_linkaform(usuarios_adm
         admin.update_user(record_id=REGISTRO_USUARIO)
 
     guardados["linkaform"].assert_not_called()
+    guardados["registro"].assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_user")
+def test_si_linkaform_rechaza_la_edicion_no_se_guarda_el_registro(usuarios_admin, mocker):
+    """
+    TB-367: update_user actualiza primero el usuario de LinkaForm y solo si
+    responde bien guarda el registro de Usuarios. Si LinkaForm rechaza el
+    cambio, debe responder error sin guardar el registro, para que los dos no
+    queden con datos distintos.
+    """
+    admin = usuarios_admin
+    guardados = usuario_guardado(admin, mocker, ESTATUS_ACTIVADO)
+    guardados["linkaform"].return_value = dict(RECHAZO_LKF)
+
+    with pytest.raises(Exception, match="No se pudo actualizar el usuario en LinkaForm"):
+        admin.update_user(record_id=REGISTRO_USUARIO, **CAMBIO_TELEFONO)
+
+    guardados["linkaform"].assert_called_once()
     guardados["registro"].assert_not_called()
