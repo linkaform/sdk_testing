@@ -35,3 +35,11 @@ UBICACION_GUARDADA = {"location": UBICACION_QA, "address_name": CONTACTO_QA}
 # Nombre nuevo al editar y respuesta del guardado.
 UBICACION_RENOMBRADA = "Planta QA Ubicaciones Norte"
 EDITADO_OK = {"status_code": 202}
+
+# Opciones avanzadas (update_config_seguridad_ubicacion): registro de la
+# configuración del módulo de seguridad, otra ubicación con su propia fila y el
+# cambio que manda el front (solo los campos que cambiaron).
+ID_CONFIG_SEGURIDAD = "6a0000000000000000000359"
+OTRA_UBICACION = "Planta QA Ubicaciones Sur"
+ENVIO_GUARDADO = ["sms"]
+CAMBIO_ENVIO = {"envio_por": ["correo"]}

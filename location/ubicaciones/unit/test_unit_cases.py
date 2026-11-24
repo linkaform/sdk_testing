@@ -1,7 +1,8 @@
 # coding: utf-8
 
 """Ubicaciones: crear una ubicación (create_new_ubicacion) y su contacto del
-catálogo y editarla (update_ubicacion), sin tocar la cuenta.
+catálogo, editarla (update_ubicacion) y sus opciones avanzadas
+(update_config_seguridad_ubicacion), sin tocar la cuenta.
 Notion: TB-351 a TB-360.
 
 Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
@@ -25,11 +26,15 @@ from ..data.ubicaciones_data import (
     UBICACION_GUARDADA,
     UBICACION_RENOMBRADA,
     EDITADO_OK,
+    ID_CONFIG_SEGURIDAD,
+    OTRA_UBICACION,
+    ENVIO_GUARDADO,
+    CAMBIO_ENVIO,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_contacto", "create_new_ubicacion", "update_ubicacion"]
+C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_contacto", "create_new_ubicacion", "update_config_seguridad_ubicacion", "update_ubicacion"]
 
 
 @pytest.mark.unit
@@ -209,3 +214,32 @@ def test_dar_de_alta_un_contacto_con_un_nombre_que_ya_existe_da_error(location_n
         loc.create_contacto(nombre=CONTACTO_QA, direccion=DIRECCION_CONTACTO)
 
     alta_contacto.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_config_seguridad_ubicacion")
+def test_las_opciones_avanzadas_de_una_ubicacion_solo_guardan_su_fila(location_no_api, mocker):
+    """
+    TB-359: la configuración del módulo de seguridad tiene una fila por
+    ubicación en un solo registro. Al guardar las opciones avanzadas de una
+    ubicación se manda solo su fila, con su índice y el campo que cambió; las
+    filas de las demás ubicaciones no se tocan.
+    """
+    loc = location_no_api
+    campos = loc.config_seguridad_fields
+    grupo = [
+        {loc.UBICACIONES_CAT_OBJ_ID: {loc.f["location"]: OTRA_UBICACION}, campos["envio_por"]: list(ENVIO_GUARDADO)},
+        {loc.UBICACIONES_CAT_OBJ_ID: {loc.f["location"]: UBICACION_QA}, campos["envio_por"]: list(ENVIO_GUARDADO)},
+    ]
+    mocker.patch.object(loc, "exists_ubicacion", return_value=True)
+    mocker.patch.object(loc, "_get_config_seguridad_record", return_value={"_id": ID_CONFIG_SEGURIDAD, "grupo": grupo})
+    guardar = mocker.patch.object(loc.lkf_api, "patch_multi_record", return_value=dict(EDITADO_OK))
+
+    loc.update_config_seguridad_ubicacion(ubicacion=UBICACION_QA, config=dict(CAMBIO_ENVIO))
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [ID_CONFIG_SEGURIDAD]
+    filas = guardar.call_args.kwargs["answers"][loc.GRUPO_REQUISITOS]
+    assert list(filas) == ["1"], f"Se mandaron las filas {list(filas)}"
+    assert filas["1"][loc.UBICACIONES_CAT_OBJ_ID] == {loc.f["location"]: UBICACION_QA}
+    assert filas["1"][campos["envio_por"]] == CAMBIO_ENVIO["envio_por"]
