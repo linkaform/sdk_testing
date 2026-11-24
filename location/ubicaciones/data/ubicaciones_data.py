@@ -27,3 +27,8 @@ CONTACTO_QA = "Contacto QA Ubicaciones"
 DIRECCION_CONTACTO = "Av. Fundidora 501"
 CIUDAD_CONTACTO = "Monterrey"
 ID_CONTACTO = "6a0000000000000000000351"
+
+# Editar una ubicación (update_ubicacion): _id del registro y cómo la regresa
+# get_ubicacion_by_id.
+REGISTRO_UBICACION = "6a0000000000000000000356"
+UBICACION_GUARDADA = {"location": UBICACION_QA, "address_name": CONTACTO_QA}

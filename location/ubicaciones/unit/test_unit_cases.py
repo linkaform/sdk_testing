@@ -1,7 +1,7 @@
 # coding: utf-8
 
 """Ubicaciones: crear una ubicación (create_new_ubicacion) y su contacto del
-catálogo, sin tocar la cuenta.
+catálogo y editarla (update_ubicacion), sin tocar la cuenta.
 Notion: TB-351 a TB-360.
 
 Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
@@ -21,11 +21,13 @@ from ..data.ubicaciones_data import (
     DIRECCION_CONTACTO,
     CIUDAD_CONTACTO,
     ID_CONTACTO,
+    REGISTRO_UBICACION,
+    UBICACION_GUARDADA,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_new_ubicacion"]
+C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_new_ubicacion", "update_ubicacion"]
 
 
 @pytest.mark.unit
@@ -147,3 +149,21 @@ def test_un_contacto_que_no_existe_en_el_catalogo_da_error_y_no_guarda_la_ubicac
         loc.create_new_ubicacion(nombre=UBICACION_QA, contacto=CONTACTO_QA)
 
     guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_ubicacion")
+def test_editar_una_ubicacion_sin_cambios_no_guarda_nada(location_no_api, mocker):
+    """
+    TB-356: si la ubicación se guarda con el mismo nombre y el mismo
+    contacto, update_ubicacion responde "Sin cambios" sin mandar nada a
+    guardar. Un guardado vacío solo crea una versión nueva del registro.
+    """
+    loc = location_no_api
+    mocker.patch.object(loc, "get_ubicacion_by_id", return_value=dict(UBICACION_GUARDADA))
+    guardar = mocker.patch.object(loc.lkf_api, "patch_multi_record")
+
+    res = loc.update_ubicacion(record_id=REGISTRO_UBICACION, nombre=UBICACION_QA, contacto=CONTACTO_QA)
+
+    guardar.assert_not_called()
+    assert res["status_code"] == 200
