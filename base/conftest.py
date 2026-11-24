@@ -24,7 +24,7 @@ if lkf_back.back() == "sanic":
     for ruta in (lkf_back.SANIC_APP, os.path.join(lkf_back.SANIC_APP, "config")):
         if ruta not in sys.path:
             sys.path.insert(0, ruta)
-    from lkf_addons.base.app import UsersAdmin
+    from lkf_addons.base.app import ScriptLogs, UsersAdmin
     from account_settings import settings
 
 
@@ -78,3 +78,18 @@ def usuarios_admin(_usuarios_base):
     admin = copy.copy(_usuarios_base)
     admin.user = _usuario_cuenta_activa()
     return admin
+
+
+@pytest.fixture(scope='session')
+def _script_logs_base():
+    """La instancia se crea una sola vez por corrida, como en la ruta de Sanic."""
+    return ScriptLogs(settings)
+
+
+@pytest.fixture
+def script_logs(_script_logs_base):
+    """Copia de la instancia de la corrida con el usuario de la cuenta activa.
+    Mockear siempre con mocker."""
+    logs = copy.copy(_script_logs_base)
+    logs.user = _usuario_cuenta_activa()
+    return logs
