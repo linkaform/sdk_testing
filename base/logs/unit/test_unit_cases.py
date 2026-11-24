@@ -21,6 +21,8 @@ from ..data.logs_data import (
     HASTA,
     NOMBRE_SCRIPT,
     IDS_CON_ESE_NOMBRE,
+    LOGS_GUARDADOS,
+    LOGS_POR_PAGINA,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -73,3 +75,23 @@ def test_script_log_buscar_por_nombre_de_script_filtra_por_sus_ids(script_logs, 
     match = coleccion.find.call_args.args[0]
     filtrados = set(match["script_id"]["$in"])
     assert filtrados == IDS_CON_ESE_NOMBRE, f"Filtra por los scripts {sorted(filtrados)}"
+
+
+@pytest.mark.unit
+@pytest.mark.target("list_script_logs")
+def test_script_log_la_lista_sabe_si_hay_pagina_siguiente_sin_contar_todos_los_logs(script_logs, mocker):
+    """
+    TB-373: la colección de logs tiene millones de registros, así que la
+    lista no los cuenta: pide una fila de más y con ella sabe si hay página
+    siguiente. Esa fila extra no se muestra.
+    """
+    logs = script_logs
+    coleccion = script_logs_simulados(logs, mocker, registros=LOGS_GUARDADOS)
+
+    res = logs.list_script_logs(limit=LOGS_POR_PAGINA)
+
+    coleccion.find.return_value.sort.return_value.skip.return_value.limit.assert_called_once_with(LOGS_POR_PAGINA + 1)
+    coleccion.count_documents.assert_not_called()
+    assert res["has_next"] is True
+    assert res["records_on_page"] == LOGS_POR_PAGINA
+    assert [r["id"] for r in res["records"]] == [r["_id"] for r in LOGS_GUARDADOS[:LOGS_POR_PAGINA]]

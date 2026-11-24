@@ -23,3 +23,12 @@ HASTA = datetime(2026, 11, 2, 23, 59, 59, 999000)
 # tres scripts visibles.
 NOMBRE_SCRIPT = "CIERRE"
 IDS_CON_ESE_NOMBRE = {101, 103}
+
+# Logs guardados en script_log (lo mínimo que lee list_script_logs).
+LOGS_GUARDADOS = [
+    {"_id": "6a0000000000000000000371", "script_id": 101, "user_id": 10, "status": "done", "traceback": ""},
+    {"_id": "6a0000000000000000000372", "script_id": 102, "user_id": 10, "status": "done", "traceback": ""},
+    {"_id": "6a0000000000000000000373", "script_id": 103, "user_id": 10, "status": "done", "traceback": ""},
+]
+# Página de 2 logs cuando hay 3: hay página siguiente.
+LOGS_POR_PAGINA = 2
