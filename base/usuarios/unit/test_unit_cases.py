@@ -29,6 +29,9 @@ from ..data.usuarios_data import (
     USER_ID_LKF,
     CAMBIO_TELEFONO,
     RECHAZO_LKF,
+    CAMBIO_TELEFONO_Y_ROL,
+    ACTUALIZADO_LKF,
+    EDITADO_OK,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -196,3 +199,31 @@ def test_si_linkaform_rechaza_la_edicion_no_se_guarda_el_registro(usuarios_admin
 
     guardados["linkaform"].assert_called_once()
     guardados["registro"].assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_user")
+def test_editar_un_usuario_guarda_solo_los_campos_que_cambiaron(usuarios_admin, mocker):
+    """
+    TB-368: al cambiar el teléfono y el rol, update_user manda a LinkaForm
+    solo esos dos campos con sus nombres de allá (phone y position) y guarda
+    en el registro solo esos mismos campos. Si mandara los demás vacíos,
+    borraría el nombre o el email del usuario.
+    """
+    admin = usuarios_admin
+    f = admin.user_fields
+    guardados = usuario_guardado(admin, mocker, ESTATUS_ACTIVADO)
+    guardados["linkaform"].return_value = dict(ACTUALIZADO_LKF)
+    guardados["registro"].return_value = dict(EDITADO_OK)
+
+    res = admin.update_user(record_id=REGISTRO_USUARIO, **CAMBIO_TELEFONO_Y_ROL)
+
+    assert guardados["linkaform"].call_args.args == (
+        USER_ID_LKF, {"phone": CAMBIO_TELEFONO_Y_ROL["phone"], "position": CAMBIO_TELEFONO_Y_ROL["role"]},
+    )
+    assert guardados["registro"].call_args.kwargs["answers"] == {
+        f["phone"]: CAMBIO_TELEFONO_Y_ROL["phone"],
+        f["role"]: CAMBIO_TELEFONO_Y_ROL["role"],
+    }
+    assert guardados["registro"].call_args.kwargs["record_id"] == [REGISTRO_USUARIO]
+    assert res == {"updated": ["phone", "role"]}
