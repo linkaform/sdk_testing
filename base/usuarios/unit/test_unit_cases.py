@@ -1,7 +1,8 @@
 # coding: utf-8
 
 """Usuarios: dar de alta un usuario (create_user), la lista (list_users) y
-editarlo (update_user), sin tocar la cuenta.
+editarlo (update_user) y restaurar su contraseña (reset_password), sin
+tocar la cuenta.
 Notion: TB-361 a TB-370.
 
 Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
@@ -32,11 +33,12 @@ from ..data.usuarios_data import (
     CAMBIO_TELEFONO_Y_ROL,
     ACTUALIZADO_LKF,
     EDITADO_OK,
+    ESTATUS_CREADO,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_build_match", "_valid_language", "_valid_timezone", "create_user", "list_users", "update_user"]
+C10_TRIGGERS = ["_build_match", "_valid_language", "_valid_timezone", "create_user", "list_users", "reset_password", "update_user"]
 
 
 @pytest.mark.unit
@@ -227,3 +229,20 @@ def test_editar_un_usuario_guarda_solo_los_campos_que_cambiaron(usuarios_admin, 
     }
     assert guardados["registro"].call_args.kwargs["record_id"] == [REGISTRO_USUARIO]
     assert res == {"updated": ["phone", "role"]}
+
+
+@pytest.mark.unit
+@pytest.mark.target("reset_password")
+def test_restaurar_la_contrasena_de_un_usuario_no_activado_da_error(usuarios_admin, mocker):
+    """
+    TB-369: solo se restaura la contraseña de un usuario que ya activó su
+    cuenta. Si todavía está en "creado", su liga de activación sigue vigente:
+    reset_password debe responder error sin generar otra liga.
+    """
+    admin = usuarios_admin
+    guardados = usuario_guardado(admin, mocker, ESTATUS_CREADO)
+
+    with pytest.raises(Exception, match="no admite esta acci"):
+        admin.reset_password(record_id=REGISTRO_USUARIO)
+
+    guardados["registro"].assert_not_called()

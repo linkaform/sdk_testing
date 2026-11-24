@@ -40,3 +40,5 @@ RECHAZO_LKF = {"status_code": 400, "json": {"phone": "no es válido"}}
 CAMBIO_TELEFONO_Y_ROL = {"phone": "8187654321", "role": "Supervisor"}
 ACTUALIZADO_LKF = {"status_code": 200}
 EDITADO_OK = {"status_code": 202}
+# Usuario creado en LinkaForm que todavía no activa su cuenta.
+ESTATUS_CREADO = "creado"
