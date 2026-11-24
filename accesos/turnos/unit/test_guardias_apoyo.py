@@ -1,10 +1,11 @@
 # coding: utf-8
 
 """
-Guardias de apoyo en el turno abierto: agregarlo (update_guards_checkin:
+Guardias de apoyo: abrir el turno con uno (do_checkin con employee_list:
+start-shift-modal), agregarlo al turno abierto (update_guards_checkin:
 add-guard-modal) y darle salida (do_checkout con guards: tabla de guardias de
 apoyo) sin tocar preprod. Se simulan el turno y el guardado.
-Notion: TB-125 y TB-126.
+Notion: TB-124, TB-125 y TB-126.
 """
 
 from lkf_back import de
@@ -21,6 +22,9 @@ from ..data.guardias_apoyo_data import (
     GUARDIA_PRINCIPAL_ID,
     ESTATUS_SALIDA,
     ASISTENCIA_OK,
+    EMPLEADO_PRINCIPAL,
+    ULTIMO_TURNO_CERRADO,
+    TURNO_CREADO,
 )
 
 
@@ -100,3 +104,37 @@ def test_dar_salida_a_un_guardia_de_apoyo_deja_el_turno_abierto(accesos_no_api, 
     assert principal[f["checkin_status"]] == ESTATUS_ENTRADA, "El guardia principal también salió del turno"
     assert answers.get(f["checkin_type"]) != "cerrada", "La caseta se cerró al dar salida al guardia de apoyo"
     assert asistencia.call_args.args[0] == [GUARDIA_APOYO_ID], f"Se cerró la asistencia de {asistencia.call_args.args[0]}"
+
+
+def test_abrir_turno_con_un_guardia_de_apoyo_lo_deja_dentro_del_turno(accesos_no_api, mocker):
+    """
+    TB-124: con la caseta cerrada, "Iniciar turno" con un guardia de apoyo
+    (employee_list de start-shift-modal) debe crear un solo turno con los dos
+    guardias dentro: el que lo abre como guardia principal y el de apoyo como
+    guardia de apoyo, los dos con estatus entrada. Si el de apoyo no queda en
+    el turno, no aparece en la caseta y no puede registrar nada.
+    """
+    acc = accesos_no_api
+    mocker.patch.object(acc, "get_last_checkin", return_value=dict(ULTIMO_TURNO_CERRADO))
+    mocker.patch.object(acc, "get_open_checkin", return_value={})
+    mocker.patch.object(acc.lkf_api, "get_user_by_id", return_value={"name": EMPLEADO_PRINCIPAL["worker_name"]})
+    mocker.patch.object(de(acc, "get_employee_data"), "get_employee_data", return_value=dict(EMPLEADO_PRINCIPAL))
+    mocker.patch.object(de(acc, "get_users_by_location_area"), "get_users_by_location_area", side_effect=lambda **kw: [{"user_id": u} for u in kw["user_id"]])
+    mocker.patch.object(acc, "get_employee_checkin_status", return_value={})
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    mocker.patch.object(acc, "get_booth_config", return_value={})
+    mocker.patch.object(acc, "do_attendance")
+    mocker.patch.object(acc, "assign_unassigned_rondines_on_checkin")
+    sumar = mocker.patch.object(acc, "update_guards_checkin")
+    crear = mocker.patch.object(acc.lkf_api, "post_forms_answers", return_value=dict(TURNO_CREADO))
+
+    acc.do_checkin(LOCATION, AREA, employee_list=[dict(GUARDIA_APOYO)], nombre_suplente="", roles=[])
+
+    sumar.assert_not_called()
+    crear.assert_called_once()
+    f = acc.checkin_fields
+    apoyo = de(acc, "CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID").CONF_AREA_EMPLEADOS_AP_CAT_OBJ_ID
+    guardias = crear.call_args.args[0]["answers"][acc.f["guard_group"]]
+    assert [g[apoyo][acc.mf["id_usuario"]] for g in guardias] == [[GUARDIA_PRINCIPAL_ID], [GUARDIA_APOYO_ID]]
+    assert [g[f["checkin_position"]] for g in guardias] == [acc.chife_guard, acc.support_guard]
+    assert all(g[f["checkin_status"]] == ESTATUS_ENTRADA for g in guardias), "Algún guardia no quedó dentro"
