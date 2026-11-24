@@ -29,7 +29,7 @@ from ..data.ubicaciones_data import (
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_new_ubicacion", "update_ubicacion"]
+C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_contacto", "create_new_ubicacion", "update_ubicacion"]
 
 
 @pytest.mark.unit
@@ -189,3 +189,23 @@ def test_cambiar_el_nombre_de_una_ubicacion_solo_manda_el_nombre(location_no_api
     guardar.assert_called_once()
     assert guardar.call_args.kwargs["answers"] == {loc.f["location"]: UBICACION_RENOMBRADA}
     assert guardar.call_args.kwargs["record_id"] == [REGISTRO_UBICACION]
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_contacto", "_get_contacto_catalogo")
+def test_dar_de_alta_un_contacto_con_un_nombre_que_ya_existe_da_error(location_no_api, mocker):
+    """
+    TB-358: el botón "+" del selector de dirección da de alta un contacto en
+    el catálogo. Si ya hay uno con ese nombre, create_contacto debe responder
+    "Contacto duplicado" sin darlo de alta: dos contactos con el mismo nombre
+    no se distinguen en el selector.
+    """
+    loc = location_no_api
+    registro = {loc.f["address_name"]: CONTACTO_QA, loc.f["address"]: DIRECCION_CONTACTO}
+    mocker.patch.object(loc.lkf_api, "search_catalog", return_value=[registro])
+    alta_contacto = mocker.patch.object(loc.lkf_api, "post_catalog_answers")
+
+    with pytest.raises(Exception, match="Ya existe un contacto"):
+        loc.create_contacto(nombre=CONTACTO_QA, direccion=DIRECCION_CONTACTO)
+
+    alta_contacto.assert_not_called()
