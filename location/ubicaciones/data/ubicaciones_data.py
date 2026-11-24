@@ -32,3 +32,6 @@ ID_CONTACTO = "6a0000000000000000000351"
 # get_ubicacion_by_id.
 REGISTRO_UBICACION = "6a0000000000000000000356"
 UBICACION_GUARDADA = {"location": UBICACION_QA, "address_name": CONTACTO_QA}
+# Nombre nuevo al editar y respuesta del guardado.
+UBICACION_RENOMBRADA = "Planta QA Ubicaciones Norte"
+EDITADO_OK = {"status_code": 202}

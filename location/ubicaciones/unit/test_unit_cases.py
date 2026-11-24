@@ -23,6 +23,8 @@ from ..data.ubicaciones_data import (
     ID_CONTACTO,
     REGISTRO_UBICACION,
     UBICACION_GUARDADA,
+    UBICACION_RENOMBRADA,
+    EDITADO_OK,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -167,3 +169,23 @@ def test_editar_una_ubicacion_sin_cambios_no_guarda_nada(location_no_api, mocker
 
     guardar.assert_not_called()
     assert res["status_code"] == 200
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_ubicacion")
+def test_cambiar_el_nombre_de_una_ubicacion_solo_manda_el_nombre(location_no_api, mocker):
+    """
+    TB-357: al renombrar una ubicación sin cambiar su contacto,
+    update_ubicacion manda a guardar solo el campo del nombre en ese registro.
+    Si mandara el contacto también, LinkaForm lo volvería a validar contra el
+    catálogo sin necesidad.
+    """
+    loc = location_no_api
+    mocker.patch.object(loc, "get_ubicacion_by_id", return_value=dict(UBICACION_GUARDADA))
+    guardar = mocker.patch.object(loc.lkf_api, "patch_multi_record", return_value=dict(EDITADO_OK))
+
+    loc.update_ubicacion(record_id=REGISTRO_UBICACION, nombre=UBICACION_RENOMBRADA, contacto=CONTACTO_QA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["answers"] == {loc.f["location"]: UBICACION_RENOMBRADA}
+    assert guardar.call_args.kwargs["record_id"] == [REGISTRO_UBICACION]
