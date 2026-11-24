@@ -42,3 +42,4 @@ ACTUALIZADO_LKF = {"status_code": 200}
 EDITADO_OK = {"status_code": 202}
 # Usuario creado en LinkaForm que todavía no activa su cuenta.
 ESTATUS_CREADO = "creado"
+ESTATUS_RESTAURAR = "restaurar"

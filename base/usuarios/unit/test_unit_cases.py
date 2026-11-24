@@ -34,6 +34,7 @@ from ..data.usuarios_data import (
     ACTUALIZADO_LKF,
     EDITADO_OK,
     ESTATUS_CREADO,
+    ESTATUS_RESTAURAR,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -246,3 +247,29 @@ def test_restaurar_la_contrasena_de_un_usuario_no_activado_da_error(usuarios_adm
         admin.reset_password(record_id=REGISTRO_USUARIO)
 
     guardados["registro"].assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("reset_password")
+def test_restaurar_la_contrasena_genera_una_liga_nueva_y_deja_el_usuario_en_restaurar(usuarios_admin, mocker):
+    """
+    TB-370: para un usuario activado, reset_password guarda un token nuevo,
+    la liga para fijar contraseña con ese token, el record_id y la cuenta, y
+    el estatus "restaurar", que es lo que dispara el correo con la liga.
+    """
+    admin = usuarios_admin
+    f = admin.user_fields
+    guardados = usuario_guardado(admin, mocker, ESTATUS_ACTIVADO)
+    guardados["registro"].return_value = dict(EDITADO_OK)
+
+    res = admin.reset_password(record_id=REGISTRO_USUARIO)
+
+    assert res == {"status": ESTATUS_RESTAURAR}
+    answers = guardados["registro"].call_args.kwargs["answers"]
+    token = answers[f["token"]]
+    assert token, "No se generó el token"
+    liga = answers[f["link"]]
+    assert f"record_id={REGISTRO_USUARIO}" in liga
+    assert f"user={admin.user['parent_id']}" in liga
+    assert f"token={token}" in liga
+    assert answers[f["status"]] == ESTATUS_RESTAURAR
