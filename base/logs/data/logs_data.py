@@ -32,3 +32,12 @@ LOGS_GUARDADOS = [
 ]
 # Página de 2 logs cuando hay 3: hay página siguiente.
 LOGS_POR_PAGINA = 2
+
+# traceback de script_log: con archivo trae la URL del log en Backblaze; sin
+# archivo trae el texto del error.
+URL_LOG = "https://f001.backblazeb2.com/file/app-linkaform/logs/qa_script_374.log"
+TEXTO_ERROR = "Traceback (most recent call last): KeyError 'folio'"
+LOGS_CON_Y_SIN_ARCHIVO = [
+    {"_id": "6a0000000000000000000374", "script_id": 101, "user_id": 10, "status": "done", "traceback": URL_LOG},
+    {"_id": "6a0000000000000000000375", "script_id": 102, "user_id": 10, "status": "done", "traceback": TEXTO_ERROR},
+]

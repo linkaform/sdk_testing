@@ -23,6 +23,8 @@ from ..data.logs_data import (
     IDS_CON_ESE_NOMBRE,
     LOGS_GUARDADOS,
     LOGS_POR_PAGINA,
+    URL_LOG,
+    LOGS_CON_Y_SIN_ARCHIVO,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -95,3 +97,20 @@ def test_script_log_la_lista_sabe_si_hay_pagina_siguiente_sin_contar_todos_los_l
     assert res["has_next"] is True
     assert res["records_on_page"] == LOGS_POR_PAGINA
     assert [r["id"] for r in res["records"]] == [r["_id"] for r in LOGS_GUARDADOS[:LOGS_POR_PAGINA]]
+
+
+@pytest.mark.unit
+@pytest.mark.target("list_script_logs")
+def test_script_log_solo_los_logs_con_archivo_traen_liga(script_logs, mocker):
+    """
+    TB-374: el botón para ver el log solo debe aparecer cuando el log tiene
+    archivo (el traceback es la URL). Si el traceback es el texto de un
+    error, no hay archivo que abrir y no debe traer liga.
+    """
+    logs = script_logs
+    script_logs_simulados(logs, mocker, registros=LOGS_CON_Y_SIN_ARCHIVO)
+
+    con_archivo, sin_archivo = logs.list_script_logs()["records"]
+
+    assert (con_archivo["has_log"], con_archivo["log_url"]) == (True, URL_LOG)
+    assert (sin_archivo["has_log"], sin_archivo["log_url"]) == (False, "")
