@@ -58,3 +58,8 @@ CANDIDATOS_BUSCADOR = [
     {"key": "tipo", "value": "Caseta", "exact": True},
     {"key": "disponibilidad", "value": "disponible", "exact": True},
 ]
+
+# Filtro Tag/QR del panel (dynamic_filters de get_catalog_areas_formatted).
+FILTRO_SOLO_TAG = [{"key": "tipo_identificador", "value": ["tag"]}]
+FILTRO_SOLO_QR = [{"key": "tipo_identificador", "value": ["qr"]}]
+FILTRO_TAG_Y_QR = [{"key": "tipo_identificador", "value": ["tag", "qr"]}]
