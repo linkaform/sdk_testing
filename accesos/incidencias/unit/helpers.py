@@ -24,3 +24,14 @@ def editar_simulado(acc, mocker, antes=INCIDENCIA_ANTES, editado=EDITADO_OK):
 def incidencia_con_falla(acc):
     """Incidencia de antes con la liga a su falla, armada como la guarda el back."""
     return {**INCIDENCIA_CON_FALLA, "falla_generada_url": acc._url_registro_lkf(FALLA_GENERADA_ID)}
+
+
+def seguimiento_simulado(acc, mocker, encontradas):
+    """Simula la incidencia que busca update_incidence_seguimiento (encontradas:
+    lo que regresa get_list_incidences) y el guardado; regresa el mock del guardado."""
+    mocker.patch.object(acc, "get_list_incidences", return_value=encontradas)
+    mocker.patch.object(acc, "_reporta_sesion", return_value=GUARDIA_SESION)
+    mocker.patch.object(acc.lkf_api, "get_metadata", return_value={})
+    mocker.patch.object(acc, "get_record_by_folio", return_value={"_id": INCIDENCIA_ANTES["_id"]})
+    mocker.patch.object(acc, "registrar_cambios_incidencia")
+    return mocker.patch.object(acc.net, "patch_forms_answers", return_value=dict(EDITADO_OK))

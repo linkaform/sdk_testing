@@ -116,3 +116,8 @@ CERRAR_DESDE_DETALLE = {
     "afectacion_patrimonial_incidencia": [],
     "acciones_correctivas_incidencia": [],
 }
+
+# Seguimiento (add-seguimientos.tsx): incidencia abierta que ya tiene un
+# seguimiento, como la regresa get_list_incidences.
+INCIDENCIA_CON_SEGUIMIENTO = {**INCIDENCIA_ANTES, "seguimientos_incidencia": [SEGUIMIENTO_EXISTENTE]}
+ESTATUS_ABIERTO = "Abierto"
