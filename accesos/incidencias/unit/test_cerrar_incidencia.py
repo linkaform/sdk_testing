@@ -11,8 +11,11 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from .helpers import editar_simulado
 from ..data.incidencias_data import (
+    FOLIO_INCIDENCIA,
     INCIDENCIA_ANTES,
+    CERRAR_DESDE_DETALLE,
     CREADA_HACE,
     TIEMPO_CIERRE_CALCULADO,
 )
@@ -40,3 +43,25 @@ def test_cerrar_una_incidencia_abierta_calcula_el_tiempo_al_cierre(accesos_no_ap
     res = acc._tiempo_cierre_answers(dict(INCIDENCIA_ANTES), "cerrado")
 
     assert res == {acc.incidence_fields["tiempo_transcurrido_cierre"]: TIEMPO_CIERRE_CALCULADO}
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_incidence", "_tiempo_cierre_answers")
+def test_cerrar_desde_el_detalle_guarda_el_estatus_cerrado_y_registra_el_historial(accesos_no_api, mocker):
+    """
+    TB-392: el botón Cerrar incidencia manda la incidencia completa con
+    estatus "cerrado". update_incidence debe guardarla cerrada, con el tiempo
+    al cierre calculado, y registrar el cambio en el historial con la versión
+    de antes. Si no, la incidencia sigue saliendo en Abiertas.
+    """
+    acc = accesos_no_api
+    mocks = editar_simulado(acc, mocker)
+    creada_hace(acc, mocker)
+
+    acc.update_incidence(dict(CERRAR_DESDE_DETALLE), FOLIO_INCIDENCIA)
+
+    f = acc.incidence_fields
+    answers = mocks["guardar"].call_args.args[0]["answers"]
+    assert answers[f["estatus"]] == "cerrado"
+    assert answers[f["tiempo_transcurrido_cierre"]] == TIEMPO_CIERRE_CALCULADO
+    mocks["historial"].assert_called_once_with(INCIDENCIA_ANTES, folio=FOLIO_INCIDENCIA)
