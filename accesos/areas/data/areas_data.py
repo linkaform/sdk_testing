@@ -51,3 +51,10 @@ GUARDADO_OK = {"status_code": 202}
 EDICION_PARCIAL = {"nombre": "Caseta Principal QA editada", "tipo_de_area": "Estacionamiento"}
 ESTADO_INACTIVA = "inactiva"
 DISPONIBILIDAD_MANTENIMIENTO = "mantenimiento"
+
+# Chips del buscador de Disponibles (get_search_counts_areas): un conteo por
+# candidato {key, value, exact}, como los manda useFacetSection.
+CANDIDATOS_BUSCADOR = [
+    {"key": "tipo", "value": "Caseta", "exact": True},
+    {"key": "disponibilidad", "value": "disponible", "exact": True},
+]
