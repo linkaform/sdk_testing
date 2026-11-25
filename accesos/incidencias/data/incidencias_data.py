@@ -123,3 +123,6 @@ INCIDENCIA_CON_SEGUIMIENTO = {**INCIDENCIA_ANTES, "seguimientos_incidencia": [SE
 ESTATUS_ABIERTO = "Abierto"
 # Folio que get_list_incidences no encuentra.
 FOLIO_INEXISTENTE = "999999-10"
+# Seguimiento vacío: el default de incidencias_sdk.py cuando no llega la llave
+# seguimientos_incidencia.
+SEGUIMIENTO_VACIO = []
