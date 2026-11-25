@@ -37,3 +37,23 @@ def test_conteos_del_buscador_no_cuentan_areas_homonimas_de_otra_ubicacion(acces
 
     consulta = cr.aggregate.call_args.args[0]
     assert LOCATION in str(consulta), f"La consulta de los conteos no filtra por {LOCATION}: {consulta}"
+
+
+@pytest.mark.unit
+@pytest.mark.target("get_search_counts_areas")
+def test_conteos_del_buscador_sin_ubicaciones_regresan_ceros_sin_consultar(accesos_no_api, mocker):
+    """
+    TB-382: sin ubicación elegida no hay áreas que contar. Cada chip debe
+    mostrar 0 sin buscar áreas ni consultar la base; si consulta, contaría
+    las áreas de todas las ubicaciones.
+    """
+    acc = accesos_no_api
+    buscar = mocker.patch.object(acc, "areas_de_ubicaciones", return_value=[AREA])
+    cr = mocker.MagicMock()
+    mocker.patch.object(acc, "cr", cr, create=True)
+
+    conteos = acc.get_search_counts_areas(locations=[], candidates=[dict(c) for c in CANDIDATOS_BUSCADOR])
+
+    assert conteos == [0, 0]
+    buscar.assert_not_called()
+    cr.aggregate.assert_not_called()
