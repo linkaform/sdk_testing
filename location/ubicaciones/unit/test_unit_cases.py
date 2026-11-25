@@ -1,7 +1,8 @@
 # coding: utf-8
 
 """Ubicaciones: crear una ubicación (create_new_ubicacion) y su contacto del
-catálogo, sin tocar la cuenta.
+catálogo, editarla (update_ubicacion) y sus opciones avanzadas
+(update_config_seguridad_ubicacion), sin tocar la cuenta.
 Notion: TB-351 a TB-360.
 
 Unitarios principales de la seccion (maximo 10) y sus C10_TRIGGERS:
@@ -21,11 +22,21 @@ from ..data.ubicaciones_data import (
     DIRECCION_CONTACTO,
     CIUDAD_CONTACTO,
     ID_CONTACTO,
+    REGISTRO_UBICACION,
+    UBICACION_GUARDADA,
+    UBICACION_RENOMBRADA,
+    EDITADO_OK,
+    ID_CONFIG_SEGURIDAD,
+    OTRA_UBICACION,
+    ENVIO_GUARDADO,
+    CAMBIO_ENVIO,
+    CAMBIO_ENVIO_INVALIDO,
+    TOLERANCIA_NEGATIVA,
 )
 
 pytestmark = pytest.mark.back("sanic")
 
-C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_new_ubicacion"]
+C10_TRIGGERS = ["_contacto_answers", "_contacto_ubicacion_desde_catalogo", "_get_contacto_catalogo", "create_contacto", "create_new_ubicacion", "update_config_seguridad_ubicacion", "update_ubicacion"]
 
 
 @pytest.mark.unit
@@ -145,5 +156,114 @@ def test_un_contacto_que_no_existe_en_el_catalogo_da_error_y_no_guarda_la_ubicac
 
     with pytest.raises(Exception, match="No existe el contacto"):
         loc.create_new_ubicacion(nombre=UBICACION_QA, contacto=CONTACTO_QA)
+
+    guardar.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_ubicacion")
+def test_editar_una_ubicacion_sin_cambios_no_guarda_nada(location_no_api, mocker):
+    """
+    TB-356: si la ubicación se guarda con el mismo nombre y el mismo
+    contacto, update_ubicacion responde "Sin cambios" sin mandar nada a
+    guardar. Un guardado vacío solo crea una versión nueva del registro.
+    """
+    loc = location_no_api
+    mocker.patch.object(loc, "get_ubicacion_by_id", return_value=dict(UBICACION_GUARDADA))
+    guardar = mocker.patch.object(loc.lkf_api, "patch_multi_record")
+
+    res = loc.update_ubicacion(record_id=REGISTRO_UBICACION, nombre=UBICACION_QA, contacto=CONTACTO_QA)
+
+    guardar.assert_not_called()
+    assert res["status_code"] == 200
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_ubicacion")
+def test_cambiar_el_nombre_de_una_ubicacion_solo_manda_el_nombre(location_no_api, mocker):
+    """
+    TB-357: al renombrar una ubicación sin cambiar su contacto,
+    update_ubicacion manda a guardar solo el campo del nombre en ese registro.
+    Si mandara el contacto también, LinkaForm lo volvería a validar contra el
+    catálogo sin necesidad.
+    """
+    loc = location_no_api
+    mocker.patch.object(loc, "get_ubicacion_by_id", return_value=dict(UBICACION_GUARDADA))
+    guardar = mocker.patch.object(loc.lkf_api, "patch_multi_record", return_value=dict(EDITADO_OK))
+
+    loc.update_ubicacion(record_id=REGISTRO_UBICACION, nombre=UBICACION_RENOMBRADA, contacto=CONTACTO_QA)
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["answers"] == {loc.f["location"]: UBICACION_RENOMBRADA}
+    assert guardar.call_args.kwargs["record_id"] == [REGISTRO_UBICACION]
+
+
+@pytest.mark.unit
+@pytest.mark.target("create_contacto", "_get_contacto_catalogo")
+def test_dar_de_alta_un_contacto_con_un_nombre_que_ya_existe_da_error(location_no_api, mocker):
+    """
+    TB-358: el botón "+" del selector de dirección da de alta un contacto en
+    el catálogo. Si ya hay uno con ese nombre, create_contacto debe responder
+    "Contacto duplicado" sin darlo de alta: dos contactos con el mismo nombre
+    no se distinguen en el selector.
+    """
+    loc = location_no_api
+    registro = {loc.f["address_name"]: CONTACTO_QA, loc.f["address"]: DIRECCION_CONTACTO}
+    mocker.patch.object(loc.lkf_api, "search_catalog", return_value=[registro])
+    alta_contacto = mocker.patch.object(loc.lkf_api, "post_catalog_answers")
+
+    with pytest.raises(Exception, match="Ya existe un contacto"):
+        loc.create_contacto(nombre=CONTACTO_QA, direccion=DIRECCION_CONTACTO)
+
+    alta_contacto.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_config_seguridad_ubicacion")
+def test_las_opciones_avanzadas_de_una_ubicacion_solo_guardan_su_fila(location_no_api, mocker):
+    """
+    TB-359: la configuración del módulo de seguridad tiene una fila por
+    ubicación en un solo registro. Al guardar las opciones avanzadas de una
+    ubicación se manda solo su fila, con su índice y el campo que cambió; las
+    filas de las demás ubicaciones no se tocan.
+    """
+    loc = location_no_api
+    campos = loc.config_seguridad_fields
+    grupo = [
+        {loc.UBICACIONES_CAT_OBJ_ID: {loc.f["location"]: OTRA_UBICACION}, campos["envio_por"]: list(ENVIO_GUARDADO)},
+        {loc.UBICACIONES_CAT_OBJ_ID: {loc.f["location"]: UBICACION_QA}, campos["envio_por"]: list(ENVIO_GUARDADO)},
+    ]
+    mocker.patch.object(loc, "exists_ubicacion", return_value=True)
+    mocker.patch.object(loc, "_get_config_seguridad_record", return_value={"_id": ID_CONFIG_SEGURIDAD, "grupo": grupo})
+    guardar = mocker.patch.object(loc.lkf_api, "patch_multi_record", return_value=dict(EDITADO_OK))
+
+    loc.update_config_seguridad_ubicacion(ubicacion=UBICACION_QA, config=dict(CAMBIO_ENVIO))
+
+    guardar.assert_called_once()
+    assert guardar.call_args.kwargs["record_id"] == [ID_CONFIG_SEGURIDAD]
+    filas = guardar.call_args.kwargs["answers"][loc.GRUPO_REQUISITOS]
+    assert list(filas) == ["1"], f"Se mandaron las filas {list(filas)}"
+    assert filas["1"][loc.UBICACIONES_CAT_OBJ_ID] == {loc.f["location"]: UBICACION_QA}
+    assert filas["1"][campos["envio_por"]] == CAMBIO_ENVIO["envio_por"]
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_config_seguridad_ubicacion")
+def test_una_opcion_avanzada_que_no_existe_da_error_y_no_guarda(location_no_api, mocker):
+    """
+    TB-360: LinkaForm rechaza un valor que no es opción del campo, y una
+    tolerancia negativa no tiene sentido para los pases. Con cualquiera de
+    los dos, update_config_seguridad_ubicacion debe responder "Valor
+    inválido" sin mandar nada a guardar.
+    """
+    loc = location_no_api
+    mocker.patch.object(loc, "exists_ubicacion", return_value=True)
+    mocker.patch.object(loc, "_get_config_seguridad_record", return_value={"_id": ID_CONFIG_SEGURIDAD, "grupo": []})
+    guardar = mocker.patch.object(loc.lkf_api, "patch_multi_record")
+
+    with pytest.raises(Exception, match="Valor inv"):
+        loc.update_config_seguridad_ubicacion(ubicacion=UBICACION_QA, config=dict(CAMBIO_ENVIO_INVALIDO))
+    with pytest.raises(Exception, match="Valor inv"):
+        loc.update_config_seguridad_ubicacion(ubicacion=UBICACION_QA, config=dict(TOLERANCIA_NEGATIVA))
 
     guardar.assert_not_called()

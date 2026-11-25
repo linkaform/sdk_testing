@@ -27,3 +27,23 @@ CONTACTO_QA = "Contacto QA Ubicaciones"
 DIRECCION_CONTACTO = "Av. Fundidora 501"
 CIUDAD_CONTACTO = "Monterrey"
 ID_CONTACTO = "6a0000000000000000000351"
+
+# Editar una ubicación (update_ubicacion): _id del registro y cómo la regresa
+# get_ubicacion_by_id.
+REGISTRO_UBICACION = "6a0000000000000000000356"
+UBICACION_GUARDADA = {"location": UBICACION_QA, "address_name": CONTACTO_QA}
+# Nombre nuevo al editar y respuesta del guardado.
+UBICACION_RENOMBRADA = "Planta QA Ubicaciones Norte"
+EDITADO_OK = {"status_code": 202}
+
+# Opciones avanzadas (update_config_seguridad_ubicacion): registro de la
+# configuración del módulo de seguridad, otra ubicación con su propia fila y el
+# cambio que manda el front (solo los campos que cambiaron).
+ID_CONFIG_SEGURIDAD = "6a0000000000000000000359"
+OTRA_UBICACION = "Planta QA Ubicaciones Sur"
+ENVIO_GUARDADO = ["sms"]
+CAMBIO_ENVIO = {"envio_por": ["correo"]}
+# Valores que no acepta la forma: una opción de envío que no existe y una
+# tolerancia negativa.
+CAMBIO_ENVIO_INVALIDO = {"envio_por": ["whatsapp"]}
+TOLERANCIA_NEGATIVA = {"tolerancia_de_entrada_previa": -5}
