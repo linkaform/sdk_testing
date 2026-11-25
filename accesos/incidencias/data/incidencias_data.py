@@ -84,3 +84,8 @@ FOLIO_CHECK_RONDIN = "512-10"
 
 # Incidencia guardada sin prioridad (registros viejos o creados desde un rondín).
 INCIDENCIA_SIN_PRIORIDAD = {"folio": FOLIO_INCIDENCIA, "estatus": "abierto"}
+
+# Cerrar una incidencia abierta: se creó hace 2 h 15 min (más unos segundos)
+# y "Tiempo transcurrido al cierre" debe quedar con ese texto.
+CREADA_HACE = {"hours": 2, "minutes": 15, "seconds": 30}
+TIEMPO_CIERRE_CALCULADO = "2 horas, 15 minutos"
