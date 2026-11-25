@@ -84,3 +84,45 @@ FOLIO_CHECK_RONDIN = "512-10"
 
 # Incidencia guardada sin prioridad (registros viejos o creados desde un rondín).
 INCIDENCIA_SIN_PRIORIDAD = {"folio": FOLIO_INCIDENCIA, "estatus": "abierto"}
+
+# Cerrar una incidencia abierta: se creó hace 2 h 15 min (más unos segundos)
+# y "Tiempo transcurrido al cierre" debe quedar con ese texto.
+CREADA_HACE = {"hours": 2, "minutes": 15, "seconds": 30}
+TIEMPO_CIERRE_CALCULADO = "2 horas, 15 minutos"
+# Lo que manda el botón Cerrar incidencia del detalle (incidencia-detalle.tsx,
+# datosCompletos + estatus "cerrado"): la incidencia completa, porque
+# update_incidence reemplaza las respuestas del registro.
+CERRAR_DESDE_DETALLE = {
+    "reporta_incidencia": GUARDIA_SESION,
+    "fecha_hora_incidencia": "2026-11-13 10:00:00",
+    "ubicacion_incidencia": LOCATION,
+    "area_incidencia": AREA,
+    "incidencia": "Intrusión",
+    "incidente": "Intrusión",
+    "categoria": "Seguridad",
+    "sub_categoria": "",
+    "comentario_incidencia": "Incidencia de prueba QA",
+    "dano_incidencia": "",
+    "evidencia_incidencia": [],
+    "documento_incidencia": [],
+    "prioridad_incidencia": "Alta",
+    "notificacion_incidencia": "no",
+    "datos_deposito_incidencia": [],
+    "tags": [],
+    "estatus": "cerrado",
+    "personas_involucradas_incidencia": [],
+    "acciones_tomadas_incidencia": [],
+    "seguimientos_incidencia": [],
+    "afectacion_patrimonial_incidencia": [],
+    "acciones_correctivas_incidencia": [],
+}
+
+# Seguimiento (add-seguimientos.tsx): incidencia abierta que ya tiene un
+# seguimiento, como la regresa get_list_incidences.
+INCIDENCIA_CON_SEGUIMIENTO = {**INCIDENCIA_ANTES, "seguimientos_incidencia": [SEGUIMIENTO_EXISTENTE]}
+ESTATUS_ABIERTO = "Abierto"
+# Folio que get_list_incidences no encuentra.
+FOLIO_INEXISTENTE = "999999-10"
+# Seguimiento vacío: el default de incidencias_sdk.py cuando no llega la llave
+# seguimientos_incidencia.
+SEGUIMIENTO_VACIO = []
