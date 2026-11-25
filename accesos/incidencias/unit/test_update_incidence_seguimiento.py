@@ -4,17 +4,20 @@
 Agregar un seguimiento a una incidencia (update_incidence_seguimiento en
 Sanic) sin tocar la cuenta: se simulan la incidencia de antes y el guardado,
 y se revisa qué se manda a guardar.
-Notion: TB-347.
+Notion: TB-347 y TB-395.
 """
 
 import pytest
 
-from .helpers import incidencia_con_falla
+from .helpers import incidencia_con_falla, seguimiento_simulado
 from ..data.incidencias_data import (
     FOLIO_INCIDENCIA,
     GUARDIA_SESION,
     EDITADO_OK,
     SEGUIMIENTO_NUEVO,
+    INCIDENCIA_CON_SEGUIMIENTO,
+    ESTATUS_ABIERTO,
+    SEGUIMIENTO_VACIO,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -43,3 +46,24 @@ def test_agregar_seguimiento_conserva_la_liga_a_la_falla_y_los_datos_del_robo(ac
     answers = guardar.call_args.args[0]["answers"]
     faltan = [campo for campo in ("falla_generada_url", "placas", "marca") if f[campo] not in answers]
     assert not faltan, f"El seguimiento borra: {faltan}"
+
+
+@pytest.mark.bug(1640)
+def test_un_seguimiento_vacio_no_truena(accesos_no_api, mocker):
+    """
+    TB-395: si el seguimiento llega vacío (incidencias_sdk.py pone [] cuando
+    no viene la llave), update_incidence_seguimiento debe responder un error
+    claro o ignorarlo. Hoy lo envuelve en [[]] y truena con AttributeError
+    al leer el seguimiento como diccionario (lkf_back marcaría ese
+    AttributeError como SKIPPED: se reporta con pytest.fail).
+    Ticket 2611-1640.
+    """
+    acc = accesos_no_api
+    seguimiento_simulado(acc, mocker, [dict(INCIDENCIA_CON_SEGUIMIENTO)])
+
+    try:
+        acc.update_incidence_seguimiento(FOLIO_INCIDENCIA, list(SEGUIMIENTO_VACIO), ESTATUS_ABIERTO)
+    except AttributeError as e:
+        pytest.fail(f"Un seguimiento vacío truena: {e}")
+    except Exception:
+        pass

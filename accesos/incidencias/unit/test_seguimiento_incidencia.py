@@ -4,7 +4,7 @@
 Agregar un seguimiento a una incidencia (Agregar seguimiento del detalle;
 update_incidence_seguimiento en Sanic) sin tocar la cuenta: se simulan la
 incidencia de antes y el guardado, y se revisa qué se manda a guardar.
-Notion: TB-393 a TB-395.
+Notion: TB-393 y TB-394.
 """
 
 import pytest
@@ -18,7 +18,6 @@ from ..data.incidencias_data import (
     INCIDENCIA_CON_SEGUIMIENTO,
     ESTATUS_ABIERTO,
     FOLIO_INEXISTENTE,
-    SEGUIMIENTO_VACIO,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -65,23 +64,3 @@ def test_un_seguimiento_a_un_folio_que_no_existe_da_error_y_no_guarda(accesos_no
         acc.update_incidence_seguimiento(FOLIO_INEXISTENTE, dict(SEGUIMIENTO_NUEVO), ESTATUS_ABIERTO)
 
     guardar.assert_not_called()
-
-
-@pytest.mark.unit
-@pytest.mark.target("update_incidence_seguimiento")
-def test_un_seguimiento_vacio_no_truena(accesos_no_api, mocker):
-    """
-    TB-395: si el seguimiento llega vacío (incidencias_sdk.py pone [] cuando
-    no viene la llave), update_incidence_seguimiento debe responder un error
-    claro o ignorarlo. Hoy lo envuelve en [[]] y truena con AttributeError
-    al leer el seguimiento como diccionario.
-    """
-    acc = accesos_no_api
-    seguimiento_simulado(acc, mocker, [dict(INCIDENCIA_CON_SEGUIMIENTO)])
-
-    try:
-        acc.update_incidence_seguimiento(FOLIO_INCIDENCIA, list(SEGUIMIENTO_VACIO), ESTATUS_ABIERTO)
-    except AttributeError as e:
-        pytest.fail(f"Un seguimiento vacío truena: {e}")
-    except Exception:
-        pass
