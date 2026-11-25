@@ -121,3 +121,5 @@ CERRAR_DESDE_DETALLE = {
 # seguimiento, como la regresa get_list_incidences.
 INCIDENCIA_CON_SEGUIMIENTO = {**INCIDENCIA_ANTES, "seguimientos_incidencia": [SEGUIMIENTO_EXISTENTE]}
 ESTATUS_ABIERTO = "Abierto"
+# Folio que get_list_incidences no encuentra.
+FOLIO_INEXISTENTE = "999999-10"

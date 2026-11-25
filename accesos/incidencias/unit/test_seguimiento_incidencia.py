@@ -17,6 +17,7 @@ from ..data.incidencias_data import (
     SEGUIMIENTO_NUEVO,
     INCIDENCIA_CON_SEGUIMIENTO,
     ESTATUS_ABIERTO,
+    FOLIO_INEXISTENTE,
 )
 
 pytestmark = pytest.mark.back("sanic")
@@ -46,3 +47,20 @@ def test_un_seguimiento_nuevo_se_suma_a_los_existentes(accesos_no_api, mocker):
         SEGUIMIENTO_EXISTENTE["registrado_por"],
         GUARDIA_SESION,
     ]
+
+
+@pytest.mark.unit
+@pytest.mark.target("update_incidence_seguimiento")
+def test_un_seguimiento_a_un_folio_que_no_existe_da_error_y_no_guarda(accesos_no_api, mocker):
+    """
+    TB-394: si la incidencia del folio no existe (por ejemplo, la borraron
+    mientras el detalle estaba abierto), agregar un seguimiento debe responder
+    "No hay una incidencia registrada." sin mandar nada a guardar.
+    """
+    acc = accesos_no_api
+    guardar = seguimiento_simulado(acc, mocker, [])
+
+    with pytest.raises(Exception, match="No hay una incidencia"):
+        acc.update_incidence_seguimiento(FOLIO_INEXISTENTE, dict(SEGUIMIENTO_NUEVO), ESTATUS_ABIERTO)
+
+    guardar.assert_not_called()
