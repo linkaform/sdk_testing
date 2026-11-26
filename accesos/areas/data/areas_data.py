@@ -51,3 +51,45 @@ GUARDADO_OK = {"status_code": 202}
 EDICION_PARCIAL = {"nombre": "Caseta Principal QA editada", "tipo_de_area": "Estacionamiento"}
 ESTADO_INACTIVA = "inactiva"
 DISPONIBILIDAD_MANTENIMIENTO = "mantenimiento"
+
+# Chips del buscador de Disponibles (get_search_counts_areas): un conteo por
+# candidato {key, value, exact}, como los manda useFacetSection.
+CANDIDATOS_BUSCADOR = [
+    {"key": "tipo", "value": "Caseta", "exact": True},
+    {"key": "disponibilidad", "value": "disponible", "exact": True},
+]
+
+# Filtro Tag/QR del panel (dynamic_filters de get_catalog_areas_formatted).
+FILTRO_SOLO_TAG = [{"key": "tipo_identificador", "value": ["tag"]}]
+FILTRO_SOLO_QR = [{"key": "tipo_identificador", "value": ["qr"]}]
+FILTRO_TAG_Y_QR = [{"key": "tipo_identificador", "value": ["tag", "qr"]}]
+
+# Pestaña Incidencias del área (get_incidencias_by_area): el área como la
+# regresa get_area_by_id y dos rondines como los regresa la consulta. Tres
+# incidencias son de AREA y una de otra área del mismo rondín.
+OTRA_AREA = "Almacén"
+AREA_DETALLE = {"_id": AREA_RECORD_ID, "rondin_area": AREA, "ubicacion": LOCATION}
+RONDINES_CON_INCIDENCIAS = [
+    {
+        "_id": "r1",
+        "folio": "101-10",
+        "ubicacion": LOCATION,
+        "nombre_recorrido": "Recorrido QA",
+        "incidencias_rondin": [
+            {"area_salida": AREA, "incidencia": "Puerta abierta"},
+            {"area_salida": OTRA_AREA, "incidencia": "Luz fundida"},
+        ],
+    },
+    {
+        "_id": "r2",
+        "folio": "102-10",
+        "ubicacion": LOCATION,
+        "nombre_recorrido": "Recorrido QA",
+        "incidencias_rondin": [
+            {"area_salida": AREA, "incidencia": "Candado roto"},
+            {"area_salida": AREA, "incidencia": "Cámara sin señal"},
+        ],
+    },
+]
+# El front pide la pestaña con limit=0 (IncidenciasAreaDashboard.tsx): todas.
+LIMIT_TODAS = 0
