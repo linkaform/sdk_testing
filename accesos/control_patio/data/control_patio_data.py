@@ -165,3 +165,20 @@ DESGLOSE_EMPAQUE = [
     {"no_referencia_material": "QA material 1", "nivel": "1", "tipo_unidad_empaque": "Tarima", "cantidad": "2", "cantidad_acumulada": "2"},
     {"no_referencia_material": "QA material 1", "nivel": "2", "tipo_unidad_empaque": "Caja", "cantidad": "40", "cantidad_acumulada": "80"},
 ]
+# Materiales del camión como los regresa get_bitac_transportista_record, los dos
+# ya inspeccionados con evidencia y comentario: se borra el primero desde el
+# detalle (delete_materiales) y el segundo debe quedarse completo (TB-419).
+MATERIALES_INSPECCIONADOS = [
+    {
+        "lugar": "remolque", "no_referencia": "remolque_1", "producto": "QA material que se borra",
+        "lote": "", "cantidad": "5", "cantidad_fisica": "5", "cantidad_buena": "5",
+        "cantidad_danada": "", "cantidad_faltante": "", "peso": "", "volumen": "",
+        "evidencia": [IMAGEN_PREPROD], "comentario": "Material que se borra",
+    },
+    {
+        "lugar": "remolque", "no_referencia": "remolque_1", "producto": "QA material que se queda",
+        "lote": "", "cantidad": "8", "cantidad_fisica": "7", "cantidad_buena": "6",
+        "cantidad_danada": "1", "cantidad_faltante": "1", "peso": "", "volumen": "",
+        "evidencia": [IMAGEN_PREPROD], "comentario": "Una caja llegó golpeada",
+    },
+]
