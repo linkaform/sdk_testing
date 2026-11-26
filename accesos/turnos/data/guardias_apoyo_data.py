@@ -22,3 +22,10 @@ ESTATUS_ENTRADA = "entrada"
 ESTATUS_SALIDA = "salida"
 GUARDADO_OK = {"status_code": 202}
 ASISTENCIA_OK = "Correcto"
+
+# Iniciar turno con la caseta cerrada y un guardia de apoyo (start-shift-modal:
+# employee_list [{user_id, name}]): empleado activo del guardia que abre el
+# turno, último turno de la caseta y respuesta al crear el turno.
+EMPLEADO_PRINCIPAL = {"worker_name": "Guardia principal QA", "user_id": GUARDIA_PRINCIPAL_ID}
+ULTIMO_TURNO_CERRADO = {"checkin_type": "cerrada"}
+TURNO_CREADO = {"status_code": 201, "json": {}}
